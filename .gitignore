@@ -1,0 +1,30 @@
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Nuxt / Nitro build output
+.nuxt/
+.output/
+dist/
+
+# Logs and local debug files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local preview, browser QA, and temporary documentation artifacts
+site-qa/
+site-workspace/
+.codex/pdf-reader/
