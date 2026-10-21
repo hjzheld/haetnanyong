@@ -1,0 +1,379 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+p {
+  margin: 0;
+}
+h1,
+h2,
+h3 {
+  margin: 0;
+}
+button {
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 10px;
+  background: transparent;
+  color: inherit;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+#pdesk > header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+main {
+  margin: auto;
+}
+.logo,
+.profile,
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+}
+.logo-mark img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+#pdesk > header > nav {
+  display: flex;
+  flex: 1;
+}
+#pdesk > header > nav a {
+  padding: 10px 18px;
+  border-radius: 12px;
+  color: #858090;
+  font-weight: 600;
+}
+#pdesk > header > nav a.selected {
+  background: #eeecf5;
+  color: #615c7b;
+  box-shadow: inset 0 1px 0 #fff;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+}
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 22px;
+}
+.heading,
+.between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.heading {
+  margin-bottom: 18px;
+}
+.actions {
+  flex-wrap: wrap;
+}
+.projects {
+  margin-top: 30px;
+}
+.project-grid {
+  display: grid;
+  gap: 18px;
+}
+.project {
+  display: grid;
+  gap: 18px;
+  text-align: left;
+  align-content: start;
+}
+.project-foot {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid;
+  padding-top: 16px;
+}
+.bar {
+  margin-top: 10px;
+  overflow: hidden;
+}
+.bar span {
+  display: block;
+  height: 100%;
+}
+.form-error {
+  color: #a64b69 !important;
+  margin: 12px 0;
+}
+.notice {
+  color: #68785f;
+  padding: 10px 0;
+}
+.auth-form {
+  width: min(360px, 100%);
+  display: grid;
+  gap: 14px;
+  order: 4;
+  text-align: left;
+  padding: 26px;
+  background: #ffffffbd;
+  border: 1px solid white;
+  border-radius: 22px;
+  box-shadow: 0 12px 40px #7565830c;
+}
+.auth-form label {
+  display: grid;
+  gap: 7px;
+  font-size: 13px;
+  color: #7a6d85;
+}
+.auth-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e3dcea;
+  border-radius: 10px;
+  background: #fff;
+  color: #39354a;
+}
+.auth-form h2 {
+  text-align: center;
+}
+.switch-auth {
+  font-size: 12px;
+  color: #8b7d9a;
+}
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-card {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 20px;
+  gap: 12px;
+}
+.login-card:after {
+  display: none !important;
+}
+.login-card h1 {
+  margin-bottom: 14px;
+}
+.login-cat {
+  object-fit: contain;
+}
+.empty img {
+  object-fit: contain;
+}
+.calendar-item {
+  text-decoration: none;
+}
+.subnav button {
+  cursor: pointer;
+}
+dialog {
+  width: min(560px, calc(100% - 32px));
+  max-height: 90vh;
+  overflow: auto;
+  padding: 28px;
+}
+dialog label {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0;
+}
+dialog input,
+dialog select,
+dialog textarea {
+  width: 100%;
+  padding: 10px;
+}
+dialog .actions {
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+input[type='checkbox'] {
+  flex-shrink: 0;
+}
+.list-row strong {
+  overflow-wrap: anywhere;
+}
+.grow {
+  min-width: 0;
+}
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid #a396bd;
+  outline-offset: 3px;
+}
+dialog input[type='color'] {
+  width: 48px !important;
+  height: 48px !important;
+  padding: 3px !important;
+  border-radius: 50% !important;
+  cursor: pointer;
+  overflow: hidden;
+}
+dialog input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+dialog input[type='color']::-webkit-color-swatch {
+  border: 0;
+  border-radius: 50%;
+}
+dialog input[type='color']::-moz-color-swatch {
+  border: 0;
+  border-radius: 50%;
+}
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+  header nav {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+  header .profile {
+    margin-left: auto;
+  }
+}
+@media (max-width: 600px) {
+  nav a {
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+  .workspace-top {
+    gap: 16px;
+  }
+  .metric-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+  .welcome .small {
+    font-size: 12px;
+  }
+  .login-card .login-cat {
+    width: 120px !important;
+    height: 120px !important;
+  }
+  .calendar {
+    overflow: hidden;
+  }
+  .calendar-item {
+    max-width: 100%;
+  }
+  .profile .small {
+    max-width: 85px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+/* Shared project/standalone item colors. */
+#pdesk:not(.is-logged-out) .list-row.colored-item {
+  border-left: 4px solid var(--item-color);
+  padding-left: 12px;
+}
+#pdesk:not(.is-logged-out) .calendar .calendar-item {
+  border-left: 4px solid var(--item-color);
+  background: #f5f3f7;
+  background-color: color-mix(in srgb, var(--item-color) 16%, white);
+  color: #343347;
+}
+.error-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background: linear-gradient(145deg, #faf8f4, #f0edf5);
+}
+.error-card {
+  width: min(520px, 100%);
+  padding: 48px 36px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid rgba(142, 136, 163, 0.22);
+  border-radius: 32px;
+  box-shadow: 0 22px 60px rgba(75, 66, 91, 0.12);
+}
+.error-card img {
+  width: 150px;
+  max-width: 45%;
+  image-rendering: pixelated;
+}
+.error-card .error-code {
+  margin: 12px 0 4px;
+  color: #8e88a3;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+.error-card h1 {
+  margin: 0 0 12px;
+  font-size: clamp(1.65rem, 4vw, 2.25rem);
+}
+.error-card > p:last-of-type {
+  margin: 0;
+  color: #6f6a75;
+  line-height: 1.7;
+}
+.error-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}

@@ -1,0 +1,283 @@
+﻿<script setup lang="ts">
+import type { Task, ScheduleEvent, Reminder } from '~/types/workspace';
+import { datePart, showTime, labels, errorText, reminderErrorText } from '~/utils/display';
+const props = defineProps<{ mode: 'create' | 'detail' | 'edit' }>();
+const route = useRoute(),
+  { request } = useApi();
+const resource = String(route.params.kind);
+if (resource !== 'tasks' && resource !== 'events')
+  throw createError({ statusCode: 404, statusMessage: 'Page not found' });
+const kind = resource === 'tasks' ? 'task' : 'event',
+  label = kind === 'task' ? '태스크' : '일정',
+  id = String(route.params.id || '');
+if (props.mode !== 'create' && !/^[1-9]\d*$/.test(id))
+  throw createError({ statusCode: 404, statusMessage: 'Page not found' });
+useHead({
+  title: `${label} ${props.mode === 'create' ? '등록' : props.mode === 'edit' ? '수정' : '상세'} · 했냐옹`,
+});
+const {
+  data: item,
+  error,
+  refresh,
+  status: itemStatus,
+} = useAsyncData(
+  `standalone-${resource}-${id}`,
+  () =>
+    props.mode === 'create'
+      ? Promise.resolve(null)
+      : request<Task | ScheduleEvent>(`/api/${resource}/${id}`),
+  { lazy: true, immediate: props.mode !== 'create' },
+);
+const loading = computed(
+  () => props.mode !== 'create' && ['idle', 'pending'].includes(itemStatus.value),
+);
+watch(
+  () => item.value?.projectId,
+  (projectId) => {
+    if (projectId)
+      void navigateTo(`/projects/${projectId}${kind === 'event' ? '?tab=events' : ''}`, {
+        replace: true,
+      });
+  },
+  { immediate: true },
+);
+const {
+  data: reminders,
+  refresh: refreshReminders,
+  error: reminderError,
+  status: reminderStatus,
+} = useAsyncData(
+  `item-reminders-${resource}-${id}`,
+  () =>
+    kind === 'event' && props.mode !== 'create'
+      ? request<Reminder[]>('/api/reminders', { query: { eventId: id } })
+      : Promise.resolve([]),
+  { lazy: true, immediate: kind === 'event' && props.mode === 'detail' },
+);
+const reminder = computed(() =>
+  reminders.value?.find((r) => String(r.eventId) === id && r.status !== 'CANCELED'),
+);
+const task = computed(() => (kind === 'task' ? (item.value as Task | null) : null));
+const schedule = computed(() => (kind === 'event' ? (item.value as ScheduleEvent | null) : null));
+const editorItem = computed(() => (item.value ? { ...item.value } : undefined));
+const busy = ref(false),
+  actionError = ref(''),
+  showReminder = ref(false),
+  confirmAction = ref<'delete' | 'cancelReminder'>();
+const {
+  data: slackConnection,
+  refresh: refreshSlack,
+  error: slackError,
+} = useSlackConnection({ lazy: true, immediate: false });
+const checkingSlack = ref(false);
+function invalidateLists() {
+  clearNuxtData(['standalone-items', 'workspace-data']);
+}
+async function saved(result?: { id: string }) {
+  invalidateLists();
+  clearNuxtData(`standalone-${resource}-${id}`);
+  await navigateTo(`/items/${resource}/${result?.id || id}`);
+}
+async function remove() {
+  if (!busy.value) confirmAction.value = 'delete';
+}
+async function confirmRemove() {
+  if (busy.value) return;
+  busy.value = true;
+  actionError.value = '';
+  try {
+    await request(`/api/${resource}/${id}`, { method: 'DELETE' });
+    invalidateLists();
+    await navigateTo('/items');
+  } catch (e) {
+    actionError.value = errorText(e, 'delete');
+  } finally {
+    busy.value = false;
+    if (!actionError.value) confirmAction.value = undefined;
+  }
+}
+async function toggleTask() {
+  if (busy.value || !task.value) return;
+  busy.value = true;
+  actionError.value = '';
+  try {
+    await request(`/api/tasks/${id}`, {
+      method: 'PATCH',
+      body: { status: task.value.status === 'DONE' ? 'TODO' : 'DONE' },
+    });
+    await refresh();
+    invalidateLists();
+  } catch (e) {
+    actionError.value = errorText(e, 'save');
+  } finally {
+    busy.value = false;
+  }
+}
+async function cancelReminder() {
+  if (!busy.value && reminder.value) confirmAction.value = 'cancelReminder';
+}
+async function confirmReminderCancel() {
+  if (busy.value || !reminder.value) return;
+  busy.value = true;
+  actionError.value = '';
+  try {
+    await request(`/api/reminders/${reminder.value.id}`, { method: 'DELETE' });
+    await refreshReminders();
+    invalidateLists();
+  } catch (e) {
+    actionError.value = errorText(e, 'reminder');
+  } finally {
+    busy.value = false;
+    if (!actionError.value) confirmAction.value = undefined;
+  }
+}
+async function reminderSaved() {
+  showReminder.value = false;
+  await refreshReminders();
+  invalidateLists();
+}
+async function openReminder() {
+  if (checkingSlack.value) return;
+  checkingSlack.value = true;
+  try {
+    if (!slackConnection.value) await refreshSlack({ dedupe: 'defer' });
+    if (slackError.value) {
+      actionError.value = errorText(slackError.value, 'slack');
+      return;
+    }
+    if (!slackConnection.value?.connected) {
+      await navigateTo('/mypage#slack');
+      return;
+    }
+    showReminder.value = true;
+  } finally {
+    checkingSlack.value = false;
+  }
+}
+</script>
+<template>
+  <p v-if="busy" class="operation-status" role="status">변경 사항을 처리하고 있어요…</p>
+  <NuxtLink to="/items" class="border-btn">← 일정·태스크 목록</NuxtLink>
+  <CommonPageHeading
+    :title="
+      mode === 'create'
+        ? label + ' 등록'
+        : mode === 'edit'
+          ? label + ' 수정'
+          : item?.title || label + ' 상세'
+    "
+    description="프로젝트 없는 나의 일정과 할 일이에요."
+  >
+    <template v-if="mode === 'detail' && item"
+      ><NuxtLink class="border-btn" :to="`/items/${resource}/${id}/edit`">수정</NuxtLink
+      ><button class="border-btn" :disabled="busy" @click="remove">삭제</button></template
+    >
+  </CommonPageHeading>
+  <p v-if="loading" role="status">불러오는 중…</p>
+  <section v-else-if="error" class="panel" role="alert">
+    <p>{{ errorText(error, 'load') }}</p>
+    <button class="border-btn" @click="refresh()">다시 시도</button>
+  </section>
+  <WorkspaceItemEditor
+    v-else-if="mode === 'create' || (mode === 'edit' && item)"
+    :key="resource + id + mode"
+    :kind="kind"
+    :item="editorItem"
+    inline
+    standalone
+    @close="navigateTo(mode === 'create' ? '/items' : `/items/${resource}/${id}`)"
+    @saved="saved"
+  />
+  <section
+    v-else-if="item"
+    class="panel item-detail colored-item"
+    :style="{ '--item-color': item.color }"
+  >
+    <div class="heading">
+      <h2>{{ label }} 정보</h2>
+      <span
+        class="item-color-sample"
+        :style="{ background: item.color }"
+        :aria-label="'색상 ' + item.color"
+      />
+    </div>
+    <p class="item-description">{{ item.description || '등록된 설명이 없어요.' }}</p>
+    <dl v-if="task">
+      <dt>기간</dt>
+      <dd>{{ datePart(task.startDate) }} ~ {{ datePart(task.dueDate) }}</dd>
+      <dt>우선순위</dt>
+      <dd>{{ labels[task.priority] }}</dd>
+      <dt>상태</dt>
+      <dd>{{ labels[task.status] }}</dd>
+    </dl>
+    <button v-if="task" class="solid" :disabled="busy" @click="toggleTask">
+      {{ task.status === 'DONE' ? '완료 취소' : '완료하기' }}
+    </button>
+    <template v-if="schedule">
+      <dl>
+        <dt>종류</dt>
+        <dd>{{ schedule.allDay ? '종일 일정' : '시간 일정 · 한국 표준시(KST)' }}</dd>
+        <dt>시작</dt>
+        <dd>{{ schedule.allDay ? datePart(schedule.startDate) : showTime(schedule.startsAt) }}</dd>
+        <dt>종료</dt>
+        <dd>
+          {{
+            schedule.allDay
+              ? datePart(schedule.endDate) + ' (종료일 제외)'
+              : showTime(schedule.endsAt)
+          }}
+        </dd>
+      </dl>
+      <p v-if="reminderStatus === 'pending' || reminderStatus === 'idle'" role="status">
+        알림 정보를 불러오는 중…
+      </p>
+      <p v-else-if="reminderError" role="alert">
+        {{ errorText(reminderError, 'reminder') }}
+        <button class="border-btn" @click="refreshReminders()">다시 시도</button>
+      </p>
+      <div v-else-if="reminder" class="heading">
+        <div>
+          <strong>알림 {{ labels[reminder.status] || reminder.status }}</strong>
+          <p class="small">{{ showTime(reminder.remindAt) }}</p>
+          <p v-if="reminder.errorMessage" class="form-error">
+            {{ reminderErrorText(reminder.errorMessage) }}
+          </p>
+        </div>
+        <button
+          v-if="
+            ['SCHEDULED', 'PENDING', 'FAILED', 'CANCEL_FAILED', 'ELAPSED'].includes(reminder.status)
+          "
+          class="border-btn"
+          :disabled="busy"
+          @click="cancelReminder"
+        >
+          알림 취소
+        </button>
+      </div>
+      <button v-else class="border-btn" :disabled="checkingSlack" @click="openReminder">
+        {{ checkingSlack ? '연결 확인 중…' : 'Slack 알림 설정' }}
+      </button>
+    </template>
+  </section>
+  <p v-if="actionError" role="alert" class="form-error">{{ actionError }}</p>
+  <WorkspaceItemEditor
+    v-if="showReminder && editorItem"
+    kind="reminder"
+    :item="editorItem"
+    @close="showReminder = false"
+    @saved="reminderSaved"
+  />
+  <CommonConfirmDialog
+    :open="!!confirmAction"
+    :title="confirmAction === 'delete' ? `${label}을 삭제할까요?` : '리마인더를 취소할까요?'"
+    :description="
+      confirmAction === 'delete'
+        ? '삭제한 내용은 되돌릴 수 없어요. 일정에 연결된 알림도 함께 취소됩니다.'
+        : '예약된 Slack 알림을 취소합니다.'
+    "
+    confirm-label="계속하기"
+    :busy="busy"
+    @cancel="confirmAction = undefined"
+    @confirm="confirmAction === 'delete' ? confirmRemove() : confirmReminderCancel()"
+  />
+</template>

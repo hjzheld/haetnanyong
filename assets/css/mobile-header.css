@@ -1,0 +1,95 @@
+/* Desktop keeps the existing navigation; mobile exposes it as a disclosure. */
+#pdesk > header .logo-mark {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+#pdesk > header .logo-mark img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  filter: none !important;
+  image-rendering: auto;
+}
+
+#pdesk > header > .mobile-menu-toggle {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  #pdesk:not(.is-logged-out) > header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0 12px;
+    padding: 10px 16px;
+  }
+  #pdesk > header > .logo {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+  #pdesk > header > .mobile-menu-toggle {
+    grid-column: 2;
+    grid-row: 1;
+    display: inline-flex;
+    gap: 8px;
+    min-width: 76px;
+    min-height: 44px;
+    border: 1px solid #e6e1ed;
+    border-radius: 12px;
+    background: #fff;
+    color: #635775;
+    font-size: 14px;
+  }
+  #pdesk > header > #primary-navigation,
+  #pdesk > header > #account-navigation {
+    display: none;
+  }
+  #pdesk > header.mobile-menu-open > #primary-navigation {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    overflow: visible;
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px 0;
+    border-top: 1px solid #eeeaf2;
+  }
+  #pdesk > header > #primary-navigation a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+  #pdesk > header.mobile-menu-open > #account-navigation {
+    display: flex;
+    grid-column: 1 / -1;
+    grid-row: 3;
+    flex-wrap: nowrap;
+    gap: 10px;
+    min-width: 0;
+    margin: 0;
+    padding: 12px 0 2px;
+    border-top: 1px solid #eeeaf2;
+  }
+  #pdesk > header > #account-navigation .small {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  #pdesk > header > #account-navigation .logout-button {
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+}

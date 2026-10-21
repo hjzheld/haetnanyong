@@ -1,0 +1,8 @@
+.nuxt
+.output
+node_modules
+.data
+dist
+coverage
+*.min.js
+*.map

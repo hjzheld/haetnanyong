@@ -1,3 +1,3 @@
-import { requireUser } from '#server/utils/auth'
+import { requireUser } from '#server/utils/auth';
 
-export default defineEventHandler(async (event) => ({ user: await requireUser(event) }))
+export default defineEventHandler(async (event) => ({ user: await requireUser(event) }));

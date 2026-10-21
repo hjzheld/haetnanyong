@@ -2,9 +2,11 @@
 
 CREATE TABLE "events" (
   "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  "project_id" bigint NOT NULL,
+  "user_id" bigint NOT NULL,
+  "project_id" bigint,
   "title" character varying(200) NOT NULL,
   "description" text,
+  "color" character varying(7) DEFAULT '#8E8AA3' NOT NULL,
   "is_all_day" boolean DEFAULT false NOT NULL,
   "starts_at" timestamp with time zone,
   "ends_at" timestamp with time zone,
@@ -58,9 +60,11 @@ CREATE TABLE "sessions" (
 
 CREATE TABLE "tasks" (
   "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  "project_id" bigint NOT NULL,
+  "user_id" bigint NOT NULL,
+  "project_id" bigint,
   "title" character varying(200) NOT NULL,
   "description" text,
+  "color" character varying(7) DEFAULT '#C98B8B' NOT NULL,
   "start_date" date NOT NULL,
   "due_date" date NOT NULL,
   "status" character varying(20) DEFAULT 'TODO'::character varying NOT NULL,
@@ -85,9 +89,11 @@ CREATE TABLE "users" (
 
 ALTER TABLE "events" ADD CONSTRAINT "chk_events_dates" CHECK ((((is_all_day = false) AND (starts_at IS NOT NULL) AND (ends_at IS NOT NULL) AND (starts_at < ends_at) AND (start_date IS NULL) AND (end_date IS NULL)) OR ((is_all_day = true) AND (start_date IS NOT NULL) AND (end_date IS NOT NULL) AND (start_date < end_date) AND (starts_at IS NULL) AND (ends_at IS NULL))));
 ALTER TABLE "events" ADD CONSTRAINT "chk_events_title" CHECK ((length(TRIM(BOTH FROM title)) > 0));
+ALTER TABLE "events" ADD CONSTRAINT "chk_events_color" CHECK (color ~ '^#[0-9A-Fa-f]{6}$');
 ALTER TABLE "events" ADD CONSTRAINT "chk_events_version" CHECK ((version >= 1));
 ALTER TABLE "events" ADD CONSTRAINT "events_pkey" PRIMARY KEY (id);
 ALTER TABLE "events" ADD CONSTRAINT "fk_events_project" FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE RESTRICT;
+ALTER TABLE "events" ADD CONSTRAINT "fk_events_user" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE "projects" ADD CONSTRAINT "chk_projects_color" CHECK (((color)::text ~ '^#[0-9A-Fa-f]{6}$'::text));
 ALTER TABLE "projects" ADD CONSTRAINT "chk_projects_name" CHECK ((length(TRIM(BOTH FROM name)) > 0));
 ALTER TABLE "projects" ADD CONSTRAINT "fk_projects_user" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT;
@@ -112,7 +118,9 @@ ALTER TABLE "tasks" ADD CONSTRAINT "chk_tasks_date_range" CHECK ((start_date <= 
 ALTER TABLE "tasks" ADD CONSTRAINT "chk_tasks_priority" CHECK (((priority)::text = ANY ((ARRAY['LOW'::character varying, 'MEDIUM'::character varying, 'HIGH'::character varying])::text[])));
 ALTER TABLE "tasks" ADD CONSTRAINT "chk_tasks_status" CHECK (((status)::text = ANY ((ARRAY['TODO'::character varying, 'IN_PROGRESS'::character varying, 'DONE'::character varying])::text[])));
 ALTER TABLE "tasks" ADD CONSTRAINT "chk_tasks_title" CHECK ((length(TRIM(BOTH FROM title)) > 0));
+ALTER TABLE "tasks" ADD CONSTRAINT "chk_tasks_color" CHECK (color ~ '^#[0-9A-Fa-f]{6}$');
 ALTER TABLE "tasks" ADD CONSTRAINT "fk_tasks_project" FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE RESTRICT;
+ALTER TABLE "tasks" ADD CONSTRAINT "fk_tasks_user" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_pkey" PRIMARY KEY (id);
 ALTER TABLE "users" ADD CONSTRAINT "chk_users_nickname" CHECK (((length(TRIM(BOTH FROM nickname)) >= 2) AND (length(TRIM(BOTH FROM nickname)) <= 30)));
 ALTER TABLE "users" ADD CONSTRAINT "chk_users_slack_connection" CHECK ((((slack_workspace_id IS NULL) AND (slack_user_id IS NULL) AND (slack_dm_channel_id IS NULL) AND (slack_connected_at IS NULL)) OR ((slack_workspace_id IS NOT NULL) AND (slack_user_id IS NOT NULL) AND (slack_dm_channel_id IS NOT NULL) AND (slack_connected_at IS NOT NULL))));

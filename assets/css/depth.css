@@ -1,0 +1,479 @@
+/* Smooth surfaces and spatial lighting; pixel rendering belongs to the mascot. */
+body {
+  margin: 0;
+  background: #f7f6f9;
+}
+#pdesk,
+#pdesk:not(.is-logged-out) {
+  --ink: #343347;
+  --muted: #777486;
+  --edge: #e9e6ef;
+  --accent: #8e8aa3;
+  --wash: #f1eff6;
+  background: #f7f6f9;
+  color: var(--ink);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: Inter, 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+  image-rendering: auto;
+  min-height: 100vh;
+}
+#pdesk:not(.is-logged-out) header {
+  background: #ffffffed;
+  border-bottom: 1px solid #ebe8f1;
+  padding: 12px 38px;
+  gap: 32px;
+  box-shadow: 0 4px 24px #38304e05;
+  backdrop-filter: blur(20px);
+}
+#pdesk:not(.is-logged-out) .logo {
+  color: #444052;
+  font-weight: 750;
+  letter-spacing: -1px;
+}
+#pdesk:not(.is-logged-out) .logo-mark {
+  background: #eeedf4;
+  border: 1px solid #e4e0ed;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 2px 0 #fff,
+    0 4px 9px #4540520a;
+  overflow: visible;
+}
+#pdesk:not(.is-logged-out) .logo-mark img {
+  width: 29px;
+  height: 29px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px #45365018);
+}
+#pdesk img {
+  image-rendering: pixelated;
+}
+#pdesk:not(.is-logged-out) nav {
+  gap: 6px;
+}
+#pdesk:not(.is-logged-out) nav button {
+  padding: 10px 18px;
+  border-radius: 12px;
+  color: #858090;
+  font-weight: 600;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+#pdesk:not(.is-logged-out) nav button[aria-pressed='true'] {
+  color: #615c7b;
+  background: #eeecf5;
+  border: 1px solid #e6e2f0;
+  box-shadow: inset 0 1px 0 #fff;
+}
+#pdesk:not(.is-logged-out) .avatar {
+  border: 0;
+  border-radius: 12px;
+  background: #f0e3e8;
+  color: #9b6c7d;
+}
+#pdesk:not(.is-logged-out) main {
+  background: transparent;
+  max-width: 1320px;
+  padding: 42px 42px 64px;
+}
+#pdesk:not(.is-logged-out) h1,
+#pdesk:not(.is-logged-out) h2,
+#pdesk:not(.is-logged-out) h3 {
+  font-family: inherit;
+  color: #39354a;
+  letter-spacing: -0.8px;
+  font-weight: 700;
+}
+#pdesk:not(.is-logged-out) h1 {
+  font-size: 30px;
+}
+#pdesk:not(.is-logged-out) h2 {
+  font-size: 19px;
+}
+#pdesk:not(.is-logged-out) .small {
+  color: #7a7586;
+  line-height: 1.75;
+}
+#pdesk:not(.is-logged-out) .eyebrow {
+  color: #a09aad;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 2px;
+}
+#pdesk:not(.is-logged-out) .welcome {
+  position: relative;
+  isolation: isolate;
+  min-height: 200px;
+  padding: 32px 38px;
+  border: 1px solid #fff;
+  border-radius: 24px;
+  background: linear-gradient(115deg, #f1eaf0, #eeeef7 65%, #e9eff5);
+  box-shadow:
+    inset 0 2px 0 #fff9,
+    0 12px 30px #6559730b;
+  overflow: hidden;
+}
+#pdesk:not(.is-logged-out) .welcome h2 {
+  font-size: 26px;
+  margin: 9px 0 12px;
+}
+#pdesk:not(.is-logged-out) .welcome:before {
+  content: '';
+  position: absolute;
+  right: 20px;
+  bottom: -15px;
+  width: 230px;
+  height: 84px;
+  border-radius: 50%;
+  background: linear-gradient(#fff, #dedce9);
+  box-shadow:
+    0 8px 0 #d6d3e2,
+    0 20px 30px #7d719b21;
+  transform: rotate(-8deg);
+  z-index: -1;
+}
+#pdesk:not(.is-logged-out) .welcome:after {
+  content: '';
+  position: absolute;
+  right: 35px;
+  top: 24px;
+  width: 54px;
+  height: 54px;
+  background: linear-gradient(135deg, #fff9, #d6d1e6);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 2px 0 #fff8,
+    0 10px 24px #8e8aa322;
+  transform: rotate(16deg);
+  z-index: -1;
+}
+#pdesk:not(.is-logged-out) .welcome img {
+  width: 150px;
+  height: 150px;
+  margin-right: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 13px 5px #65597323);
+  transform: translateY(-6px);
+}
+#pdesk:not(.is-logged-out) .metric-row {
+  border: 0;
+  background: transparent;
+  gap: 16px;
+}
+#pdesk:not(.is-logged-out) .metric {
+  border: 1px solid #eae7ef;
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px 24px;
+  box-shadow:
+    0 4px 0 #eeecf2,
+    0 10px 22px #53456005;
+}
+#pdesk:not(.is-logged-out) .metric b {
+  font-size: 30px;
+  color: #676079;
+  font-weight: 650;
+  margin-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+#pdesk:not(.is-logged-out) .panel,
+#pdesk:not(.is-logged-out) .project {
+  border: 1px solid #eae7ef !important;
+  border-radius: 20px;
+  background: linear-gradient(160deg, #fff, #fdfcfe);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 5px 0 #efedf3,
+    0 12px 28px #45365007;
+}
+#pdesk:not(.is-logged-out) .panel {
+  padding: 26px;
+}
+#pdesk:not(.is-logged-out) .project {
+  padding: 24px;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+#pdesk:not(.is-logged-out) .project:hover {
+  background: #fff;
+  border-color: #d8d2e4 !important;
+  transform: translateY(-4px);
+  box-shadow:
+    0 5px 0 #eae6f0,
+    0 18px 32px #4536500e;
+}
+#pdesk:not(.is-logged-out) .project-foot,
+#pdesk:not(.is-logged-out) .list-row {
+  border-color: #efedf3;
+}
+#pdesk:not(.is-logged-out) .dot {
+  border: 0;
+  border-radius: 5px;
+  width: 11px;
+  height: 11px;
+  box-shadow: inset 0 1px 0 #fff6;
+}
+#pdesk:not(.is-logged-out) .solid {
+  background: linear-gradient(#9690ac, #817b99);
+  border: 1px solid #807893;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 #ffffff50,
+    0 3px 0 #6d6681,
+    0 6px 12px #7367881a;
+  transition: transform 0.15s;
+}
+#pdesk:not(.is-logged-out) .border-btn,
+#pdesk .profile .logout-button {
+  background: #fff;
+  border: 1px solid #e4e0ea;
+  border-radius: 11px;
+  font-weight: 500;
+  box-shadow: 0 2px 0 #f0edf4;
+  color: #746c82;
+}
+#pdesk:not(.is-logged-out) .border-btn:hover {
+  background: #f7f5fa;
+  box-shadow: 0 2px 0 #eae5f0;
+  transform: translateY(-1px);
+}
+#pdesk:not(.is-logged-out) .solid:hover {
+  box-shadow:
+    inset 0 1px 0 #ffffff50,
+    0 3px 0 #6d6681,
+    0 8px 16px #73678820;
+  transform: translateY(-1px);
+}
+#pdesk:not(.is-logged-out) .solid:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 #fff5;
+}
+#pdesk:not(.is-logged-out) .badge {
+  border: 0;
+  border-radius: 7px;
+  background: #edf1e9;
+  color: #78886a;
+  font-weight: 550;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+#pdesk:not(.is-logged-out) .badge.rose {
+  background: #f7eaf0;
+  color: #ab798a;
+  border: 0;
+}
+#pdesk:not(.is-logged-out) .badge.lavender {
+  background: #f0edf7;
+  color: #8b80a5;
+  border: 0;
+}
+#pdesk:not(.is-logged-out) .bar {
+  border: 0;
+  border-radius: 8px;
+  background: #f0edf4;
+  height: 6px;
+  box-shadow: inset 0 1px 2px #45365009;
+}
+#pdesk:not(.is-logged-out) .bar span {
+  background: linear-gradient(90deg, #bab1cf, #8e8aa3) !important;
+  border-radius: 8px;
+}
+#pdesk:not(.is-logged-out) .subnav {
+  border-color: #e7e3ed;
+}
+#pdesk:not(.is-logged-out) .subnav button[aria-pressed='true'] {
+  color: #817593;
+  border-color: #a99cbc;
+}
+#pdesk:not(.is-logged-out) .calendar {
+  border-color: #e7e3ed;
+  border-radius: 16px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 8px 24px #45365005;
+}
+#pdesk:not(.is-logged-out) .day,
+#pdesk:not(.is-logged-out) .weekday {
+  border-color: #eeebf3;
+}
+#pdesk:not(.is-logged-out) .weekday,
+#pdesk:not(.is-logged-out) .day.blank {
+  background: #f8f7fb;
+  color: #9a92a6;
+}
+#pdesk:not(.is-logged-out) .day.today {
+  background: #f8f0f5;
+}
+#pdesk:not(.is-logged-out) .calendar-item {
+  border: 0;
+  border-radius: 5px;
+  background: #edf1e9;
+  color: #6a7d5f;
+  font-weight: 500;
+}
+#pdesk:not(.is-logged-out) .calendar-item.event {
+  border: 0;
+  background: #f0edf7;
+  color: #89799f;
+}
+#pdesk:not(.is-logged-out) dialog {
+  border: 1px solid #eee9f4;
+  border-radius: 24px;
+  box-shadow: 0 24px 100px #39314a30;
+}
+#pdesk:not(.is-logged-out) dialog::backdrop {
+  background: #38304440;
+  backdrop-filter: blur(5px);
+}
+#pdesk:not(.is-logged-out) dialog input,
+#pdesk:not(.is-logged-out) dialog textarea,
+#pdesk:not(.is-logged-out) dialog select {
+  border: 1px solid #e4dfeb;
+  border-radius: 10px;
+  background: #fcfbfd;
+  box-shadow: inset 0 2px 3px #45365004;
+}
+#pdesk:not(.is-logged-out) footer,
+#pdesk .prototype-note {
+  border-color: #e7e3ed;
+  color: #a29aaa;
+}
+#pdesk th {
+  background: #f8f7fb;
+  color: #94889e;
+}
+#pdesk .login-screen,
+#pdesk .login-card {
+  background: radial-gradient(ellipse at 50% 30%, #f0e9f3, transparent 65%), #f8f7fb;
+  color: #494254;
+}
+#pdesk .login-card {
+  position: relative;
+  isolation: isolate;
+}
+#pdesk .login-card .login-cat {
+  width: 180px;
+  height: 180px;
+  filter: drop-shadow(0 18px 8px #75658326);
+  margin-bottom: 30px;
+}
+#pdesk .login-card h1 {
+  color: #494254;
+  font:
+    700 36px/1.5 system-ui,
+    sans-serif;
+  letter-spacing: -1.5px;
+}
+#pdesk .login-card .eyebrow {
+  color: #a89cb7;
+}
+#pdesk .login-card:after {
+  content: '프로젝트 · 할 일 · 캘린더 · 리마인더';
+  background: linear-gradient(140deg, #fff, #f2eef7);
+  color: #8d819c;
+  border: 1px solid #fff;
+  border-radius: 24px;
+  box-shadow:
+    0 6px 0 #e8e1ef,
+    0 20px 45px #75658316;
+  transform: perspective(800px) rotateX(12deg);
+  width: min(640px, 85vw);
+  font:
+    500 14px/1.8 system-ui,
+    sans-serif;
+  word-spacing: 10px;
+}
+#pdesk .login-card .login-button {
+  background: linear-gradient(#a199b3, #8e849f);
+  color: #fff;
+  border: 1px solid #9185a1;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 1px 0 #fff5,
+    0 4px 0 #776c89,
+    0 12px 24px #75658321;
+  font:
+    600 14px/1.8 system-ui,
+    sans-serif;
+  width: auto;
+  padding: 12px 28px;
+}
+#pdesk .login-card .login-note {
+  color: #a79bad !important;
+}
+@media (max-width: 900px) {
+  #pdesk:not(.is-logged-out) main {
+    padding: 30px 22px 48px;
+  }
+  #pdesk:not(.is-logged-out) header {
+    padding: 12px 20px;
+    gap: 16px;
+  }
+}
+@media (max-width: 600px) {
+  #pdesk:not(.is-logged-out) {
+    border: 0;
+    box-shadow: none;
+  }
+  #pdesk:not(.is-logged-out) main {
+    padding: 26px 16px 44px;
+  }
+  #pdesk:not(.is-logged-out) .welcome {
+    padding: 24px;
+    gap: 12px;
+    min-height: 195px;
+  }
+  #pdesk:not(.is-logged-out) .welcome h2 {
+    font-size: 22px;
+  }
+  #pdesk:not(.is-logged-out) .welcome img {
+    width: 90px;
+    height: 90px;
+    margin-right: 0;
+    flex-shrink: 0;
+  }
+  #pdesk:not(.is-logged-out) .welcome:before {
+    right: -40px;
+    width: 170px;
+    bottom: 8px;
+  }
+  #pdesk:not(.is-logged-out) .welcome:after {
+    right: 12px;
+    width: 32px;
+    height: 32px;
+  }
+  #pdesk:not(.is-logged-out) .metric-row {
+    gap: 12px;
+  }
+  #pdesk:not(.is-logged-out) .metric {
+    padding: 16px;
+    border: 1px solid #eae7ef;
+  }
+  #pdesk:not(.is-logged-out) .panel {
+    padding: 20px;
+  }
+  #pdesk:not(.is-logged-out) .workspace-top h1 {
+    font-size: 26px;
+  }
+  #pdesk .login-card h1 {
+    font-size: 28px;
+  }
+  #pdesk .login-card:after {
+    word-spacing: 2px;
+    padding: 24px 16px;
+  }
+  #pdesk:not(.is-logged-out) header .profile {
+    gap: 7px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #pdesk * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

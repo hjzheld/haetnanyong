@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto'
+import { createHash } from 'node:crypto';
 
 export function hashSessionToken(token: string) {
-  return createHash('sha256').update(token).digest('hex')
+  return createHash('sha256').update(token).digest('hex');
 }

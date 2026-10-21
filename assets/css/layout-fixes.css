@@ -1,0 +1,414 @@
+/* Layout boundaries shared by workspace pages, policy pages and dialogs. */
+.calendar-scroll-hint {
+  display: none;
+}
+.calendar-scroll {
+  min-width: 0;
+}
+:root {
+  color-scheme: light;
+}
+#pdesk {
+  width: 100%;
+}
+#pdesk main {
+  width: 100%;
+  min-width: 0;
+}
+#pdesk :is(.panel, .project, .account-grid > *, .columns > *, .metric) {
+  min-width: 0;
+}
+#pdesk :is(.heading, .workspace-top, .project-foot, .account-actions) {
+  overflow-wrap: anywhere;
+}
+#pdesk :is(.small, .connection-details, .form-error, .notice) {
+  overflow-wrap: anywhere;
+  line-height: 1.65;
+}
+#pdesk > header > nav {
+  flex: 1 1 520px;
+  flex-wrap: wrap;
+}
+#pdesk > header .logo,
+#pdesk > header .profile {
+  flex-shrink: 0;
+}
+#pdesk .project-grid {
+  display: grid;
+}
+#pdesk .project h3 {
+  overflow-wrap: anywhere;
+}
+#pdesk .site-footer {
+  width: 100%;
+  align-items: center;
+}
+#pdesk .site-footer nav {
+  flex: 0 1 auto;
+  justify-content: flex-end;
+  gap: 12px;
+}
+#pdesk .site-footer nav a {
+  padding: 6px 0;
+  font-size: 13px;
+  font-weight: 400;
+  white-space: normal;
+}
+#pdesk .legal-page {
+  width: 100%;
+  margin: 0 auto;
+  overflow-wrap: anywhere;
+}
+#pdesk .legal-page p + p {
+  margin-top: 12px;
+}
+#pdesk .legal-page a {
+  color: #69577e;
+  text-decoration: underline;
+}
+#pdesk .login-card h1 {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+#pdesk :is(input, select, textarea) {
+  min-width: 0;
+  max-width: 100%;
+}
+#pdesk textarea {
+  resize: vertical;
+}
+#pdesk input[readonly] {
+  background: #f4f2f6;
+  color: #71697b;
+}
+#pdesk .subnav {
+  flex-wrap: wrap;
+}
+#pdesk .legend {
+  flex-wrap: wrap;
+}
+#pdesk .list-row {
+  min-width: 0;
+}
+#pdesk dialog {
+  margin: auto;
+  max-height: calc(100dvh - 32px);
+  color: #39354a;
+  font-family: var(--app-font);
+}
+#pdesk dialog:not([open]) {
+  display: none;
+}
+#pdesk dialog :is(.account-form, fieldset) {
+  min-width: 0;
+}
+#pdesk dialog .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+#pdesk dialog.confirm-dialog {
+  width: min(430px, calc(100% - 32px));
+}
+#pdesk dialog.confirm-dialog h2 {
+  margin-bottom: 10px;
+}
+#pdesk dialog.confirm-dialog .danger {
+  background: #a4565d;
+}
+#pdesk .calendar .day {
+  overflow: hidden;
+}
+#pdesk .calendar .weekday {
+  min-width: 0;
+  padding-inline: 0;
+}
+
+@media (max-width: 900px) {
+  #pdesk > header > nav {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+  #pdesk > header .profile {
+    margin-left: auto;
+  }
+}
+@media (max-width: 600px) {
+  #pdesk:not(.is-logged-out) > header {
+    gap: 12px;
+    padding: 12px 16px;
+  }
+  #pdesk > header > nav {
+    gap: 4px;
+  }
+  #pdesk > header > nav a {
+    padding: 8px;
+    font-size: 12px;
+  }
+  #pdesk > header .profile {
+    min-width: 0;
+    gap: 6px;
+  }
+  #pdesk > header .profile .small {
+    max-width: 64px;
+  }
+  #pdesk .login-card .login-cat {
+    width: 120px;
+    height: 120px;
+  }
+  #pdesk .login-card h1 {
+    font-size: 24px;
+    letter-spacing: -1px;
+  }
+  #pdesk .login-card {
+    padding: 28px 16px;
+  }
+  #pdesk .auth-form {
+    padding: 22px 18px;
+  }
+  #pdesk .account-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  #pdesk .list-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  #pdesk .list-row > .grow {
+    flex-basis: 55%;
+  }
+  #pdesk .project-foot {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #pdesk .site-footer {
+    align-items: flex-start;
+    padding: 20px 16px;
+  }
+  #pdesk .site-footer nav {
+    justify-content: flex-start;
+    flex-basis: auto;
+  }
+  #pdesk .calendar-filter-trigger {
+    min-width: 0;
+    max-width: 100%;
+  }
+  #pdesk .calendar-project-filter {
+    min-width: 0;
+  }
+  #pdesk .calendar-filter-menu {
+    width: 100%;
+    max-width: calc(100vw - 72px);
+  }
+  #pdesk .calendar .day-create {
+    width: 100%;
+    padding: 0;
+  }
+  #pdesk .calendar .day-create span {
+    display: none;
+  }
+  #pdesk .calendar .day-number {
+    width: 24px;
+    height: 24px;
+  }
+  #pdesk dialog {
+    padding: 22px 18px;
+  }
+  #pdesk .offline-banner {
+    width: calc(100% - 32px);
+    border-radius: 12px;
+  }
+}
+
+/* Mobile composition: compact header, touch targets and readable content. */
+@media (max-width: 767px) {
+  #pdesk:not(.is-logged-out) > header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 8px;
+    padding: 12px 16px 0;
+  }
+  #pdesk > header .logo {
+    font-size: 17px;
+    gap: 8px;
+  }
+  #pdesk > header .logo-mark {
+    width: 34px;
+    height: 34px;
+  }
+  #pdesk > header .profile {
+    margin: 0;
+    gap: 6px;
+  }
+  #pdesk > header .profile .small {
+    display: none;
+  }
+  #pdesk > header .profile .avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+  #pdesk > header .logout-button {
+    min-height: 44px;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  #pdesk > header > nav {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 4px;
+    padding: 0 0 10px;
+    min-width: 0;
+    width: 100%;
+    overscroll-behavior-x: contain;
+  }
+  #pdesk > header > nav a {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 12px;
+    font-size: 14px;
+  }
+  #pdesk:not(.is-logged-out) main {
+    padding: 24px 16px 36px;
+  }
+  #pdesk .workspace-top {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  #pdesk:not(.is-logged-out) .workspace-top h1 {
+    font-size: 25px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+  }
+  #pdesk .workspace-top > .actions {
+    width: 100%;
+  }
+  #pdesk .workspace-top > .actions > :is(a, button) {
+    flex: 1;
+  }
+  #pdesk:not(.is-logged-out) .panel {
+    padding: 18px;
+    border-radius: 16px;
+  }
+  #pdesk .columns,
+  #pdesk .account-grid,
+  #pdesk .project-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  #pdesk .metric-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  #pdesk:not(.is-logged-out) .metric {
+    padding: 16px 12px;
+    border-radius: 14px;
+  }
+  #pdesk:not(.is-logged-out) .metric b {
+    font-size: 25px;
+    margin-top: 6px;
+  }
+  #pdesk:not(.is-logged-out) .welcome {
+    padding: 20px;
+    min-height: 160px;
+    gap: 8px;
+  }
+  #pdesk .welcome > div:first-child {
+    min-width: 0;
+    flex: 1;
+  }
+  #pdesk:not(.is-logged-out) .welcome h2 {
+    font-size: 20px;
+    line-height: 1.5;
+  }
+  #pdesk .welcome-art {
+    width: 84px;
+    height: 96px;
+  }
+  #pdesk .welcome-cat {
+    width: 80px !important;
+    height: 80px !important;
+  }
+  #pdesk .welcome-paw {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  #pdesk :is(.solid, .border-btn, .account-actions button) {
+    min-height: 44px;
+    font-size: 14px;
+  }
+  #pdesk .account-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  #pdesk .account-actions button {
+    width: 100%;
+    justify-self: stretch;
+  }
+  #pdesk :is(.account-form, .item-page-form, .auth-form, dialog) :is(input, select, textarea) {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  #pdesk .item-page-form {
+    width: 100%;
+  }
+  #pdesk .slack-banner {
+    padding: 18px;
+    align-items: stretch;
+  }
+  #pdesk .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+  }
+  #pdesk .table-wrap table {
+    min-width: 580px;
+  }
+  #pdesk .calendar-scroll-hint {
+    display: block;
+    margin: 8px 0 12px;
+    font-size: 12px;
+  }
+  #pdesk .calendar-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    border-radius: 16px;
+  }
+  #pdesk:not(.is-logged-out) .calendar {
+    min-width: 630px;
+  }
+  #pdesk:not(.is-logged-out) .calendar .day {
+    min-height: 110px;
+    padding: 8px 5px;
+  }
+  #pdesk:not(.is-logged-out) .calendar .calendar-item {
+    font-size: 12px;
+    padding: 6px;
+  }
+  #pdesk .calendar-heading {
+    gap: 14px;
+  }
+  #pdesk .calendar-project-filter {
+    width: 100%;
+  }
+  #pdesk .calendar-filter-trigger {
+    flex: 1;
+  }
+  #pdesk .site-footer {
+    margin-top: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  #pdesk .site-footer nav {
+    flex-wrap: wrap;
+  }
+  #pdesk .site-footer nav a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}

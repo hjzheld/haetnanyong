@@ -3,5 +3,7 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{ tone?: 'neutral' | 'success' | 'danger' | 'warning' }>(), { tone: 'neutral' })
+withDefaults(defineProps<{ tone?: 'neutral' | 'success' | 'danger' | 'warning' }>(), {
+  tone: 'neutral',
+});
 </script>

@@ -1,22 +1,31 @@
 export function getDatabaseUrl() {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig();
   if (!config.databaseUrl) {
-    throw createError({ statusCode: 503, statusMessage: 'DATABASE_URL is not configured' })
+    throw createError({ statusCode: 503, statusMessage: 'DATABASE_URL is not configured' });
   }
-  return config.databaseUrl
+  return config.databaseUrl;
 }
 
 export async function query<T = Record<string, unknown>>(text: string, params: unknown[] = []) {
-  const config = useRuntimeConfig()
-  if (!config.databaseUrl) throw createError({ statusCode: 503, statusMessage: 'DATABASE_URL is not configured' })
-  const { sql } = await import('#server/db/client')
+  const config = useRuntimeConfig();
+  if (!config.databaseUrl)
+    throw createError({ statusCode: 503, statusMessage: 'DATABASE_URL is not configured' });
+  const { sql } = await import('#server/db/client');
   try {
-    return await sql().query(text, params) as T[]
+    return (await sql().query(text, params)) as T[];
   } catch (error) {
-    const code = (error as { code?: string }).code
-    if (code === '23505') throw createError({ statusCode: 409, statusMessage: 'A record with the same unique value already exists' })
-    if (['23514', '23502', '22P02', '22007', '22008', '22001', '23503'].includes(code || '')) throw createError({ statusCode: 400, statusMessage: 'Input violates a database field or relationship constraint' })
-    throw error
+    const code = (error as { code?: string }).code;
+    if (code === '23505')
+      throw createError({
+        statusCode: 409,
+        statusMessage: 'A record with the same unique value already exists',
+      });
+    if (['23514', '23502', '22P02', '22007', '22008', '22001', '23503'].includes(code || ''))
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Input violates a database field or relationship constraint',
+      });
+    throw error;
   }
 }
 
