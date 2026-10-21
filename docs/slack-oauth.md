@@ -21,6 +21,13 @@
 
 ## 동작과 보관
 
+- 새 연결은 OAuth만 사용합니다. 설정이 빠지거나 암호화 키·Redirect URL이 올바르지 않으면
+  마이페이지에서 연결 준비 안내를 표시합니다. 봇 토큰만 있는 경우에도 멤버 ID 입력으로
+  돌아가지 않습니다. 로그인한 사용자의 GET `/api/account/slack` 응답 `setupIssues`에서
+  미설정 또는 잘못된 환경 변수 이름만 확인할 수 있습니다. 비밀 값은 반환하지 않습니다.
+- 이전 `/challenge`, `/verify` 요청은 로그인 확인 후 410을 반환하며 Slack을 호출하거나
+  연결을 수정하지 않습니다. 기존 연결 사용자의 알림·취소에 필요한 봇 토큰은 유지합니다.
+
 - POST `/api/account/slack/start`: 로그인·기존 알림 검사, CSRF 검사, 요청 제한,
   10분 유효 state 생성. state 해시는 DB에, 원문은 HttpOnly SameSite=Lax 쿠키에 저장합니다.
 - GET `/api/account/slack/callback`: 쿠키·state·로그인 세션을 확인하고 state를 원자적으로

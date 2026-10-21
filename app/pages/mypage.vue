@@ -67,9 +67,6 @@ watch(deleteDialog, async (open) => {
 const passwordMismatch = computed(
   () => Boolean(password.confirmation) && password.next !== password.confirmation,
 );
-const memberId = ref(''),
-  code = ref(''),
-  sent = ref(false);
 async function saveProfile() {
   if (profileBusy.value) return;
   profileError.value = '';
@@ -137,44 +134,6 @@ async function revokeOtherSessions() {
     sessionBusy.value = false;
   }
 }
-async function sendCode() {
-  if (slackBusy.value) return;
-  slackBusy.value = true;
-  connectionError.value = '';
-  slackNotice.value = '';
-  try {
-    await request('/api/account/slack/challenge', {
-      method: 'POST',
-      body: { memberId: memberId.value.trim() },
-    });
-    sent.value = true;
-    code.value = '';
-    slackNotice.value = 'Slack DM으로 인증 코드를 보냈어요. 10분 안에 입력해주세요.';
-  } catch (e) {
-    connectionError.value = errorText(e, 'slack');
-  } finally {
-    slackBusy.value = false;
-  }
-}
-async function verify() {
-  if (slackBusy.value) return;
-  slackBusy.value = true;
-  connectionError.value = '';
-  try {
-    await request('/api/account/slack/verify', {
-      method: 'POST',
-      body: { code: code.value.trim() },
-    });
-    await refresh();
-    sent.value = false;
-    code.value = '';
-    slackNotice.value = 'Slack 계정을 연결했어요.';
-  } catch (e) {
-    connectionError.value = errorText(e, 'slackVerify');
-  } finally {
-    slackBusy.value = false;
-  }
-}
 async function disconnect() {
   if (!slackBusy.value) disconnectConfirm.value = true;
 }
@@ -185,7 +144,6 @@ async function confirmDisconnect() {
   try {
     await request('/api/account/slack', { method: 'DELETE' });
     await refresh();
-    sent.value = false;
     disconnectConfirm.value = false;
     slackNotice.value = '연결을 해제했어요.';
   } catch (e) {
@@ -264,9 +222,12 @@ async function deleteAccount() {
           </div>
         </form>
       </section>
-      <section id="slack" class="panel">
+      <section id="slack" class="panel slack-panel">
         <div class="heading">
-          <h2>Slack 연결</h2>
+          <div class="slack-brand">
+            <span class="slack-brand-mark"><CommonSlackMark /></span>
+            <h2>Slack 연결</h2>
+          </div>
           <span class="badge" :class="{ rose: !slack?.connected }">{{
             slackStatus === 'pending' || slackStatus === 'idle'
               ? '확인 중'
@@ -283,29 +244,56 @@ async function deleteAccount() {
           <button class="border-btn" @click="refresh()">다시 시도</button>
         </p>
         <template v-else-if="slack">
-          <p class="small">
-            했냐옹 앱이 설치된 워크스페이스에서 내 Slack 계정을 연결해요. 인증 후 일정 알림을 개인
-            DM으로 받을 수 있어요.
-          </p>
-          <div v-if="slack.connected" class="connection-details">
-            <p>워크스페이스 {{ slack.workspaceId }}</p>
-            <p>멤버 {{ slack.memberId }}</p>
-            <p class="small">연결일 {{ showTime(slack.connectedAt) }}</p>
-            <button
-              class="border-btn"
-              :disabled="slackBusy"
-              :aria-busy="slackBusy"
-              @click="disconnect"
-            >
-              {{ slackBusy ? '처리 중…' : '연결 해제' }}</button
-            ><NuxtLink to="/reminders" class="border-btn">리마인더 보기 →</NuxtLink>
+          <div class="slack-intro">
+            <h3>
+              {{
+                slack.connected
+                  ? '일정 알림을 받을 준비가 됐어요'
+                  : '놓치기 쉬운 일정, DM으로 챙겨요'
+              }}
+            </h3>
+            <p>
+              {{
+                slack.connected
+                  ? '일정에서 알림 시간을 설정하면 연결된 Slack 계정으로 보내드려요.'
+                  : '평소 사용하는 Slack을 연결하고, 원하는 시간에 개인 메시지로 일정 알림을 받아보세요.'
+              }}
+            </p>
           </div>
-          <p v-if="!slack.configured" class="form-error">
+          <dl v-if="slack.connected" class="slack-account-details">
+            <div>
+              <dt>워크스페이스 ID</dt>
+              <dd>{{ slack.workspaceId }}</dd>
+            </div>
+            <div>
+              <dt>멤버 ID</dt>
+              <dd>{{ slack.memberId }}</dd>
+            </div>
+            <div>
+              <dt>연결한 날짜</dt>
+              <dd>{{ showTime(slack.connectedAt) }}</dd>
+            </div>
+          </dl>
+          <ol v-else class="slack-connect-steps" aria-label="Slack 연결 순서">
+            <li><span>1</span>워크스페이스 선택</li>
+            <li><span>2</span>연결 권한 승인</li>
+            <li><span>3</span>일정 알림 설정</li>
+          </ol>
+          <p v-if="!slack.oauthConfigured" class="slack-inline-notice" role="status">
             관리자가 먼저 Slack 연결 설정을 완료해야 해요.
           </p>
-          <div v-else-if="slack.oauthConfigured">
-            <p class="small">Slack에서 알림을 받을 워크스페이스를 선택하고 연결을 승인해주세요.</p>
-            <button class="solid" :disabled="slackBusy" @click="connectSlackOAuth">
+          <div class="slack-actions">
+            <NuxtLink v-if="slack.connected" to="/reminders" class="solid"
+              >리마인더 보기 →</NuxtLink
+            >
+            <button
+              v-if="slack.oauthConfigured"
+              :class="slack.connected ? 'border-btn' : 'slack-connect-button'"
+              :disabled="slackBusy"
+              :aria-busy="slackBusy"
+              @click="connectSlackOAuth"
+            >
+              <CommonSlackMark v-if="!slack.connected" />
               {{
                 slackBusy
                   ? 'Slack으로 이동 중…'
@@ -314,50 +302,21 @@ async function deleteAccount() {
                     : 'Slack 연결'
               }}
             </button>
+            <button
+              v-if="slack.connected"
+              class="slack-disconnect"
+              :disabled="slackBusy"
+              @click="disconnect"
+            >
+              연결 해제
+            </button>
           </div>
-          <template v-else
-            ><ol class="slack-steps">
-              <li>Slack에서 내 프로필을 열어요.</li>
-              <li>더보기 메뉴에서 ‘멤버 ID 복사’를 선택해요.</li>
-              <li>아래에 붙여넣고, 했냐옹 앱 DM으로 받은 코드를 입력해요.</li>
-            </ol>
-            <form class="account-form" @submit.prevent="sendCode">
-              <label
-                >Slack 멤버 ID<input
-                  v-model="memberId"
-                  required
-                  pattern="[UWuw][A-Za-z0-9]{8,49}"
-                  maxlength="50"
-                  placeholder="U0123456789"
-                  :disabled="slackBusy"
-                  @input="sent = false"
-              /></label>
-              <p class="small">
-                인증 코드 보내기를 누르면 입력한 멤버에게 확인용 DM 1건을 보내요. 본인의 ID를
-                입력해주세요.
-              </p>
-              <button class="border-btn" :disabled="slackBusy" :aria-busy="slackBusy">
-                {{ slackBusy ? '처리 중…' : sent ? '인증 코드 재발송' : '인증 코드 보내기' }}
-              </button>
-            </form>
-            <form v-if="sent" class="account-form" @submit.prevent="verify">
-              <label
-                >DM 인증 코드<input
-                  v-model="code"
-                  required
-                  minlength="12"
-                  maxlength="12"
-                  autocomplete="one-time-code"
-                  placeholder="12자리 인증 코드"
-                  :disabled="slackBusy" /></label
-              ><button class="solid" :disabled="slackBusy" :aria-busy="slackBusy">
-                {{ slackBusy ? '연결 확인 중…' : '연결 확인' }}
-              </button>
-            </form>
-          </template>
-          <p class="small">
-            예약 중이거나 결과 확인이 필요한 알림이 있으면 먼저 리마인더에서 정리한 뒤 연결을
-            변경해주세요.
+          <p class="slack-footnote">
+            {{
+              slack.connected
+                ? '연결을 변경하거나 해제하기 전, 예약된 리마인더를 먼저 정리해주세요.'
+                : '내 워크스페이스에서 연결할 수 있어요. 설치 정책에 따라 관리자 승인이 필요할 수 있어요.'
+            }}
           </p>
         </template>
         <p v-if="connectionError" role="alert" class="form-error">{{ connectionError }}</p>

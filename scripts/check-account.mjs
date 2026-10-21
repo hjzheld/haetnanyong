@@ -135,53 +135,22 @@ cookies.set('session', 'test-session');
 const challenge = load('server/api/account/slack/challenge.post.ts').default,
   verify = load('server/api/account/slack/verify.post.ts').default,
   disconnect = load('server/api/account/slack.delete.ts').default;
-body = { memberId: 'bad' };
-await assert.rejects(
-  () => challenge({}),
-  (e) => e.statusCode === 400,
-);
-body = { memberId: 'U01234567' };
-await challenge({});
-assert.ok(cookies.get('slack_challenge'));
-assert.equal(calls.filter((c) => c.method === 'chat.postMessage').length, 1);
-await assert.rejects(
-  () => challenge({}),
-  (e) => e.statusCode === 429,
-);
-body = { code: 'WRONG' };
-await assert.rejects(
-  () => verify({}),
-  (e) => e.statusCode === 400,
-);
-const code = calls
-  .find((c) => c.method === 'chat.postMessage')
-  .payload.text.match(/코드: ([A-F0-9]{12})/)[1];
-body = { code };
-user = { ...user, id: '2' };
-await assert.rejects(
-  () => verify({}),
-  (e) => e.statusCode === 400,
-);
-user = { ...user, id: '1' };
+for (const endpoint of [challenge, verify]) {
+  await assert.rejects(
+    () => endpoint({}),
+    (e) => e.statusCode === 410,
+  );
+}
+assert.equal(calls.length, 0, 'Retired endpoints must never contact Slack');
+assert.equal(connectionWrites, 0);
 active = true;
-await assert.rejects(
-  () => verify({}),
-  (e) => e.statusCode === 409,
-);
 await assert.rejects(
   () => disconnect({}),
   (e) => e.statusCode === 409,
 );
 active = false;
-await verify({});
-assert.equal(connectionWrites, 1);
-assert.ok(!cookies.has('slack_challenge'));
-await assert.rejects(
-  () => verify({}),
-  (e) => e.statusCode === 400,
-);
 await disconnect({});
-assert.equal(connectionWrites, 2);
+assert.equal(connectionWrites, 1);
 console.log(
-  'PASS: profile validation/current password; Slack member validation, DM challenge, cooldown, wrong code, user binding, active-reminder guards, successful verification, cookie consumption, disconnect. DB and Slack mocked; no external messages or writes.',
+  'PASS: profile validation, retired Slack endpoints return 410 without messages, active reminder guard, disconnect. DB and Slack mocked.',
 );

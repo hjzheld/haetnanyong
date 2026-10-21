@@ -43,6 +43,20 @@ const globals = {
   sendRedirect: (_event, url) => url,
 };
 const oauth = load('server/utils/slack-oauth.ts', {}, globals);
+assert.equal(oauth.slackOAuthConfigured(), true);
+const configuredClientId = config.slackClientId;
+config.slackClientId = '';
+assert.equal(oauth.slackOAuthConfigured(), false, 'Legacy bot token must not enable OAuth');
+assert.ok(oauth.slackOAuthIssues().includes('SLACK_CLIENT_ID'));
+config.slackClientId = configuredClientId;
+const configuredKey = config.slackTokenEncryptionKey;
+config.slackTokenEncryptionKey = 'short-key';
+assert.equal(oauth.slackOAuthConfigured(), false, 'Short encryption keys are not configured');
+config.slackTokenEncryptionKey = configuredKey;
+const configuredRedirect = config.slackRedirectUri;
+config.slackRedirectUri = 'http://example.test/api/account/slack/callback';
+assert.equal(oauth.slackOAuthConfigured(), false, 'Invalid redirect must not enable OAuth');
+config.slackRedirectUri = configuredRedirect;
 const sealed = oauth.encryptSlackToken('workspace-one-token', 'TONE');
 assert.ok(!sealed.includes('workspace-one-token'));
 assert.equal(oauth.decryptSlackToken(sealed, 'TONE'), 'workspace-one-token');

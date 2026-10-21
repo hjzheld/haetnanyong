@@ -2,11 +2,31 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:
 
 export const slackOAuthCookie = 'slack_oauth_state';
 export const slackScopes = ['users:read', 'chat:write', 'im:write'];
-export function slackOAuthConfigured() {
+export function slackOAuthIssues(): string[] {
   const c = useRuntimeConfig();
-  return Boolean(
-    c.slackClientId && c.slackClientSecret && c.slackRedirectUri && c.slackTokenEncryptionKey,
-  );
+  const issues: string[] = [];
+  if (!c.slackClientId?.trim()) issues.push('SLACK_CLIENT_ID');
+  if (!c.slackClientSecret?.trim()) issues.push('SLACK_CLIENT_SECRET');
+  if (!c.slackTokenEncryptionKey || c.slackTokenEncryptionKey.length < 32)
+    issues.push('SLACK_TOKEN_ENCRYPTION_KEY');
+  try {
+    const url = new URL(c.slackRedirectUri);
+    if (
+      url.protocol !== 'https:' ||
+      url.pathname !== '/api/account/slack/callback' ||
+      url.search ||
+      url.hash ||
+      url.username ||
+      url.password
+    )
+      issues.push('SLACK_REDIRECT_URI');
+  } catch {
+    issues.push('SLACK_REDIRECT_URI');
+  }
+  return issues;
+}
+export function slackOAuthConfigured() {
+  return slackOAuthIssues().length === 0;
 }
 export function slackOAuthConfig() {
   if (!slackOAuthConfigured())
