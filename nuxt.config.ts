@@ -43,6 +43,10 @@ export default defineNuxtConfig({
     databaseUrl: process.env.DATABASE_URL || '',
     sessionSecret: process.env.SESSION_SECRET || '',
     slackBotToken: process.env.SLACK_BOT_TOKEN || '',
+    slackClientId: process.env.SLACK_CLIENT_ID || '',
+    slackClientSecret: process.env.SLACK_CLIENT_SECRET || '',
+    slackRedirectUri: process.env.SLACK_REDIRECT_URI || '',
+    slackTokenEncryptionKey: process.env.SLACK_TOKEN_ENCRYPTION_KEY || '',
     slackDmChannelId: process.env.SLACK_DM_CHANNEL_ID || '',
     cronSecret: process.env.CRON_SECRET || '',
     public: {

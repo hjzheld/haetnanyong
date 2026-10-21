@@ -1,5 +1,6 @@
 export interface SlackConnection {
   configured: boolean;
+  oauthConfigured?: boolean;
   connected: boolean;
   workspaceId: string | null;
   memberId: string | null;

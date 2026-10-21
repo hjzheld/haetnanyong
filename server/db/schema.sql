@@ -136,3 +136,20 @@ CREATE INDEX idx_tasks_project_start_date ON public.tasks USING btree (project_i
 CREATE INDEX idx_tasks_project_status ON public.tasks USING btree (project_id, status);
 CREATE INDEX idx_reminders_status_remind_at ON public.reminders USING btree (status, remind_at);
 CREATE INDEX idx_events_project_start_date ON public.events USING btree (project_id, start_date);
+
+CREATE TABLE IF NOT EXISTS slack_installations (
+  workspace_id varchar(50) PRIMARY KEY,
+  encrypted_bot_token text NOT NULL,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS slack_channel_installations (
+  channel_id varchar(50) PRIMARY KEY,
+  workspace_id varchar(50) NOT NULL REFERENCES slack_installations(workspace_id)
+);
+CREATE TABLE IF NOT EXISTS slack_oauth_states (
+  state_hash varchar(64) PRIMARY KEY,
+  user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  session_hash varchar(64) NOT NULL,
+  expires_at timestamptz NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_slack_oauth_states_expiry ON slack_oauth_states(expires_at);

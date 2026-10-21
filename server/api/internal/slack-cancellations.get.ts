@@ -19,6 +19,13 @@ export default defineEventHandler(async (event) => {
 
   await query('DELETE FROM slack_cancellation_jobs WHERE purge_after <= now()');
   await query('DELETE FROM api_rate_limits WHERE expires_at <= now()');
+  await query('DELETE FROM slack_oauth_states WHERE expires_at <= now()');
+  await query(`DELETE FROM slack_channel_installations c
+    WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.slack_dm_channel_id=c.channel_id)
+      AND NOT EXISTS (SELECT 1 FROM slack_cancellation_jobs j WHERE j.slack_dm_channel_id=c.channel_id)
+      AND NOT EXISTS (SELECT 1 FROM reminders r WHERE r.slack_dm_channel_id=c.channel_id AND r.status NOT IN ('CANCELED','FAILED','ELAPSED'))`);
+  await query(`DELETE FROM slack_installations i
+    WHERE NOT EXISTS (SELECT 1 FROM slack_channel_installations c WHERE c.workspace_id=i.workspace_id)`);
   await query(
     "DELETE FROM email_verification_tokens WHERE expires_at <= now() OR used_at < now() - interval '24 hours'",
   );

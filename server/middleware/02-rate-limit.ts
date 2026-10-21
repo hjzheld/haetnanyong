@@ -4,6 +4,7 @@ const limits: Record<string, { max: number; windowMs: number }> = {
   '/api/auth/login': { max: 10, windowMs: 10 * 60_000 },
   '/api/auth/register': { max: 5, windowMs: 60 * 60_000 },
   '/api/account/slack/challenge': { max: 10, windowMs: 60 * 60_000 },
+  '/api/account/slack/start': { max: 10, windowMs: 60 * 60_000 },
 };
 
 export default defineEventHandler(async (event) => {

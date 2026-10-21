@@ -5,6 +5,18 @@ definePageMeta({ middleware: 'auth' });
 useHead({ title: '마이페이지 · 했냐옹' });
 const { user, setUser } = useSession();
 const { request } = useApi();
+async function connectSlackOAuth() {
+  if (slackBusy.value) return;
+  slackBusy.value = true;
+  connectionError.value = '';
+  try {
+    const { url } = await request<{ url: string }>('/api/account/slack/start', { method: 'POST' });
+    window.location.assign(url);
+  } catch (error) {
+    connectionError.value = errorText(error, 'slack');
+    slackBusy.value = false;
+  }
+}
 const profile = reactive({ email: user.value?.email || '', nickname: user.value?.nickname || '' });
 const {
   data: slack,
@@ -289,8 +301,20 @@ async function deleteAccount() {
             ><NuxtLink to="/reminders" class="border-btn">리마인더 보기 →</NuxtLink>
           </div>
           <p v-if="!slack.configured" class="form-error">
-            관리자가 먼저 이 서버에 Slack 앱의 봇 토큰을 설정해야 해요.
+            관리자가 먼저 Slack 연결 설정을 완료해야 해요.
           </p>
+          <div v-else-if="slack.oauthConfigured">
+            <p class="small">Slack에서 알림을 받을 워크스페이스를 선택하고 연결을 승인해주세요.</p>
+            <button class="solid" :disabled="slackBusy" @click="connectSlackOAuth">
+              {{
+                slackBusy
+                  ? 'Slack으로 이동 중…'
+                  : slack.connected
+                    ? '다른 Slack 계정 연결'
+                    : 'Slack 연결'
+              }}
+            </button>
+          </div>
           <template v-else
             ><ol class="slack-steps">
               <li>Slack에서 내 프로필을 열어요.</li>
