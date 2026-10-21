@@ -52,7 +52,9 @@ const eventCounts = computed(() => {
 const reminderByEvent = computed(
   () =>
     new Map(
-      reminders.value.filter((r) => r.status !== 'CANCELED').map((r) => [String(r.eventId), r]),
+      reminders.value
+        .filter((r) => !['CANCELED', 'FAILED', 'ELAPSED'].includes(r.status))
+        .map((r) => [String(r.eventId), r]),
     ),
 );
 const selected = computed(() => projectById.value.get(props.projectId || '')),
@@ -236,6 +238,24 @@ function askReminderCancel(id: string) {
     url: `/api/reminders/${id}`,
     description: '예약된 Slack 알림을 취소할까요?',
   };
+}
+async function checkReminder(id: string) {
+  if (busy.value) return;
+  busy.value = true;
+  actionError.value = '';
+  try {
+    const result = await request<{ status: string }>(`/api/reminders/${id}/reconcile`, {
+      method: 'POST',
+    });
+    notice.value = ['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING'].includes(result.status)
+      ? '예약 결과를 아직 확인하지 못했어요. 2분 후 상태 확인을 눌러주세요.'
+      : 'Slack 예약 상태를 확인했어요.';
+  } catch (error) {
+    actionError.value = errorText(error, 'reminder');
+  } finally {
+    await refresh();
+    busy.value = false;
+  }
 }
 async function confirmRemove() {
   if (!deleteTarget.value) return;
@@ -663,27 +683,49 @@ const titles = {
               <td>{{ r.offsetMinutes ? r.offsetMinutes + tr('분 전') : tr('직접 지정') }}</td>
               <td>
                 <span class="badge lavender">{{ tr(labels[r.status]) || r.status }}</span>
+                <p v-if="r.status === 'ELAPSED'" class="small">
+                  {{ tr('예약 시각이 지났어요. 실제 수신 여부는 Slack에서 확인해주세요.') }}
+                </p>
               </td>
               <td>
                 <button
-                  v-if="['SCHEDULED', 'PENDING', 'FAILED', 'CANCEL_FAILED'].includes(r.status)"
+                  v-if="
+                    ['SCHEDULED', 'PENDING', 'FAILED', 'CANCEL_FAILED', 'ELAPSED'].includes(
+                      r.status,
+                    )
+                  "
                   class="border-btn"
                   :disabled="busy"
                   @click="askReminderCancel(r.id)"
                 >
-                  {{ tr('예약 취소') }}</button
-                ><span
-                  v-else-if="['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING'].includes(r.status)"
-                  class="small"
-                  >{{ tr('처리 결과 확인 필요') }}</span
+                  {{ tr('예약 취소') }}
+                </button>
+                <button
+                  v-if="['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING', 'SCHEDULED'].includes(r.status)"
+                  class="border-btn"
+                  :disabled="busy"
+                  @click="checkReminder(r.id)"
                 >
+                  {{ tr('상태 확인') }}
+                </button>
+                <button
+                  v-if="
+                    ['FAILED', 'ELAPSED', 'CANCELED'].includes(r.status) &&
+                    eventById.get(String(r.eventId))
+                  "
+                  class="border-btn"
+                  :disabled="busy"
+                  @click="edit('reminder', eventById.get(String(r.eventId)))"
+                >
+                  {{ tr('다시 예약') }}
+                </button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
       <CommonEmptyState v-else class="reminders-empty" image="/images/cat-sleeping.png">{{
-        tr('프로젝트 일정에서 알림을 설정해보세요.')
+        tr('일정 상세에서 Slack 알림을 설정해보세요.')
       }}</CommonEmptyState>
     </section>
   </template>

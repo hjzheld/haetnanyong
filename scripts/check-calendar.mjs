@@ -27,7 +27,8 @@ const items = toCalendarItems(
 );
 assert.equal(items.length, 3, 'Both project and standalone items must be retained');
 assert.equal(occursOnDay(items[0], '2026-10-21'), true);
-assert.equal(occursOnDay(items[0], '2026-10-01'), false, 'Tasks appear on their due date');
+assert.equal(occursOnDay(items[0], '2026-10-01'), true, 'Tasks appear from their start date');
+assert.equal(occursOnDay(items[0], '2026-10-15'), true, 'Tasks appear on each day in range');
 assert.equal(occursOnDay(items[1], '2026-10-31'), true);
 assert.equal(occursOnDay(items[1], '2026-11-01'), true, 'All-day events cross month boundaries');
 assert.equal(occursOnDay(items[1], '2026-11-02'), false, 'All-day end dates are exclusive');

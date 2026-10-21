@@ -9,7 +9,8 @@ export function toCalendarItems(tasks: Task[], events: ScheduleEvent[]): Calenda
 }
 
 export function occursOnDay(item: CalendarItem, day: string): boolean {
-  if (item.kind === 'task') return datePart(item.endDate) === day;
+  if (item.kind === 'task')
+    return datePart(item.startDate || item.endDate) <= day && datePart(item.endDate) >= day;
   if (item.allDay) return datePart(item.startDate) <= day && datePart(item.endDate) > day;
   if (!item.startsAt || !item.endsAt) return false;
   return (
@@ -25,7 +26,11 @@ export function groupCalendarItems(items: CalendarItem[], days: string[]) {
   for (const day of days) if (day) groups.set(day, []);
   for (const item of items) {
     if (item.kind === 'task') {
-      groups.get(datePart(item.endDate))?.push(item);
+      const start = datePart(item.startDate || item.endDate);
+      const end = datePart(item.endDate);
+      for (const [day, entries] of groups) {
+        if (day >= start && day <= end) entries.push(item);
+      }
       continue;
     }
     if (!item.allDay && (!item.startsAt || !item.endsAt)) continue;

@@ -45,7 +45,7 @@ const f = reactive({
   startsAt: localTime(i?.startsAt as string) || today + 'T14:00',
   endsAt: localTime(i?.endsAt as string) || today + 'T15:00',
   timing: i?.allDay ? 'CUSTOM' : '10',
-  scheduledAt: today + 'T09:00',
+  scheduledAt: localTime(new Date(Date.now() + 5 * 60_000).toISOString()),
   text: tr(`${i?.title || tr('일정')} 일정이 곧 시작해요.`),
 });
 const displayColor = computed({
@@ -132,7 +132,17 @@ async function submit() {
           : { startsAt: f.startsAt + ':00+09:00', endsAt: f.endsAt + ':00+09:00' }),
       };
     }
-    if (props.kind === 'reminder')
+    if (props.kind === 'reminder') {
+      const when =
+        f.timing === 'CUSTOM'
+          ? Date.parse(f.scheduledAt + ':00+09:00')
+          : Date.parse(String(i?.startsAt || '')) - Number(f.timing) * 60_000;
+      if (
+        !Number.isFinite(when) ||
+        when < Date.now() + 60_000 ||
+        when > Date.now() + 120 * 86400000
+      )
+        throw Error('알림은 현재부터 1분 이후, 120일 이내로 설정해주세요.');
       body = {
         eventId: i?.id,
         text: f.text.trim(),
@@ -140,6 +150,7 @@ async function submit() {
           ? { scheduledAt: f.scheduledAt + ':00+09:00' }
           : { offsetMinutes: Number(f.timing) }),
       };
+    }
     const resource = { project: 'projects', task: 'tasks', event: 'events', reminder: 'reminders' }[
         props.kind
       ],
@@ -283,6 +294,7 @@ async function submit() {
         </template>
         <template v-if="kind === 'reminder'">
           <p class="small">{{ tr('저장하면 연결된 Slack으로 실제 알림이 예약됩니다.') }}</p>
+          <p class="small">{{ tr('알림은 현재부터 1분 이후, 120일 이내로 설정해주세요.') }}</p>
           <label
             >{{ tr('알림 방식')
             }}<span class="select-control"
@@ -306,7 +318,9 @@ async function submit() {
           <label v-if="f.timing === 'CUSTOM'"
             >{{ tr('알림 시각 (KST)')
             }}<input v-model="f.scheduledAt" type="datetime-local" required /></label
-          ><label>{{ tr('메시지') }}<textarea v-model="f.text" required rows="3" /></label>
+          ><label
+            >{{ tr('메시지') }}<textarea v-model="f.text" required maxlength="4000" rows="3" />
+          </label>
         </template>
       </fieldset>
       <p v-if="error" role="alert" class="form-error">{{ tr(error) }}</p>

@@ -85,9 +85,10 @@ async function confirmRemove() {
   busy.value = true;
   actionError.value = '';
   try {
+    const returnTo = projectReturnTo.value;
     await request(`/api/${resource}/${id}`, { method: 'DELETE' });
     invalidateLists();
-    await navigateTo('/items');
+    await navigateTo(returnTo);
   } catch (e) {
     actionError.value = errorText(e, 'delete');
   } finally {
@@ -134,6 +135,25 @@ async function reminderSaved() {
   showReminder.value = false;
   await refreshReminders();
   invalidateLists();
+}
+async function checkReminder() {
+  if (busy.value || !reminder.value) return;
+  busy.value = true;
+  actionError.value = '';
+  try {
+    const result = await request<{ status: string }>(
+      `/api/reminders/${reminder.value.id}/reconcile`,
+      { method: 'POST' },
+    );
+    if (['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING'].includes(result.status))
+      actionError.value = '예약 결과를 아직 확인하지 못했어요. 2분 후 상태 확인을 눌러주세요.';
+    await refreshReminders();
+    invalidateLists();
+  } catch (error) {
+    actionError.value = errorText(error, 'reminder');
+  } finally {
+    busy.value = false;
+  }
 }
 async function openReminder() {
   if (checkingSlack.value) return;
@@ -264,6 +284,25 @@ async function openReminder() {
         >
           {{ tr('알림 취소') }}
         </button>
+        <button
+          v-if="['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING', 'SCHEDULED'].includes(reminder.status)"
+          class="border-btn"
+          :disabled="busy"
+          @click="checkReminder"
+        >
+          {{ tr('상태 확인') }}
+        </button>
+        <button
+          v-if="['FAILED', 'ELAPSED'].includes(reminder.status)"
+          class="border-btn"
+          :disabled="busy || checkingSlack"
+          @click="openReminder"
+        >
+          {{ tr('다시 예약') }}
+        </button>
+        <p v-if="reminder.status === 'ELAPSED'" class="small">
+          {{ tr('예약 시각이 지났어요. 실제 수신 여부는 Slack에서 확인해주세요.') }}
+        </p>
       </div>
       <button v-else class="border-btn" :disabled="checkingSlack" @click="openReminder">
         {{ checkingSlack ? tr('연결 확인 중…') : tr('Slack 알림 설정') }}

@@ -7,6 +7,21 @@ definePageMeta({ middleware: 'auth' });
 useHead(() => ({ title: tr('마이페이지 · 했냐옹') }));
 const { user, setUser } = useSession();
 const { request } = useApi();
+const checkingSlackHealth = ref(false);
+async function checkSlackHealth() {
+  if (checkingSlackHealth.value) return;
+  checkingSlackHealth.value = true;
+  connectionError.value = '';
+  slackNotice.value = '';
+  try {
+    await request('/api/account/slack/health');
+    slackNotice.value = 'Slack 연결이 정상이에요. 일정에서 알림을 예약해주세요.';
+  } catch (error) {
+    connectionError.value = errorText(error, 'slack');
+  } finally {
+    checkingSlackHealth.value = false;
+  }
+}
 async function connectSlackOAuth() {
   if (slackBusy.value) return;
   slackBusy.value = true;
@@ -291,6 +306,14 @@ async function deleteAccount() {
             {{ tr('관리자가 먼저 Slack 연결 설정을 완료해야 해요.') }}
           </p>
           <div class="slack-actions">
+            <button
+              v-if="slack.connected"
+              class="border-btn"
+              :disabled="checkingSlackHealth || slackBusy"
+              @click="checkSlackHealth"
+            >
+              {{ checkingSlackHealth ? tr('연결 확인 중…') : tr('연결 상태 확인') }}
+            </button>
             <NuxtLink v-if="slack.connected" to="/reminders" class="solid">{{
               tr('리마인더 보기 →')
             }}</NuxtLink>

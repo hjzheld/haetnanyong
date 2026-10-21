@@ -1,6 +1,7 @@
 import { requireUser } from '#server/utils/auth';
 import { query } from '#server/utils/db';
-import { scheduleSlackMessage } from '#server/services/slack';
+import { scheduleSlackMessage, slackFailure } from '#server/services/slack';
+import { reminderKey } from '#server/services/reminders';
 import { inputBody, inputId, inputText, inputTime } from '#server/utils/input';
 
 export default defineEventHandler(async (event) => {
@@ -8,6 +9,8 @@ export default defineEventHandler(async (event) => {
   const body = inputBody(await readBody(event));
   const eventId = inputId(body.eventId);
   const text = inputText(body.text, 'text');
+  if ([...text].length > 4000)
+    throw createError({ statusCode: 400, statusMessage: 'text exceeds 4000 characters' });
   const [item] = await query<{
     starts_at: string | null;
     is_all_day: boolean;
@@ -36,12 +39,12 @@ export default defineEventHandler(async (event) => {
     : new Date(Date.parse(item.starts_at!) - offset * 60000);
   if (
     !Number.isFinite(when.getTime()) ||
-    when.getTime() <= Date.now() ||
+    when.getTime() < Date.now() + 60_000 ||
     when.getTime() > Date.now() + 120 * 86400000
   )
     throw createError({
       statusCode: 400,
-      statusMessage: 'Reminder must be in the future and within 120 days',
+      statusMessage: 'Reminder must be at least 1 minute in the future and within 120 days',
     });
   const channel = item.channel;
   if (!channel)
@@ -49,9 +52,9 @@ export default defineEventHandler(async (event) => {
       statusCode: 409,
       statusMessage: '마이페이지에서 본인의 Slack 계정을 먼저 연결해주세요.',
     });
-  const key = eventId + ':' + when.toISOString();
-  const [pending] = await query<{ id: string }>(
-    "INSERT INTO reminders (event_id,timing_type,offset_minutes,remind_at,status,idempotency_key,slack_dm_channel_id) VALUES ($1,$2,$3,$4,'SCHEDULING',$5,$6) ON CONFLICT (event_id) DO UPDATE SET timing_type=EXCLUDED.timing_type, offset_minutes=EXCLUDED.offset_minutes, remind_at=EXCLUDED.remind_at, status='SCHEDULING', idempotency_key=EXCLUDED.idempotency_key, slack_dm_channel_id=EXCLUDED.slack_dm_channel_id, slack_scheduled_message_id=NULL, reservation_accepted_at=NULL, canceled_at=NULL, revision=reminders.revision+1, updated_at=now() WHERE reminders.status='CANCELED' RETURNING id",
+  const key = reminderKey(eventId, when.toISOString(), text);
+  const [pending] = await query<{ id: string; revision: number }>(
+    "INSERT INTO reminders (event_id,timing_type,offset_minutes,remind_at,status,idempotency_key,slack_dm_channel_id) VALUES ($1,$2,$3,$4,'SCHEDULING',$5,$6) ON CONFLICT (event_id) DO UPDATE SET timing_type=EXCLUDED.timing_type, offset_minutes=EXCLUDED.offset_minutes, remind_at=EXCLUDED.remind_at, status='SCHEDULING', idempotency_key=EXCLUDED.idempotency_key, slack_dm_channel_id=EXCLUDED.slack_dm_channel_id, slack_scheduled_message_id=NULL, reservation_accepted_at=NULL, canceled_at=NULL, last_error_code=NULL, last_error_message=NULL, revision=reminders.revision+1, updated_at=now() WHERE reminders.status IN ('CANCELED','FAILED','ELAPSED') RETURNING id,revision",
     [
       eventId,
       custom ? 'CUSTOM' : 'BEFORE_START',
@@ -74,15 +77,29 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Slack did not return a reservation ID',
       });
     const [result] = await query(
-      'UPDATE reminders SET status=\'SCHEDULED\', slack_scheduled_message_id=$1, reservation_accepted_at=now(), attempt_count=attempt_count+1, last_attempt_at=now(), last_error_message=NULL, updated_at=now() WHERE id=$2 RETURNING id,event_id AS "eventId",remind_at AS "remindAt",status,revision',
-      [slack.scheduled_message_id, pending.id],
+      'UPDATE reminders SET status=\'SCHEDULED\', slack_scheduled_message_id=$1, reservation_accepted_at=now(), attempt_count=attempt_count+1, last_attempt_at=now(), last_error_code=NULL, last_error_message=NULL, updated_at=now() WHERE id=$2 AND revision=$3 AND status=\'SCHEDULING\' RETURNING id,event_id AS "eventId",remind_at AS "remindAt",status,revision',
+      [slack.scheduled_message_id, pending.id, pending.revision],
     );
+    if (!result)
+      throw createError({
+        statusCode: 409,
+        statusMessage: 'Reminder state changed; reload before retrying',
+      });
     return result;
   } catch (error) {
+    const failure = slackFailure(error);
     await query(
-      "UPDATE reminders SET status='UNKNOWN', attempt_count=attempt_count+1, last_attempt_at=now(), last_error_message=$1, updated_at=now() WHERE id=$2",
-      [error instanceof Error ? error.message : 'Scheduling outcome unknown', pending.id],
+      "UPDATE reminders SET status=$1, attempt_count=attempt_count+1, last_attempt_at=now(), last_error_code=$2,last_error_message=$3, updated_at=now() WHERE id=$4 AND revision=$5 AND status='SCHEDULING'",
+      [
+        failure.rejected ? 'FAILED' : 'UNKNOWN',
+        failure.code,
+        error instanceof Error ? error.message : 'Scheduling outcome unknown',
+        pending.id,
+        pending.revision,
+      ],
     );
+    const retryAfter = (error as { data?: { retryAfter?: number } }).data?.retryAfter;
+    if (retryAfter) setResponseHeader(event, 'Retry-After', retryAfter);
     throw error;
   }
 });

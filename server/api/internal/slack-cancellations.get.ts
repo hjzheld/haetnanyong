@@ -1,5 +1,6 @@
 import { query } from '#server/utils/db';
 import { cancelSlackMessage } from '#server/services/slack';
+import { reconcileReminder } from '#server/services/reminders';
 
 interface CancellationJob {
   id: string;
@@ -62,5 +63,22 @@ export default defineEventHandler(async (event) => {
       }
     }
   }
-  return { ok: true, processed: jobs.length, resolved };
+  const reminders = await query<{ id: string; userId: string }>(
+    `SELECT r.id,e.user_id AS "userId" FROM reminders r JOIN events e ON e.id=r.event_id
+      WHERE r.status IN ('UNKNOWN','SCHEDULING','CANCEL_PENDING','SCHEDULED')
+        AND r.updated_at < now() - interval '2 minutes'
+      ORDER BY r.updated_at LIMIT 10`,
+  );
+  let reconciled = 0;
+  const deadline = Date.now() + 20_000;
+  for (const reminder of reminders) {
+    if (Date.now() >= deadline) break;
+    try {
+      await reconcileReminder(reminder.id, reminder.userId);
+      reconciled++;
+    } catch {
+      // Keep uncertain reservations intact; another run or the owner can retry.
+    }
+  }
+  return { ok: true, processed: jobs.length, resolved, reconciled };
 });

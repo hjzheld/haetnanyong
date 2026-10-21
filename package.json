@@ -12,6 +12,7 @@
     "preview": "nuxt preview",
     "prepare": "nuxt prepare",
     "lint": "nuxt typecheck",
+    "test:reminders": "node scripts/check-reminders.mjs && node scripts/check-slack-oauth.mjs",
     "test:performance": "node scripts/check-performance.mjs && node scripts/check-account.mjs && node scripts/check-calendar-dates.mjs && node scripts/check-calendar.mjs && node scripts/check-reveal.mjs",
     "test:performance:browser": "node scripts/check-performance-browser.cjs",
     "format": "prettier --write .",

@@ -69,6 +69,7 @@ type ApiErrorLike = {
 };
 
 const friendlyMessages = new Set([
+  '알림은 현재부터 1분 이후, 120일 이내로 설정해주세요.',
   '마감일은 시작일 이후여야 해요.',
   '종료는 시작보다 뒤여야 해요.',
   '닉네임은 2~30자로 입력해주세요.',
@@ -88,6 +89,16 @@ const friendlyMessages = new Set([
 ]);
 
 const exactMessages: Record<string, string> = {
+  'Reminder must be at least 1 minute in the future and within 120 days':
+    '알림은 현재부터 1분 이후, 120일 이내로 설정해주세요.',
+  'Slack reservation list is incomplete':
+    'Slack 예약 목록을 확인하지 못했어요. 기존 알림은 유지돼요. 잠시 후 상태 확인을 다시 눌러주세요.',
+  'Slack reservation was not found; choose a new reminder time':
+    'Slack에서 예약을 찾지 못했어요. 알림 시각을 확인하고 다시 예약해주세요.',
+  'Slack workspace does not match the connected account':
+    '연결된 Slack 워크스페이스가 달라요. 마이페이지에서 다시 연결해주세요.',
+  'Slack installation token is unavailable':
+    'Slack 연결 정보를 사용할 수 없어요. 관리자에게 문의해주세요.',
   'Invalid email': '이메일 형식을 확인해주세요.',
   'Invalid email or password': '이메일 또는 비밀번호가 일치하지 않아요.',
   'Email is already registered': '이미 가입된 이메일이에요.',
@@ -124,13 +135,13 @@ const exactMessages: Record<string, string> = {
   'Slack did not return a reservation ID':
     'Slack 알림 예약을 확인하지 못했어요. 잠시 후 상태를 다시 확인해주세요.',
   'Reservation outcome requires reconciliation before cancellation':
-    'Slack 예약 결과를 확인한 후 다시 취소해주세요.',
+    '아직 예약 처리 중이거나 결과가 불확실해요. 2분 후 상태 확인을 누르고 다시 취소해주세요.',
   'Reminder state changed; reload before retrying':
     '리마인더 상태가 변경됐어요. 새로고침 후 다시 시도해주세요.',
   'Stored Slack channel is missing': 'Slack 연결 정보가 없어요. 마이페이지에서 다시 연결해주세요.',
   'Cancellation failed': 'Slack 리마인더 취소에 실패했어요. 잠시 후 다시 시도해주세요.',
   'Scheduling outcome unknown':
-    'Slack 알림 예약 결과를 확인하고 있어요. 잠시 후 다시 확인해주세요.',
+    'Slack 예약 결과를 확인하지 못했어요. 2분 후 알림 목록에서 상태 확인을 눌러주세요.',
   'A record with the same unique value already exists':
     '이미 사용 중인 값이 있어요. 입력 내용을 확인해주세요.',
   'Input violates a database field or relationship constraint':
@@ -170,6 +181,8 @@ function technicalMessage(raw: string) {
     return 'Slack 사용자를 찾지 못했어요. 멤버 ID와 워크스페이스를 확인해주세요.';
   if (/ratelimited|too_many_requests/i.test(raw))
     return '요청이 너무 많아요. 잠시 후 다시 시도해주세요.';
+  if (/internal_error|fatal_error|Slack .* request failed/i.test(raw))
+    return 'Slack 응답을 확인하지 못했어요. 알림 목록에서 2분 후 상태 확인을 눌러주세요.';
   if (/channel_not_found|not_in_channel/i.test(raw))
     return 'Slack 대화방을 찾지 못했어요. Slack 계정을 다시 연결해주세요.';
   if (/account_inactive|user_not_visible/i.test(raw))

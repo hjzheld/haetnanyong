@@ -571,5 +571,32 @@ const messages: Record<string, string> = {
   영어: 'English',
   뒤로가기: 'Back',
   한국어: '한국어',
+  'Slack 연결 정보를 사용할 수 없어요. 관리자에게 문의해주세요.':
+    'Slack connection credentials are unavailable. Contact the administrator.',
+  '아직 예약 처리 중이거나 결과가 불확실해요. 2분 후 상태 확인을 누르고 다시 취소해주세요.':
+    'The reservation is processing or uncertain. Check its status in two minutes before canceling.',
+  '상태 확인': 'Check status',
+  '다시 예약': 'Schedule again',
+  '연결 상태 확인': 'Check connection',
+  '예약 결과를 아직 확인하지 못했어요. 2분 후 상태 확인을 눌러주세요.':
+    'The reservation is still uncertain. Check its status again in two minutes.',
+  'Slack 예약 상태를 확인했어요.': 'Slack reservation status checked.',
+  '예약 시각이 지났어요. 실제 수신 여부는 Slack에서 확인해주세요.':
+    'The scheduled time has passed. Check Slack to see whether the message arrived.',
+  '일정 상세에서 Slack 알림을 설정해보세요.': 'Set a Slack reminder from an event’s details.',
+  '알림은 현재부터 1분 이후, 120일 이내로 설정해주세요.':
+    'Schedule reminders at least one minute ahead and within 120 days.',
+  'Slack 연결이 정상이에요. 일정에서 알림을 예약해주세요.':
+    'Your Slack connection works. Schedule a reminder from an event.',
+  'Slack 예약 목록을 확인하지 못했어요. 기존 알림은 유지돼요. 잠시 후 상태 확인을 다시 눌러주세요.':
+    'Could not check Slack reservations. Existing reminders are unchanged. Check again shortly.',
+  'Slack에서 예약을 찾지 못했어요. 알림 시각을 확인하고 다시 예약해주세요.':
+    'No matching Slack reservation was found. Check the time and schedule again.',
+  '연결된 Slack 워크스페이스가 달라요. 마이페이지에서 다시 연결해주세요.':
+    'The Slack workspace does not match. Reconnect from My page.',
+  'Slack 응답을 확인하지 못했어요. 알림 목록에서 2분 후 상태 확인을 눌러주세요.':
+    'Could not confirm Slack’s response. Check the reminder status in two minutes.',
+  'Slack 예약 결과를 확인하지 못했어요. 2분 후 알림 목록에서 상태 확인을 눌러주세요.':
+    'Could not confirm the reservation. Check its status in two minutes.',
 };
 export default messages;
