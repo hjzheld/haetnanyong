@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { tr } = useLocale();
+
 const props = withDefaults(
   defineProps<{
     open: boolean;
@@ -27,11 +29,11 @@ watch(
 <template>
   <dialog ref="dialog" class="confirm-dialog" @cancel.prevent="!busy && emit('cancel')">
     <form method="dialog" @submit.prevent>
-      <h2>{{ title }}</h2>
-      <p>{{ description }}</p>
+      <h2>{{ tr(title) }}</h2>
+      <p>{{ tr(description) }}</p>
       <div class="actions">
         <button type="button" class="border-btn" :disabled="busy" @click="emit('cancel')">
-          취소
+          {{ tr('취소') }}
         </button>
         <button
           type="button"
@@ -40,7 +42,7 @@ watch(
           :disabled="busy"
           @click="emit('confirm')"
         >
-          {{ busy ? '처리 중…' : confirmLabel }}
+          {{ busy ? tr('처리 중…') : tr(confirmLabel) }}
         </button>
       </div>
     </form>

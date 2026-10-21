@@ -12,10 +12,10 @@
 .item-page-form textarea {
   width: 100%;
   padding: 11px 12px;
-  border: 1px solid #ddd6e5;
+  border: 1px solid var(--color-border-lavender-869);
   border-radius: 10px;
-  background: white;
-  color: #343347;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
   font: inherit;
 }
 .item-page-form input[type='color'] {
@@ -58,7 +58,7 @@
   margin: 24px 0;
 }
 .item-detail dt {
-  color: #777486;
+  color: var(--color-text-muted);
 }
 .item-detail dd {
   margin: 0;
@@ -69,7 +69,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 1px solid #0002;
+  border: 1px solid var(--color-border-neutral-0-a13);
 }
 #pdesk header nav {
   flex-wrap: wrap;

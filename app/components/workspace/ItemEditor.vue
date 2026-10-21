@@ -1,5 +1,8 @@
 ﻿<script setup lang="ts">
+const { tr } = useLocale();
+
 import { errorText, koreaDate, datePart, localTime } from '~/utils/display';
+import { DEFAULT_ITEM_COLORS } from '~/utils/item-colors';
 import type { Project } from '~/types/workspace';
 const props = defineProps<{
   kind: 'project' | 'task' | 'event' | 'reminder';
@@ -26,12 +29,11 @@ const projectLocked = computed(() =>
     ? Boolean(props.projectId || inheritedProject.value)
     : false,
 );
-const defaults = { project: '#557558', task: '#C98B8B', event: '#8E8AA3', reminder: '#8E8AA3' };
 const f = reactive({
   name: String(i?.name || ''),
   title: String(i?.title || ''),
   description: String(i?.description || ''),
-  color: String(i?.color || defaults[props.kind]),
+  color: String(i?.color || DEFAULT_ITEM_COLORS[props.kind]),
   priority: String(i?.priority || 'MEDIUM'),
   status: String(i?.status || 'TODO'),
   startDate: datePart(i?.startDate as string) || today,
@@ -44,7 +46,7 @@ const f = reactive({
   endsAt: localTime(i?.endsAt as string) || today + 'T15:00',
   timing: i?.allDay ? 'CUSTOM' : '10',
   scheduledAt: today + 'T09:00',
-  text: `${i?.title || ''} 일정이 곧 시작해요.`,
+  text: tr(`${i?.title || tr('일정')} 일정이 곧 시작해요.`),
 });
 const displayColor = computed({
   get: () => inheritedProject.value?.color || f.color,
@@ -55,15 +57,26 @@ const displayColor = computed({
 const busy = ref(false),
   error = ref(''),
   dialog = ref<HTMLDialogElement>(),
+  discardPromptOpen = ref(false),
   savedSuccessfully = ref(false);
 const serializeForm = () => JSON.stringify({ chosenProject: chosenProject.value, form: { ...f } });
 const initialSnapshot = serializeForm();
 const dirty = computed(() => !savedSuccessfully.value && serializeForm() !== initialSnapshot);
+let resolveDiscardPrompt: ((discard: boolean) => void) | undefined;
 function confirmDiscard() {
-  return !dirty.value || window.confirm('저장하지 않은 내용이 있어요. 이대로 나갈까요?');
+  if (!dirty.value) return Promise.resolve(true);
+  discardPromptOpen.value = true;
+  return new Promise<boolean>((resolve) => {
+    resolveDiscardPrompt = resolve;
+  });
 }
-function attemptClose() {
-  if (confirmDiscard()) emit('close');
+function resolveDiscard(discard: boolean) {
+  discardPromptOpen.value = false;
+  resolveDiscardPrompt?.(discard);
+  resolveDiscardPrompt = undefined;
+}
+async function attemptClose() {
+  if (await confirmDiscard()) emit('close');
 }
 function beforeUnload(event: BeforeUnloadEvent) {
   if (!dirty.value) return;
@@ -78,8 +91,12 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload));
 onBeforeRouteLeave(() => confirmDiscard());
 const title = computed(
   () =>
-    ({ project: '프로젝트', task: '태스크', event: '일정', reminder: 'Slack 알림' })[props.kind] +
-    (i?.id && props.kind !== 'reminder' ? ' 수정' : ' 추가'),
+    ({
+      project: tr('프로젝트'),
+      task: tr('태스크'),
+      event: tr('일정'),
+      reminder: tr('Slack 알림'),
+    })[props.kind] + (i?.id && props.kind !== 'reminder' ? tr(' 수정') : tr(' 추가')),
 );
 async function submit() {
   if (busy.value) return;
@@ -149,94 +166,165 @@ async function submit() {
     @cancel.prevent="!busy && attemptClose()"
   >
     <form :aria-busy="busy" @submit.prevent="submit">
-      <h2 id="editor-title">{{ title }}</h2>
+      <h2 id="editor-title">{{ tr(title) }}</h2>
       <fieldset :disabled="busy">
         <label
           v-if="
             !standalone && !item?.id && !props.projectId && (kind === 'task' || kind === 'event')
           "
-          >프로젝트 (선택)<select v-model="chosenProject">
-            <option value="">프로젝트 없이 만들기</option>
-            <option v-for="p in availableProjects" :key="p.id" :value="String(p.id)">
-              {{ p.name }}
-            </option>
-          </select></label
-        >
+          >{{ tr('프로젝트 (선택)')
+          }}<span class="select-control"
+            ><select v-model="chosenProject" :aria-label="tr('프로젝트 (선택)')">
+              <option value="">{{ tr('프로젝트 없이 만들기') }}</option>
+              <option v-for="p in availableProjects" :key="p.id" :value="String(p.id)">
+                {{ p.name }}
+              </option></select
+            ><svg
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m4 6 4 4 4-4" /></svg></span
+        ></label>
         <label v-if="kind === 'project'"
-          >프로젝트 이름<input v-model="f.name" required maxlength="150"
+          >{{ tr('프로젝트 이름') }}<input v-model="f.name" required maxlength="150"
         /></label>
         <label v-else-if="kind !== 'reminder'"
-          >제목<input v-model="f.title" required maxlength="200"
+          >{{ tr('제목') }}<input v-model="f.title" required maxlength="200"
         /></label>
         <label v-if="kind !== 'reminder'"
-          >설명 (선택)<textarea v-model="f.description" rows="3" />
+          >{{ tr('설명 (선택)') }}<textarea v-model="f.description" rows="3" />
         </label>
         <label v-if="kind !== 'reminder' && !projectLocked"
-          >색상<input v-model="displayColor" type="color" aria-label="표시 색상"
+          >{{ tr('색상') }}<input v-model="displayColor" type="color" :aria-label="tr('표시 색상')"
         /></label>
         <p v-if="projectLocked && inheritedProject" class="small">
-          {{ inheritedProject.name }} 프로젝트 색상을 따라가요.
+          {{ inheritedProject.name }} {{ tr('프로젝트 색상을 따라가요.') }}
         </p>
         <template v-if="kind === 'task'">
-          <label>시작일<input v-model="f.startDate" type="date" required /></label
+          <label>{{ tr('시작일') }}<input v-model="f.startDate" type="date" required /></label
           ><label
-            >마감일<input v-model="f.dueDate" type="date" :min="f.startDate" required
+            >{{ tr('마감일') }}<input v-model="f.dueDate" type="date" :min="f.startDate" required
           /></label>
           <label
-            >우선순위<select v-model="f.priority">
-              <option value="LOW">낮음</option>
-              <option value="MEDIUM">보통</option>
-              <option value="HIGH">높음</option>
-            </select></label
-          >
+            >{{ tr('우선순위')
+            }}<span class="select-control"
+              ><select v-model="f.priority" :aria-label="tr('우선순위')">
+                <option value="LOW">{{ tr('낮음') }}</option>
+                <option value="MEDIUM">{{ tr('보통') }}</option>
+                <option value="HIGH">{{ tr('높음') }}</option></select
+              ><svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m4 6 4 4 4-4" /></svg></span
+          ></label>
           <label v-if="item?.id"
-            >상태<select v-model="f.status">
-              <option value="TODO">할 일</option>
-              <option value="IN_PROGRESS">진행 중</option>
-              <option value="DONE">완료</option>
-            </select></label
-          >
+            >{{ tr('상태')
+            }}<span class="select-control"
+              ><select v-model="f.status" :aria-label="tr('상태')">
+                <option value="TODO">{{ tr('할 일') }}</option>
+                <option value="IN_PROGRESS">{{ tr('진행 중') }}</option>
+                <option value="DONE">{{ tr('완료') }}</option></select
+              ><svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m4 6 4 4 4-4" /></svg></span
+          ></label>
         </template>
         <template v-if="kind === 'event'">
           <label
-            >일정 종류<select v-model="f.allDay" :disabled="!!item?.id">
-              <option :value="false">시간 일정</option>
-              <option :value="true">종일 일정</option>
-            </select></label
-          >
-          <p class="small">시간은 한국 표준시(KST) 기준이에요.</p>
+            >{{ tr('일정 종류')
+            }}<span class="select-control"
+              ><select v-model="f.allDay" :aria-label="tr('일정 종류')" :disabled="!!item?.id">
+                <option :value="false">{{ tr('시간 일정') }}</option>
+                <option :value="true">{{ tr('종일 일정') }}</option></select
+              ><svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m4 6 4 4 4-4" /></svg></span
+          ></label>
+          <p class="small">{{ tr('시간은 한국 표준시(KST) 기준이에요.') }}</p>
           <template v-if="f.allDay"
-            ><label>시작일<input v-model="f.startDate" type="date" required /></label
-            ><label>종료일 (이 날짜는 제외)<input v-model="f.endDate" type="date" required /></label
+            ><label>{{ tr('시작일') }}<input v-model="f.startDate" type="date" required /></label
+            ><label
+              >{{ tr('종료일 (이 날짜는 제외)')
+              }}<input v-model="f.endDate" type="date" required /></label
           ></template>
           <template v-else
-            ><label>시작 시간<input v-model="f.startsAt" type="datetime-local" required /></label
-            ><label>종료 시간<input v-model="f.endsAt" type="datetime-local" required /></label
+            ><label
+              >{{ tr('시작 시간')
+              }}<input v-model="f.startsAt" type="datetime-local" required /></label
+            ><label
+              >{{ tr('종료 시간')
+              }}<input v-model="f.endsAt" type="datetime-local" required /></label
           ></template>
         </template>
         <template v-if="kind === 'reminder'">
-          <p class="small">저장하면 연결된 Slack으로 실제 알림이 예약됩니다.</p>
+          <p class="small">{{ tr('저장하면 연결된 Slack으로 실제 알림이 예약됩니다.') }}</p>
           <label
-            >알림 방식<select v-model="f.timing">
-              <template v-if="!item?.allDay"
-                ><option value="10">시작 10분 전</option>
-                <option value="30">시작 30분 전</option></template
+            >{{ tr('알림 방식')
+            }}<span class="select-control"
+              ><select v-model="f.timing" :aria-label="tr('알림 방식')">
+                <template v-if="!item?.allDay"
+                  ><option value="10">{{ tr('시작 10분 전') }}</option>
+                  <option value="30">{{ tr('시작 30분 전') }}</option></template
+                >
+                <option value="CUSTOM">{{ tr('직접 지정') }}</option></select
+              ><svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
               >
-              <option value="CUSTOM">직접 지정</option>
-            </select></label
-          >
+                <path d="m4 6 4 4 4-4" /></svg></span
+          ></label>
           <label v-if="f.timing === 'CUSTOM'"
-            >알림 시각 (KST)<input v-model="f.scheduledAt" type="datetime-local" required /></label
-          ><label>메시지<textarea v-model="f.text" required rows="3" /></label>
+            >{{ tr('알림 시각 (KST)')
+            }}<input v-model="f.scheduledAt" type="datetime-local" required /></label
+          ><label>{{ tr('메시지') }}<textarea v-model="f.text" required rows="3" /></label>
         </template>
       </fieldset>
-      <p v-if="error" role="alert" class="form-error">{{ error }}</p>
+      <p v-if="error" role="alert" class="form-error">{{ tr(error) }}</p>
       <div class="actions">
-        <button type="button" class="border-btn" :disabled="busy" @click="attemptClose">취소</button
+        <button type="button" class="border-btn" :disabled="busy" @click="attemptClose">
+          {{ tr('취소') }}</button
         ><button class="solid" :disabled="busy" :aria-busy="busy">
-          {{ busy ? (kind === 'reminder' ? '알림 예약 중…' : '저장 중…') : '저장하기' }}
+          {{ busy ? (kind === 'reminder' ? tr('알림 예약 중…') : tr('저장 중…')) : tr('저장하기') }}
         </button>
       </div>
     </form>
   </component>
+  <CommonConfirmDialog
+    :open="discardPromptOpen"
+    :title="tr('변경사항을 버릴까요?')"
+    :description="tr('저장하지 않은 내용이 있어요. 이대로 나갈까요?')"
+    :confirm-label="tr('나가기')"
+    @cancel="resolveDiscard(false)"
+    @confirm="resolveDiscard(true)"
+  />
 </template>

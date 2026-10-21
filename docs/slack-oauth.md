@@ -4,7 +4,6 @@
    기존 001~005 마이그레이션이 적용된 데이터베이스가 전제입니다.
 2. Vercel Production 환경 변수에 다음을 등록합니다. 로컬에서도 같은 이름을 사용합니다.
    - `SLACK_CLIENT_ID`: Slack Basic Information의 Client ID
-   - `SLACK_CLIENT_SECRET`: 같은 화면의 Client Secret
    - `SLACK_REDIRECT_URI`: `https://haetnanyong.vercel.app/api/account/slack/callback`
    - `SLACK_TOKEN_ENCRYPTION_KEY`: 독립적인 랜덤 키, 32자 이상
 3. 키 생성: `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`

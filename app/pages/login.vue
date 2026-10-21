@@ -1,9 +1,11 @@
 ﻿<script setup lang="ts">
+const { tr } = useLocale();
+
 import type { User } from '~/types/workspace';
 import { errorText } from '~/utils/display';
 import { safeInternalRedirect } from '~/utils/navigation';
 definePageMeta({ layout: false, middleware: 'guest' });
-useHead({ title: '로그인 · 했냐옹' });
+useHead(() => ({ title: tr('로그인 · 했냐옹') }));
 const { setUser } = useSession();
 const route = useRoute();
 const register = ref(route.query.mode === 'register'),
@@ -50,49 +52,54 @@ async function submit() {
   <div id="pdesk" class="is-logged-out">
     <section class="login-screen">
       <div class="login-card">
-        <img class="login-cat" src="/images/cat.png" alt="했냐옹 고양이" />
-        <h1>잊지 말고, 오늘도 했냐옹</h1>
+        <img class="login-cat" src="/images/cat.png" :alt="tr('했냐옹 고양이')" />
+        <h1>{{ tr('잊지 말고, 오늘도 했냐옹') }}</h1>
         <form class="auth-form" :aria-busy="busy" @submit.prevent="submit">
-          <h2>{{ register ? '회원가입' : '로그인' }}</h2>
+          <h2>{{ register ? tr('회원가입') : tr('로그인') }}</h2>
           <fieldset :disabled="busy" class="auth-fields">
             <label
-              >이메일<input
+              >{{ tr('이메일')
+              }}<input
                 v-model="email"
                 type="email"
                 required
                 maxlength="254"
                 autocomplete="email"
-                placeholder="이메일 주소를 입력해주세요"
+                :placeholder="tr('이메일 주소를 입력해주세요')"
             /></label>
             <label
-              >비밀번호<input
+              >{{ tr('비밀번호')
+              }}<input
                 v-model="password"
                 type="password"
                 required
                 :minlength="register ? 8 : 1"
                 maxlength="200"
                 :autocomplete="register ? 'new-password' : 'current-password'"
-                :placeholder="register ? '8자 이상 입력해주세요' : '비밀번호를 입력해주세요'"
+                :placeholder="
+                  register ? tr('8자 이상 입력해주세요') : tr('비밀번호를 입력해주세요')
+                "
             /></label>
             <label v-if="register"
-              >닉네임 (선택)<input
+              >{{ tr('닉네임 (선택)')
+              }}<input
                 v-model="nickname"
                 minlength="2"
                 maxlength="30"
-                placeholder="비워두면 귀여운 닉네임을 만들어드려요"
+                :placeholder="tr('비워두면 귀여운 닉네임을 만들어드려요')"
                 autocomplete="nickname"
             /></label>
           </fieldset>
-          <p v-if="error" role="alert" class="form-error">{{ error }}</p>
+          <p v-if="error" role="alert" class="form-error">{{ tr(error) }}</p>
           <button class="login-button" :disabled="busy" :aria-busy="busy">
             {{
               busy
                 ? register
-                  ? '가입 중…'
-                  : '로그인 중…'
+                  ? tr('가입 중…')
+                  : tr('로그인 중…')
                 : register
-                  ? '가입하고 시작하기'
-                  : '로그인'
+                  ? tr('가입하고 시작하기')
+                  : tr('로그인')
             }}
           </button>
           <div v-if="busy" class="request-progress" aria-hidden="true"><span /></div>
@@ -100,8 +107,8 @@ async function submit() {
             {{
               busy
                 ? register
-                  ? '계정을 만들고 있어요. 잠시만 기다려주세요.'
-                  : '로그인 정보를 확인하고 있어요. 잠시만 기다려주세요.'
+                  ? tr('계정을 만들고 있어요. 잠시만 기다려주세요.')
+                  : tr('로그인 정보를 확인하고 있어요. 잠시만 기다려주세요.')
                 : ''
             }}
           </p>
@@ -114,15 +121,15 @@ async function submit() {
               error = '';
             "
           >
-            <span>{{ register ? '이미 가입된 계정이 있나요?' : '처음이신가요?' }}</span
-            ><strong>{{ register ? '로그인' : '회원가입' }}</strong>
+            <span>{{ register ? tr('이미 가입된 계정이 있나요?') : tr('처음이신가요?') }}</span
+            ><strong>{{ register ? tr('로그인') : tr('회원가입') }}</strong>
           </button>
           <NuxtLink
             class="login-intro-link"
             to="/"
             :aria-disabled="busy"
             @click="busy && $event.preventDefault()"
-            ><span aria-hidden="true">←</span><span>소개페이지 보기</span></NuxtLink
+            ><span aria-hidden="true">←</span><span>{{ tr('소개페이지 보기') }}</span></NuxtLink
           >
         </form>
       </div>

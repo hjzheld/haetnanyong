@@ -1,16 +1,16 @@
 /* Smooth surfaces and spatial lighting; pixel rendering belongs to the mascot. */
 body {
   margin: 0;
-  background: #f7f6f9;
+  background: var(--color-background-page);
 }
 #pdesk,
 #pdesk:not(.is-logged-out) {
-  --ink: #343347;
-  --muted: #777486;
-  --edge: #e9e6ef;
-  --accent: #8e8aa3;
-  --wash: #f1eff6;
-  background: #f7f6f9;
+  --ink: var(--color-text-primary);
+  --muted: var(--color-text-muted);
+  --edge: var(--color-border);
+  --accent: var(--color-accent-blue-590);
+  --wash: var(--color-surface-neutral-951);
+  background: var(--color-background-page);
   color: var(--ink);
   border: 0;
   border-radius: 0;
@@ -20,32 +20,32 @@ body {
   min-height: 100vh;
 }
 #pdesk:not(.is-logged-out) header {
-  background: #ffffffed;
-  border-bottom: 1px solid #ebe8f1;
+  background: var(--color-surface-neutral-1000-a93);
+  border-bottom: 1px solid var(--color-border-neutral-927);
   padding: 12px 38px;
   gap: 32px;
-  box-shadow: 0 4px 24px #38304e05;
+  box-shadow: 0 4px 24px var(--color-shadow-lavender-247-a2);
   backdrop-filter: blur(20px);
 }
 #pdesk:not(.is-logged-out) .logo {
-  color: #444052;
+  color: var(--color-text-lavender-286);
   font-weight: 750;
   letter-spacing: -1px;
 }
 #pdesk:not(.is-logged-out) .logo-mark {
-  background: #eeedf4;
-  border: 1px solid #e4e0ed;
+  background: var(--color-surface-neutral-943);
+  border: 1px solid var(--color-border-lavender-904);
   border-radius: 14px;
   box-shadow:
-    inset 0 2px 0 #fff,
-    0 4px 9px #4540520a;
+    inset 0 2px 0 var(--color-shadow-highlight),
+    0 4px 9px var(--color-shadow-lavender-286-a4);
   overflow: visible;
 }
 #pdesk:not(.is-logged-out) .logo-mark img {
   width: 29px;
   height: 29px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 2px #45365018);
+  filter: drop-shadow(0 2px 2px var(--color-shadow-lavender-263-a9));
 }
 #pdesk img {
   image-rendering: pixelated;
@@ -56,23 +56,23 @@ body {
 #pdesk:not(.is-logged-out) nav button {
   padding: 10px 18px;
   border-radius: 12px;
-  color: #858090;
+  color: var(--color-text-lavender-533);
   font-weight: 600;
   transition:
     background 0.2s,
     color 0.2s;
 }
 #pdesk:not(.is-logged-out) nav button[aria-pressed='true'] {
-  color: #615c7b;
-  background: #eeecf5;
-  border: 1px solid #e6e2f0;
-  box-shadow: inset 0 1px 0 #fff;
+  color: var(--color-text-blue-422);
+  background: var(--color-surface-neutral-943-2);
+  border: 1px solid var(--color-border-lavender-914);
+  box-shadow: inset 0 1px 0 var(--color-shadow-highlight);
 }
 #pdesk:not(.is-logged-out) .avatar {
   border: 0;
   border-radius: 12px;
-  background: #f0e3e8;
-  color: #9b6c7d;
+  background: var(--color-surface-lavender-916);
+  color: var(--color-text-lavender-516);
 }
 #pdesk:not(.is-logged-out) main {
   background: transparent;
@@ -83,7 +83,7 @@ body {
 #pdesk:not(.is-logged-out) h2,
 #pdesk:not(.is-logged-out) h3 {
   font-family: inherit;
-  color: #39354a;
+  color: var(--color-text-lavender-249);
   letter-spacing: -0.8px;
   font-weight: 700;
 }
@@ -94,11 +94,11 @@ body {
   font-size: 19px;
 }
 #pdesk:not(.is-logged-out) .small {
-  color: #7a7586;
+  color: var(--color-text-lavender-492);
   line-height: 1.75;
 }
 #pdesk:not(.is-logged-out) .eyebrow {
-  color: #a09aad;
+  color: var(--color-text-lavender-641);
   font-size: 10px;
   font-weight: 650;
   letter-spacing: 2px;
@@ -108,12 +108,17 @@ body {
   isolation: isolate;
   min-height: 200px;
   padding: 32px 38px;
-  border: 1px solid #fff;
+  border: 1px solid var(--color-border-neutral-1000);
   border-radius: 24px;
-  background: linear-gradient(115deg, #f1eaf0, #eeeef7 65%, #e9eff5);
+  background: linear-gradient(
+    115deg,
+    var(--color-surface-neutral-931),
+    var(--color-surface-neutral-951-2) 65%,
+    var(--color-surface-blue-937)
+  );
   box-shadow:
-    inset 0 2px 0 #fff9,
-    0 12px 30px #6559730b;
+    inset 0 2px 0 var(--color-shadow-neutral-1000-a60),
+    0 12px 30px var(--color-shadow-lavender-400-a4);
   overflow: hidden;
 }
 #pdesk:not(.is-logged-out) .welcome h2 {
@@ -128,10 +133,10 @@ body {
   width: 230px;
   height: 84px;
   border-radius: 50%;
-  background: linear-gradient(#fff, #dedce9);
+  background: linear-gradient(var(--color-surface), var(--color-surface-blue-888));
   box-shadow:
-    0 8px 0 #d6d3e2,
-    0 20px 30px #7d719b21;
+    0 8px 0 var(--color-shadow-lavender-857-2),
+    0 20px 30px var(--color-shadow-lavender-525-a13);
   transform: rotate(-8deg);
   z-index: -1;
 }
@@ -142,11 +147,15 @@ body {
   top: 24px;
   width: 54px;
   height: 54px;
-  background: linear-gradient(135deg, #fff9, #d6d1e6);
+  background: linear-gradient(
+    135deg,
+    var(--color-surface-neutral-1000-a60),
+    var(--color-surface-lavender-861)
+  );
   border-radius: 16px;
   box-shadow:
-    inset 0 2px 0 #fff8,
-    0 10px 24px #8e8aa322;
+    inset 0 2px 0 var(--color-shadow-neutral-1000-a53),
+    0 10px 24px var(--color-shadow-blue-590-a13);
   transform: rotate(16deg);
   z-index: -1;
 }
@@ -155,7 +164,7 @@ body {
   height: 150px;
   margin-right: 36px;
   object-fit: contain;
-  filter: drop-shadow(0 13px 5px #65597323);
+  filter: drop-shadow(0 13px 5px var(--color-shadow-lavender-400-a14));
   transform: translateY(-6px);
 }
 #pdesk:not(.is-logged-out) .metric-row {
@@ -164,30 +173,30 @@ body {
   gap: 16px;
 }
 #pdesk:not(.is-logged-out) .metric {
-  border: 1px solid #eae7ef;
-  background: #fff;
+  border: 1px solid var(--color-border-neutral-922);
+  background: var(--color-surface);
   border-radius: 18px;
   padding: 20px 24px;
   box-shadow:
-    0 4px 0 #eeecf2,
-    0 10px 22px #53456005;
+    0 4px 0 var(--color-shadow-neutral-937),
+    0 10px 22px var(--color-shadow-lavender-324-a2);
 }
 #pdesk:not(.is-logged-out) .metric b {
   font-size: 30px;
-  color: #676079;
+  color: var(--color-text-lavender-425);
   font-weight: 650;
   margin-top: 8px;
   font-variant-numeric: tabular-nums;
 }
 #pdesk:not(.is-logged-out) .panel,
 #pdesk:not(.is-logged-out) .project {
-  border: 1px solid #eae7ef !important;
+  border: 1px solid var(--color-border-neutral-922) !important;
   border-radius: 20px;
-  background: linear-gradient(160deg, #fff, #fdfcfe);
+  background: linear-gradient(160deg, var(--color-surface), var(--color-surface-neutral-992));
   box-shadow:
-    inset 0 1px 0 #fff,
-    0 5px 0 #efedf3,
-    0 12px 28px #45365007;
+    inset 0 1px 0 var(--color-shadow-highlight),
+    0 5px 0 var(--color-shadow-neutral-941),
+    0 12px 28px var(--color-shadow-lavender-263-a3-2);
 }
 #pdesk:not(.is-logged-out) .panel {
   padding: 26px;
@@ -199,158 +208,164 @@ body {
     box-shadow 0.2s;
 }
 #pdesk:not(.is-logged-out) .project:hover {
-  background: #fff;
-  border-color: #d8d2e4 !important;
+  background: var(--color-surface);
+  border-color: var(--color-border-lavender-859) !important;
   transform: translateY(-4px);
   box-shadow:
-    0 5px 0 #eae6f0,
-    0 18px 32px #4536500e;
+    0 5px 0 var(--color-shadow-neutral-922),
+    0 18px 32px var(--color-shadow-lavender-263-a5-2);
 }
 #pdesk:not(.is-logged-out) .project-foot,
 #pdesk:not(.is-logged-out) .list-row {
-  border-color: #efedf3;
+  border-color: var(--color-border-neutral-941);
 }
 #pdesk:not(.is-logged-out) .dot {
   border: 0;
   border-radius: 5px;
   width: 11px;
   height: 11px;
-  box-shadow: inset 0 1px 0 #fff6;
+  box-shadow: inset 0 1px 0 var(--color-shadow-neutral-1000-a40);
 }
 #pdesk:not(.is-logged-out) .solid {
-  background: linear-gradient(#9690ac, #817b99);
-  border: 1px solid #807893;
+  background: linear-gradient(var(--color-surface-lavender-620), var(--color-surface-lavender-541));
+  border: 1px solid var(--color-border-lavender-524);
   border-radius: 12px;
   font-weight: 600;
   box-shadow:
-    inset 0 1px 0 #ffffff50,
-    0 3px 0 #6d6681,
-    0 6px 12px #7367881a;
+    inset 0 1px 0 var(--color-shadow-neutral-1000-a31),
+    0 3px 0 var(--color-shadow-lavender-453),
+    0 6px 12px var(--color-shadow-lavender-469-a10);
   transition: transform 0.15s;
 }
 #pdesk:not(.is-logged-out) .border-btn,
 #pdesk .profile .logout-button {
-  background: #fff;
-  border: 1px solid #e4e0ea;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-neutral-898-2);
   border-radius: 11px;
   font-weight: 500;
-  box-shadow: 0 2px 0 #f0edf4;
-  color: #746c82;
+  box-shadow: 0 2px 0 var(--color-shadow-neutral-943);
+  color: var(--color-text-lavender-467-2);
 }
 #pdesk:not(.is-logged-out) .border-btn:hover {
-  background: #f7f5fa;
-  box-shadow: 0 2px 0 #eae5f0;
+  background: var(--color-surface-neutral-971-3);
+  box-shadow: 0 2px 0 var(--color-shadow-neutral-920);
   transform: translateY(-1px);
 }
 #pdesk:not(.is-logged-out) .solid:hover {
   box-shadow:
-    inset 0 1px 0 #ffffff50,
-    0 3px 0 #6d6681,
-    0 8px 16px #73678820;
+    inset 0 1px 0 var(--color-shadow-neutral-1000-a31),
+    0 3px 0 var(--color-shadow-lavender-453),
+    0 8px 16px var(--color-shadow-lavender-469-a13);
   transform: translateY(-1px);
 }
 #pdesk:not(.is-logged-out) .solid:active {
   transform: translateY(2px);
-  box-shadow: inset 0 1px 0 #fff5;
+  box-shadow: inset 0 1px 0 var(--color-shadow-neutral-1000-a33);
 }
 #pdesk:not(.is-logged-out) .badge {
   border: 0;
   border-radius: 7px;
-  background: #edf1e9;
-  color: #78886a;
+  background: var(--color-surface-neutral-929);
+  color: var(--color-text-sage-475);
   font-weight: 550;
   padding: 4px 8px;
   font-size: 11px;
 }
 #pdesk:not(.is-logged-out) .badge.rose {
-  background: #f7eaf0;
-  color: #ab798a;
+  background: var(--color-surface-lavender-943);
+  color: var(--color-text-lavender-573);
   border: 0;
 }
 #pdesk:not(.is-logged-out) .badge.lavender {
-  background: #f0edf7;
-  color: #8b80a5;
+  background: var(--color-surface-neutral-949);
+  color: var(--color-text-lavender-575);
   border: 0;
 }
 #pdesk:not(.is-logged-out) .bar {
   border: 0;
   border-radius: 8px;
-  background: #f0edf4;
+  background: var(--color-surface-neutral-943-3);
   height: 6px;
-  box-shadow: inset 0 1px 2px #45365009;
+  box-shadow: inset 0 1px 2px var(--color-shadow-lavender-263-a4);
 }
 #pdesk:not(.is-logged-out) .bar span {
-  background: linear-gradient(90deg, #bab1cf, #8e8aa3) !important;
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-lavender-753),
+    var(--color-surface-blue-590)
+  ) !important;
   border-radius: 8px;
 }
 #pdesk:not(.is-logged-out) .subnav {
-  border-color: #e7e3ed;
+  border-color: var(--color-border-neutral-910);
 }
 #pdesk:not(.is-logged-out) .subnav button[aria-pressed='true'] {
-  color: #817593;
-  border-color: #a99cbc;
+  color: var(--color-text-lavender-518);
+  border-color: var(--color-border-lavender-675);
 }
 #pdesk:not(.is-logged-out) .calendar {
-  border-color: #e7e3ed;
+  border-color: var(--color-border-neutral-910);
   border-radius: 16px;
   overflow: hidden;
-  background: white;
-  box-shadow: 0 8px 24px #45365005;
+  background: var(--color-surface);
+  box-shadow: 0 8px 24px var(--color-shadow-lavender-263-a2);
 }
 #pdesk:not(.is-logged-out) .day,
 #pdesk:not(.is-logged-out) .weekday {
-  border-color: #eeebf3;
+  border-color: var(--color-border-neutral-937);
 }
 #pdesk:not(.is-logged-out) .weekday,
 #pdesk:not(.is-logged-out) .day.blank {
-  background: #f8f7fb;
-  color: #9a92a6;
+  background: var(--color-surface-neutral-976-2);
+  color: var(--color-text-lavender-612);
 }
 #pdesk:not(.is-logged-out) .day.today {
-  background: #f8f0f5;
+  background: var(--color-surface-neutral-957-2);
 }
 #pdesk:not(.is-logged-out) .calendar-item {
   border: 0;
   border-radius: 5px;
-  background: #edf1e9;
-  color: #6a7d5f;
+  background: var(--color-surface-neutral-929);
+  color: var(--color-text-sage-431);
   font-weight: 500;
 }
 #pdesk:not(.is-logged-out) .calendar-item.event {
   border: 0;
-  background: #f0edf7;
-  color: #89799f;
+  background: var(--color-surface-neutral-949);
+  color: var(--color-text-lavender-549);
 }
 #pdesk:not(.is-logged-out) dialog {
-  border: 1px solid #eee9f4;
+  border: 1px solid var(--color-border-neutral-935);
   border-radius: 24px;
-  box-shadow: 0 24px 100px #39314a30;
+  box-shadow: 0 24px 100px var(--color-shadow-lavender-241-a19);
 }
 #pdesk:not(.is-logged-out) dialog::backdrop {
-  background: #38304440;
+  background: var(--color-surface-lavender-227-a25);
   backdrop-filter: blur(5px);
 }
 #pdesk:not(.is-logged-out) dialog input,
 #pdesk:not(.is-logged-out) dialog textarea,
 #pdesk:not(.is-logged-out) dialog select {
-  border: 1px solid #e4dfeb;
+  border: 1px solid var(--color-border-lavender-898);
   border-radius: 10px;
-  background: #fcfbfd;
-  box-shadow: inset 0 2px 3px #45365004;
+  background: var(--color-surface-neutral-988-2);
+  box-shadow: inset 0 2px 3px var(--color-shadow-lavender-263-a2-2);
 }
 #pdesk:not(.is-logged-out) footer,
 #pdesk .prototype-note {
-  border-color: #e7e3ed;
-  color: #a29aaa;
+  border-color: var(--color-border-neutral-910);
+  color: var(--color-text-lavender-635);
 }
 #pdesk th {
-  background: #f8f7fb;
-  color: #94889e;
+  background: var(--color-surface-neutral-976-2);
+  color: var(--color-text-lavender-576-2);
 }
 #pdesk .login-screen,
 #pdesk .login-card {
-  background: radial-gradient(ellipse at 50% 30%, #f0e9f3, transparent 65%), #f8f7fb;
-  color: #494254;
+  background:
+    radial-gradient(ellipse at 50% 30%, var(--color-surface-neutral-933-2), transparent 65%),
+    var(--color-surface-neutral-976-2);
+  color: var(--color-text-lavender-294);
 }
 #pdesk .login-card {
   position: relative;
@@ -359,28 +374,28 @@ body {
 #pdesk .login-card .login-cat {
   width: 180px;
   height: 180px;
-  filter: drop-shadow(0 18px 8px #75658326);
+  filter: drop-shadow(0 18px 8px var(--color-shadow-lavender-455-a15));
   margin-bottom: 30px;
 }
 #pdesk .login-card h1 {
-  color: #494254;
+  color: var(--color-text-lavender-294);
   font:
     700 36px/1.5 system-ui,
     sans-serif;
   letter-spacing: -1.5px;
 }
 #pdesk .login-card .eyebrow {
-  color: #a89cb7;
+  color: var(--color-text-lavender-665);
 }
 #pdesk .login-card:after {
   content: '프로젝트 · 할 일 · 캘린더 · 리마인더';
-  background: linear-gradient(140deg, #fff, #f2eef7);
-  color: #8d819c;
-  border: 1px solid #fff;
+  background: linear-gradient(140deg, var(--color-surface), var(--color-surface-neutral-951-3));
+  color: var(--color-text-lavender-559);
+  border: 1px solid var(--color-border-neutral-1000);
   border-radius: 24px;
   box-shadow:
-    0 6px 0 #e8e1ef,
-    0 20px 45px #75658316;
+    0 6px 0 var(--color-shadow-lavender-910),
+    0 20px 45px var(--color-shadow-lavender-455-a9);
   transform: perspective(800px) rotateX(12deg);
   width: min(640px, 85vw);
   font:
@@ -389,14 +404,14 @@ body {
   word-spacing: 10px;
 }
 #pdesk .login-card .login-button {
-  background: linear-gradient(#a199b3, #8e849f);
-  color: #fff;
-  border: 1px solid #9185a1;
+  background: linear-gradient(var(--color-surface-lavender-651), var(--color-surface-lavender-571));
+  color: var(--color-text-on-accent);
+  border: 1px solid var(--color-border-lavender-576);
   border-radius: 14px;
   box-shadow:
-    inset 0 1px 0 #fff5,
-    0 4px 0 #776c89,
-    0 12px 24px #75658321;
+    inset 0 1px 0 var(--color-shadow-neutral-1000-a33),
+    0 4px 0 var(--color-shadow-lavender-480),
+    0 12px 24px var(--color-shadow-lavender-455-a13);
   font:
     600 14px/1.8 system-ui,
     sans-serif;
@@ -404,7 +419,7 @@ body {
   padding: 12px 28px;
 }
 #pdesk .login-card .login-note {
-  color: #a79bad !important;
+  color: var(--color-text-lavender-643) !important;
 }
 @media (max-width: 900px) {
   #pdesk:not(.is-logged-out) main {
@@ -452,7 +467,7 @@ body {
   }
   #pdesk:not(.is-logged-out) .metric {
     padding: 16px;
-    border: 1px solid #eae7ef;
+    border: 1px solid var(--color-border-neutral-922);
   }
   #pdesk:not(.is-logged-out) .panel {
     padding: 20px;

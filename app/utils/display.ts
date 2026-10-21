@@ -16,13 +16,17 @@ export const labels: Record<string, string> = {
   ELAPSED: '예약 시각 경과',
 };
 const koreaDateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' });
-const timeFormatter = new Intl.DateTimeFormat('ko-KR', {
+const timeOptions: Intl.DateTimeFormatOptions = {
   timeZone: 'Asia/Seoul',
   month: 'long',
   day: 'numeric',
   hour: '2-digit',
   minute: '2-digit',
-});
+};
+const timeFormatters = {
+  ko: new Intl.DateTimeFormat('ko-KR', timeOptions),
+  en: new Intl.DateTimeFormat('en-US', timeOptions),
+};
 export const koreaDate = (value = new Date()) => koreaDateFormatter.format(value);
 export const datePart = (value?: string | null) =>
   !value ? '' : /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : koreaDate(new Date(value));
@@ -33,8 +37,8 @@ export const localTime = (value?: string | null) =>
         .slice(0, 16)
         .replace(' ', 'T')
     : '';
-export const showTime = (value?: string | null) =>
-  value ? timeFormatter.format(new Date(value)) : '';
+export const showTime = (value?: string | null, locale: 'ko' | 'en' = 'ko') =>
+  value ? timeFormatters[locale].format(new Date(value)) : '';
 export type ErrorContext =
   | 'default'
   | 'load'

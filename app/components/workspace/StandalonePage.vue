@@ -1,6 +1,8 @@
 ﻿<script setup lang="ts">
+const { tr, formatTime } = useLocale();
+
 import type { Task, ScheduleEvent, Reminder } from '~/types/workspace';
-import { datePart, showTime, labels, errorText, reminderErrorText } from '~/utils/display';
+import { datePart, labels, errorText, reminderErrorText } from '~/utils/display';
 const props = defineProps<{ mode: 'create' | 'detail' | 'edit' }>();
 const route = useRoute(),
   { request } = useApi();
@@ -12,9 +14,11 @@ const kind = resource === 'tasks' ? 'task' : 'event',
   id = String(route.params.id || '');
 if (props.mode !== 'create' && !/^[1-9]\d*$/.test(id))
   throw createError({ statusCode: 404, statusMessage: 'Page not found' });
-useHead({
-  title: `${label} ${props.mode === 'create' ? '등록' : props.mode === 'edit' ? '수정' : '상세'} · 했냐옹`,
-});
+useHead(() => ({
+  title: tr(
+    `${label} ${props.mode === 'create' ? '등록' : props.mode === 'edit' ? '수정' : '상세'} · 했냐옹`,
+  ),
+}));
 const {
   data: item,
   error,
@@ -156,27 +160,29 @@ async function openReminder() {
 }
 </script>
 <template>
-  <p v-if="busy" class="operation-status" role="status">변경 사항을 처리하고 있어요…</p>
-  <NuxtLink to="/items" class="border-btn">← 일정·태스크 목록</NuxtLink>
+  <p v-if="busy" class="operation-status" role="status">{{ tr('변경 사항을 처리하고 있어요…') }}</p>
+  <NuxtLink to="/items" class="border-btn">{{ tr('← 일정·태스크 목록') }}</NuxtLink>
   <CommonPageHeading
     :title="
       mode === 'create'
-        ? label + ' 등록'
+        ? tr(label) + ' ' + tr('등록')
         : mode === 'edit'
-          ? label + ' 수정'
-          : item?.title || label + ' 상세'
+          ? tr(label) + ' ' + tr('수정')
+          : item?.title || tr(label) + ' ' + tr('상세')
     "
-    description="프로젝트 없는 나의 일정과 할 일이에요."
+    :description="tr('프로젝트 없는 나의 일정과 할 일이에요.')"
   >
     <template v-if="mode === 'detail' && item"
-      ><NuxtLink class="border-btn" :to="`/items/${resource}/${id}/edit`">수정</NuxtLink
-      ><button class="border-btn" :disabled="busy" @click="remove">삭제</button></template
+      ><NuxtLink class="border-btn" :to="`/items/${resource}/${id}/edit`">{{ tr('수정') }}</NuxtLink
+      ><button class="border-btn" :disabled="busy" @click="remove">
+        {{ tr('삭제') }}
+      </button></template
     >
   </CommonPageHeading>
-  <p v-if="loading" role="status">불러오는 중…</p>
+  <p v-if="loading" role="status">{{ tr('불러오는 중…') }}</p>
   <section v-else-if="error" class="panel" role="alert">
-    <p>{{ errorText(error, 'load') }}</p>
-    <button class="border-btn" @click="refresh()">다시 시도</button>
+    <p>{{ tr(errorText(error, 'load')) }}</p>
+    <button class="border-btn" @click="refresh()">{{ tr('다시 시도') }}</button>
   </section>
   <WorkspaceItemEditor
     v-else-if="mode === 'create' || (mode === 'edit' && item)"
@@ -194,53 +200,55 @@ async function openReminder() {
     :style="{ '--item-color': item.color }"
   >
     <div class="heading">
-      <h2>{{ label }} 정보</h2>
+      <h2>{{ tr(label) }} {{ tr('정보') }}</h2>
       <span
         class="item-color-sample"
         :style="{ background: item.color }"
-        :aria-label="'색상 ' + item.color"
+        :aria-label="tr('색상 ') + item.color"
       />
     </div>
-    <p class="item-description">{{ item.description || '등록된 설명이 없어요.' }}</p>
+    <p class="item-description">{{ item.description || tr('등록된 설명이 없어요.') }}</p>
     <dl v-if="task">
-      <dt>기간</dt>
+      <dt>{{ tr('기간') }}</dt>
       <dd>{{ datePart(task.startDate) }} ~ {{ datePart(task.dueDate) }}</dd>
-      <dt>우선순위</dt>
-      <dd>{{ labels[task.priority] }}</dd>
-      <dt>상태</dt>
-      <dd>{{ labels[task.status] }}</dd>
+      <dt>{{ tr('우선순위') }}</dt>
+      <dd>{{ tr(labels[task.priority]) }}</dd>
+      <dt>{{ tr('상태') }}</dt>
+      <dd>{{ tr(labels[task.status]) }}</dd>
     </dl>
     <button v-if="task" class="solid" :disabled="busy" @click="toggleTask">
-      {{ task.status === 'DONE' ? '완료 취소' : '완료하기' }}
+      {{ task.status === 'DONE' ? tr('완료 취소') : tr('완료하기') }}
     </button>
     <template v-if="schedule">
       <dl>
-        <dt>종류</dt>
-        <dd>{{ schedule.allDay ? '종일 일정' : '시간 일정 · 한국 표준시(KST)' }}</dd>
-        <dt>시작</dt>
-        <dd>{{ schedule.allDay ? datePart(schedule.startDate) : showTime(schedule.startsAt) }}</dd>
-        <dt>종료</dt>
+        <dt>{{ tr('종류') }}</dt>
+        <dd>{{ schedule.allDay ? tr('종일 일정') : tr('시간 일정 · 한국 표준시(KST)') }}</dd>
+        <dt>{{ tr('시작') }}</dt>
+        <dd>
+          {{ schedule.allDay ? datePart(schedule.startDate) : formatTime(schedule.startsAt) }}
+        </dd>
+        <dt>{{ tr('종료') }}</dt>
         <dd>
           {{
             schedule.allDay
-              ? datePart(schedule.endDate) + ' (종료일 제외)'
-              : showTime(schedule.endsAt)
+              ? datePart(schedule.endDate) + tr(' (종료일 제외)')
+              : formatTime(schedule.endsAt)
           }}
         </dd>
       </dl>
       <p v-if="reminderStatus === 'pending' || reminderStatus === 'idle'" role="status">
-        알림 정보를 불러오는 중…
+        {{ tr('알림 정보를 불러오는 중…') }}
       </p>
       <p v-else-if="reminderError" role="alert">
-        {{ errorText(reminderError, 'reminder') }}
-        <button class="border-btn" @click="refreshReminders()">다시 시도</button>
+        {{ tr(errorText(reminderError, 'reminder')) }}
+        <button class="border-btn" @click="refreshReminders()">{{ tr('다시 시도') }}</button>
       </p>
       <div v-else-if="reminder" class="heading">
         <div>
-          <strong>알림 {{ labels[reminder.status] || reminder.status }}</strong>
-          <p class="small">{{ showTime(reminder.remindAt) }}</p>
+          <strong>{{ tr('알림') }} {{ tr(labels[reminder.status]) || reminder.status }}</strong>
+          <p class="small">{{ formatTime(reminder.remindAt) }}</p>
           <p v-if="reminder.errorMessage" class="form-error">
-            {{ reminderErrorText(reminder.errorMessage) }}
+            {{ tr(reminderErrorText(reminder.errorMessage)) }}
           </p>
         </div>
         <button
@@ -251,15 +259,15 @@ async function openReminder() {
           :disabled="busy"
           @click="cancelReminder"
         >
-          알림 취소
+          {{ tr('알림 취소') }}
         </button>
       </div>
       <button v-else class="border-btn" :disabled="checkingSlack" @click="openReminder">
-        {{ checkingSlack ? '연결 확인 중…' : 'Slack 알림 설정' }}
+        {{ checkingSlack ? tr('연결 확인 중…') : tr('Slack 알림 설정') }}
       </button>
     </template>
   </section>
-  <p v-if="actionError" role="alert" class="form-error">{{ actionError }}</p>
+  <p v-if="actionError" role="alert" class="form-error">{{ tr(actionError) }}</p>
   <WorkspaceItemEditor
     v-if="showReminder && editorItem"
     kind="reminder"
@@ -269,13 +277,15 @@ async function openReminder() {
   />
   <CommonConfirmDialog
     :open="!!confirmAction"
-    :title="confirmAction === 'delete' ? `${label}을 삭제할까요?` : '리마인더를 취소할까요?'"
+    :title="
+      confirmAction === 'delete' ? tr(`${label}을 삭제할까요?`) : tr('리마인더를 취소할까요?')
+    "
     :description="
       confirmAction === 'delete'
-        ? '삭제한 내용은 되돌릴 수 없어요. 일정에 연결된 알림도 함께 취소됩니다.'
-        : '예약된 Slack 알림을 취소합니다.'
+        ? tr('삭제한 내용은 되돌릴 수 없어요. 일정에 연결된 알림도 함께 취소됩니다.')
+        : tr('예약된 Slack 알림을 취소합니다.')
     "
-    confirm-label="계속하기"
+    :confirm-label="tr('계속하기')"
     :busy="busy"
     @cancel="confirmAction = undefined"
     @confirm="confirmAction === 'delete' ? confirmRemove() : confirmReminderCancel()"

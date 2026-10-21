@@ -10,6 +10,13 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
+      script: [
+        {
+          key: 'theme-init',
+          tagPriority: 'critical',
+          innerHTML: `(function(){var m=document.cookie.match(/(?:^|; )nyang-theme=([^;]*)/),p='system';try{p=m?decodeURIComponent(m[1]):'system'}catch(e){}document.documentElement.dataset.theme=p==='dark'||(p!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'})()`,
+        },
+      ],
       link: [
         { rel: 'icon', type: 'image/png', href: '/images/favicon.png' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -23,6 +30,7 @@ export default defineNuxtConfig({
   },
   // Nuxt 4의 `~`는 app/을 가리키므로 프로젝트 루트 assets는 `~~`를 사용합니다.
   css: [
+    '~~/assets/css/variables.css',
     '~~/assets/css/frontend.css',
     '~~/assets/css/workspace.css',
     '~~/assets/css/depth.css',
@@ -33,6 +41,7 @@ export default defineNuxtConfig({
     '~~/assets/css/feedback.css',
     '~~/assets/css/layout-fixes.css',
     '~~/assets/css/mobile-header.css',
+    '~~/assets/css/theme.css',
   ],
   typescript: {
     strict: true,
@@ -44,7 +53,6 @@ export default defineNuxtConfig({
     sessionSecret: process.env.SESSION_SECRET || '',
     slackBotToken: process.env.SLACK_BOT_TOKEN || '',
     slackClientId: process.env.SLACK_CLIENT_ID || '',
-    slackClientSecret: process.env.SLACK_CLIENT_SECRET || '',
     slackRedirectUri: process.env.SLACK_REDIRECT_URI || '',
     slackTokenEncryptionKey: process.env.SLACK_TOKEN_ENCRYPTION_KEY || '',
     slackDmChannelId: process.env.SLACK_DM_CHANNEL_ID || '',

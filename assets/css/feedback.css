@@ -71,9 +71,9 @@ body,
 #pdesk .auth-form .form-error {
   margin: 0;
   padding: 11px 13px;
-  border: 1px solid #f0dce3;
+  border: 1px solid var(--color-border-lavender-902-2);
   border-radius: 10px;
-  background: #fff5f8;
+  background: var(--color-surface-neutral-980-2);
   line-height: 1.7;
 }
 #pdesk .login-card .auth-form :is(.switch-auth, .login-intro-link) {
@@ -90,7 +90,7 @@ body,
   border: 1px solid transparent;
   border-radius: 10px;
   background: transparent;
-  color: #8b8199;
+  color: var(--color-text-lavender-553-2);
   font-size: 13px;
   line-height: 1.6;
   text-align: center;
@@ -107,22 +107,22 @@ body,
   align-items: center;
   justify-content: center;
   padding: 9px 12px;
-  border: 1px solid #e9e2f0;
-  background: #f4f0f8;
-  color: #6f607f;
+  border: 1px solid var(--color-border-lavender-914-2);
+  background: var(--color-surface-neutral-957-3);
+  color: var(--color-text-lavender-437);
   box-shadow: none;
   transform: none;
 }
 #pdesk .login-card .auth-form :is(.switch-auth, .login-intro-link):focus-visible {
-  outline: 2px solid #c8bfd8;
+  outline: 2px solid var(--color-border-lavender-798);
   outline-offset: 2px;
 }
 #pdesk .switch-auth strong {
-  color: #7b698d;
+  color: var(--color-text-lavender-482);
   font-weight: 700;
 }
 #pdesk .login-card .auth-form .login-intro-link {
-  color: #9b91a6;
+  color: var(--color-text-lavender-610);
   margin-top: -8px;
 }
 #pdesk .login-card .auth-form .login-intro-link[aria-disabled='true'] {
@@ -131,7 +131,7 @@ body,
 }
 #pdesk .auth-status {
   margin: 0;
-  color: #8b7c9d;
+  color: var(--color-text-lavender-551);
   font-size: 12px;
   line-height: 1.7;
   text-align: center;
@@ -143,14 +143,18 @@ body,
   height: 3px;
   border-radius: 4px;
   overflow: hidden;
-  background: #eae3f0;
+  background: var(--color-surface-lavender-916-2);
 }
 #pdesk .request-progress span {
   display: block;
   height: 100%;
   width: 38%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #d2c6de, #9c89b2);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-lavender-824),
+    var(--color-surface-lavender-618)
+  );
   animation: request-progress 1.2s ease-in-out infinite;
 }
 #pdesk .operation-status {
@@ -164,11 +168,11 @@ body,
   transform: translateX(-50%);
   max-width: calc(100vw - 32px);
   padding: 12px 18px;
-  border: 1px solid #e7dfef;
+  border: 1px solid var(--color-border-lavender-906);
   border-radius: 14px;
-  background: #fff;
-  color: #817090;
-  box-shadow: 0 8px 28px #5345601c;
+  background: var(--color-surface);
+  color: var(--color-text-lavender-502);
+  box-shadow: 0 8px 28px var(--color-shadow-lavender-324-a11);
   font-size: 13px;
 }
 #pdesk .operation-status::before {
@@ -176,8 +180,8 @@ body,
   width: 15px;
   height: 15px;
   flex: none;
-  border: 2px solid #d9cee4;
-  border-top-color: #8d7aa3;
+  border: 2px solid var(--color-border-lavender-851);
+  border-top-color: var(--color-border-lavender-559);
   border-radius: 50%;
   animation: request-spin 0.75s linear infinite;
 }
@@ -216,9 +220,9 @@ body,
   margin: 0;
   padding: 10px 16px;
   border-radius: 999px;
-  background: #3d3748;
-  color: #fff;
-  box-shadow: 0 10px 28px rgba(30, 25, 38, 0.2);
+  background: var(--color-surface-lavender-249);
+  color: var(--color-text-on-accent);
+  box-shadow: 0 10px 28px var(--color-shadow-lavender-124-a20);
   font-weight: 700;
 }
 .confirm-dialog {
@@ -226,12 +230,12 @@ body,
   padding: 28px;
   border: 0;
   border-radius: 24px;
-  background: #fff;
+  background: var(--color-surface);
   color: inherit;
-  box-shadow: 0 28px 80px rgba(42, 35, 52, 0.24);
+  box-shadow: 0 28px 80px var(--color-shadow-lavender-171-a24);
 }
 .confirm-dialog::backdrop {
-  background: rgba(38, 33, 44, 0.4);
+  background: var(--color-surface-neutral-151-a40);
   backdrop-filter: blur(3px);
 }
 .confirm-dialog h2 {
@@ -239,7 +243,7 @@ body,
 }
 .confirm-dialog p {
   margin: 0;
-  color: #6f6875;
+  color: var(--color-text-lavender-433);
   line-height: 1.65;
 }
 .confirm-dialog .actions {
@@ -249,5 +253,5 @@ body,
   margin-top: 24px;
 }
 .confirm-dialog .danger {
-  background: #a4565d;
+  background: var(--color-surface-rose-490);
 }

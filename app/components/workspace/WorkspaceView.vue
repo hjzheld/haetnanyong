@@ -1,14 +1,10 @@
 ﻿<script setup lang="ts">
+const { tr, formatTime, formatMonth } = useLocale();
+
 import type { Project, Task, ScheduleEvent, Reminder, CalendarItem } from '~/types/workspace';
 import { groupCalendarItems, toCalendarItems } from '~/utils/calendar';
-import {
-  labels,
-  koreaDate,
-  datePart,
-  showTime,
-  errorText,
-  reminderErrorText,
-} from '~/utils/display';
+import { DEFAULT_ITEM_COLORS } from '~/utils/item-colors';
+import { labels, koreaDate, datePart, errorText, reminderErrorText } from '~/utils/display';
 const props = defineProps<{
   view: 'home' | 'projects' | 'detail' | 'calendar' | 'reminders';
   projectId?: string;
@@ -131,11 +127,9 @@ const todays = computed(() =>
     ),
 );
 const projectName = (id: string | null) =>
-  projectById.value.get(String(id))?.name || '프로젝트 없음';
+  projectById.value.get(String(id))?.name || tr('프로젝트 없음');
 const itemColor = (item: { projectId: string | null; color?: string }, kind: 'task' | 'event') =>
-  projectById.value.get(String(item.projectId))?.color ||
-  item.color ||
-  (kind === 'task' ? '#C98B8B' : '#8E8AA3');
+  projectById.value.get(String(item.projectId))?.color || item.color || DEFAULT_ITEM_COLORS[kind];
 const itemStyle = (item: { projectId: string | null; color?: string }, kind: 'task' | 'event') => ({
   '--item-color': itemColor(item, kind),
 });
@@ -146,7 +140,11 @@ function calendarStyle(item: CalendarItem) {
     value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4,
   );
   const luminance = 0.2126 * linear[0]! + 0.7152 * linear[1]! + 0.0722 * linear[2]!;
-  return { background: color, color: luminance > 0.179 ? '#171923' : '#ffffff', border: 'none' };
+  return {
+    background: color,
+    color: luminance > 0.179 ? 'var(--color-on-user-light)' : 'var(--color-on-user-dark)',
+    border: 'none',
+  };
 }
 const month = ref(today.slice(0, 7)),
   filter = ref(''),
@@ -154,8 +152,8 @@ const month = ref(today.slice(0, 7)),
   projectFilterRoot = ref<HTMLElement>();
 const selectedProjectLabel = computed(() =>
   filter.value === 'standalone'
-    ? '프로젝트 없음'
-    : active.value.find((p) => String(p.id) === filter.value)?.name || '전체 프로젝트',
+    ? tr('프로젝트 없음')
+    : active.value.find((p) => String(p.id) === filter.value)?.name || tr('전체 프로젝트'),
 );
 function chooseProject(value: string) {
   filter.value = value;
@@ -258,7 +256,7 @@ const titles = {
 </script>
 <template>
   <p v-if="busy" class="operation-status" role="status" aria-live="polite">
-    요청을 처리하고 있어요. 잠시만 기다려주세요.
+    {{ tr('요청을 처리하고 있어요. 잠시만 기다려주세요.') }}
   </p>
   <Transition name="toast"
     ><div
@@ -267,10 +265,10 @@ const titles = {
       :class="{ error: !!actionError }"
       :role="actionError ? 'alert' : 'status'"
     >
-      {{ toastText
-      }}<button
+      ><span>{{ tr(toastText) }}</span
+      ><button
         type="button"
-        aria-label="알림 닫기"
+        :aria-label="tr('알림 닫기')"
         @click="
           notice = '';
           actionError = '';
@@ -281,82 +279,85 @@ const titles = {
     </div></Transition
   >
   <CommonPageHeading
-    :title="selected?.name || titles[view]"
-    :description="selected?.description || '프로젝트별로 할 일과 일정을 모아 관리해 보세요.'"
+    :title="selected?.name || tr(titles[view])"
+    :description="selected?.description || tr('프로젝트별로 할 일과 일정을 모아 관리해 보세요.')"
     ><button v-if="view === 'home' || view === 'projects'" class="solid" @click="edit('project')">
-      + 프로젝트 만들기</button
+      {{ tr('+ 프로젝트 만들기') }}</button
     ><template v-if="view === 'detail' && selected"
-      ><button class="border-btn" @click="edit('project', selected)">프로젝트 수정</button
+      ><button class="border-btn" @click="edit('project', selected)">
+        {{ tr('프로젝트 수정') }}</button
       ><button
         class="border-btn"
         :disabled="busy"
         @click="mutate(`/api/projects/${selected.id}`, 'PATCH', { archived: !selected.archivedAt })"
       >
-        {{ selected.archivedAt ? '복원하기' : '보관하기' }}
+        {{ selected.archivedAt ? tr('복원하기') : tr('보관하기') }}
       </button></template
     ></CommonPageHeading
   >
-  <p v-if="loading" role="status">불러오는 중…</p>
+  <p v-if="loading" role="status">{{ tr('불러오는 중…') }}</p>
   <div v-else-if="error" role="alert" class="panel">
-    <p>{{ errorText(error, 'load') }}</p>
-    <button class="border-btn" @click="refresh()">다시 시도</button>
+    <p>{{ tr(errorText(error, 'load')) }}</p>
+    <button class="border-btn" @click="refresh()">{{ tr('다시 시도') }}</button>
   </div>
-  <p v-if="actionError" role="alert" class="form-error">{{ actionError }}</p>
-  <p v-if="notice" role="status" class="notice">{{ notice }}</p>
+  <p v-if="actionError" role="alert" class="form-error">{{ tr(actionError) }}</p>
+  <p v-if="notice" role="status" class="notice">{{ tr(notice) }}</p>
   <div v-if="!loading && !error && data && view === 'reminders'" class="slack-banner">
     <div>
       <strong>{{
         slackConnection?.connected
-          ? 'Slack 개인 DM이 연결되어 있어요.'
-          : 'Slack을 연결하고 일정 알림을 받아보세요.'
+          ? tr('Slack 개인 DM이 연결되어 있어요.')
+          : tr('Slack을 연결하고 일정 알림을 받아보세요.')
       }}</strong>
       <p class="small">
         {{
           slackConnectionError
-            ? '연결 상태를 불러오지 못했어요. 마이페이지에서 다시 확인해주세요.'
-            : '본인 계정을 인증하면 일정 시작 전 DM으로 알려드려요.'
+            ? tr('연결 상태를 불러오지 못했어요. 마이페이지에서 다시 확인해주세요.')
+            : tr('본인 계정을 인증하면 일정 시작 전 DM으로 알려드려요.')
         }}
       </p>
     </div>
     <NuxtLink to="/mypage#slack" class="border-btn"
-      >{{ slackConnection?.connected ? 'Slack 연결 관리' : 'Slack 연결하기' }} →</NuxtLink
+      >{{ slackConnection?.connected ? tr('Slack 연결 관리') : tr('Slack 연결하기') }} →</NuxtLink
     >
   </div>
   <template v-if="!loading && !error && data">
     <template v-if="view === 'home'"
       ><section class="welcome">
         <div>
-          <h2>작은 할 일부터 차근차근.</h2>
+          <h2>{{ tr('작은 할 일부터 차근차근.') }}</h2>
           <p class="small">
-            할 일에는 마감일을, 약속에는 시간을 정해두세요.<br />오늘도 함께 하나씩 챙겨볼까요?
+            {{ tr('할 일에는 마감일을, 약속에는 시간을 정해두세요.') }}<br />{{
+              tr('오늘도 함께 하나씩 챙겨볼까요?')
+            }}
           </p>
         </div>
-        <img src="/images/cat.png" alt="응원하는 했냐옹 고양이" />
+        <img src="/images/cat.png" :alt="tr('응원하는 했냐옹 고양이')" />
       </section>
       <div class="metric-row">
         <div
           v-reveal="index"
           v-for="(metric, index) in [
-            { label: '진행 중인 프로젝트', value: active.length },
-            { label: '다가오는 마감', value: due.length },
-            { label: '오늘 일정', value: todays.length },
+            { label: tr('진행 중인 프로젝트'), value: active.length },
+            { label: tr('다가오는 마감'), value: due.length },
+            { label: tr('오늘 일정'), value: todays.length },
             {
-              label: '완료한 태스크',
+              label: tr('완료한 태스크'),
               value: tasks.filter((t) => visible(t.projectId) && t.status === 'DONE').length,
             },
           ]"
-          :key="metric.label"
+          :key="tr(metric.label)"
           class="metric"
         >
-          <span class="small">{{ metric.label }}</span
+          <span class="small">{{ tr(metric.label) }}</span
           ><b>{{ metric.value }}</b>
         </div>
       </div>
       <div class="columns">
         <section v-reveal class="panel">
           <div class="heading">
-            <h2>다가오는 할 일</h2>
-            <span class="small">지연된 할 일 · 3일 이내 마감</span>
+            <h2>{{ tr('다가오는 할 일') }}</h2>
+            <span class="small">{{ tr('지연된 할 일 · 3일 이내 마감') }}</span>
           </div>
           <div
             v-for="t in due.slice(0, 5)"
@@ -366,7 +367,7 @@ const titles = {
           >
             <input
               type="checkbox"
-              :aria-label="t.title + ' 완료'"
+              :aria-label="t.title + tr(' 완료')"
               :disabled="busy"
               @change="mutate(`/api/tasks/${t.id}`, 'PATCH', { status: 'DONE' })"
             /><NuxtLink
@@ -376,14 +377,14 @@ const titles = {
               <p class="small">
                 {{ projectName(t.projectId) }} · {{ datePart(t.dueDate) }}
               </p></NuxtLink
-            ><span class="badge rose">{{ labels[t.priority] }}</span>
+            ><span class="badge rose">{{ tr(labels[t.priority]) }}</span>
           </div>
-          <CommonEmptyState v-if="!due.length">급한 할 일은 없어요.</CommonEmptyState>
+          <CommonEmptyState v-if="!due.length">{{ tr('급한 할 일은 없어요.') }}</CommonEmptyState>
         </section>
         <section v-reveal class="panel">
           <div class="heading">
-            <h2>오늘의 일정</h2>
-            <NuxtLink to="/calendar" class="border-btn">캘린더 보기</NuxtLink>
+            <h2>{{ tr('오늘의 일정') }}</h2>
+            <NuxtLink to="/calendar" class="border-btn">{{ tr('캘린더 보기') }}</NuxtLink>
           </div>
           <div
             v-for="e in todays"
@@ -395,20 +396,24 @@ const titles = {
               class="grow"
               :to="e.projectId ? `/projects/${e.projectId}?tab=events` : `/items/events/${e.id}`"
               ><strong>{{ e.title }}</strong>
-              <p class="small">{{ e.allDay ? '종일 일정' : showTime(e.startsAt) }}</p></NuxtLink
+              <p class="small">
+                {{ e.allDay ? tr('종일 일정') : formatTime(e.startsAt) }}
+              </p></NuxtLink
             >
           </div>
-          <CommonEmptyState v-if="!todays.length">오늘은 여유로운 하루예요.</CommonEmptyState>
+          <CommonEmptyState v-if="!todays.length">{{
+            tr('오늘은 여유로운 하루예요.')
+          }}</CommonEmptyState>
         </section>
       </div></template
     >
     <section v-if="view === 'home' || view === 'projects'" class="projects">
       <div class="heading">
-        <h2>나의 프로젝트</h2>
-        <NuxtLink v-if="view === 'home'" to="/projects">전체 보기 →</NuxtLink>
+        <h2>{{ tr('나의 프로젝트') }}</h2>
+        <NuxtLink v-if="view === 'home'" to="/projects">{{ tr('전체 보기 →') }}</NuxtLink>
         <div v-else class="subnav">
-          <button :aria-pressed="!archived" @click="archived = false">진행 중</button
-          ><button :aria-pressed="archived" @click="archived = true">보관함</button>
+          <button :aria-pressed="!archived" @click="archived = false">{{ tr('진행 중') }}</button
+          ><button :aria-pressed="archived" @click="archived = true">{{ tr('보관함') }}</button>
         </div>
       </div>
       <div class="project-grid">
@@ -426,30 +431,30 @@ const titles = {
         v-if="
           !(view === 'home' ? active : projects.filter((p) => !!p.archivedAt === archived)).length
         "
-        >첫 프로젝트를 만들어보세요.</CommonEmptyState
+        >{{ tr('첫 프로젝트를 만들어보세요.') }}</CommonEmptyState
       >
     </section>
     <template v-if="view === 'detail'"
-      ><NuxtLink to="/projects">← 프로젝트 목록</NuxtLink
-      ><CommonEmptyState v-if="!selected">프로젝트를 찾을 수 없어요.</CommonEmptyState
+      ><NuxtLink to="/projects">{{ tr('← 프로젝트 목록') }}</NuxtLink
+      ><CommonEmptyState v-if="!selected">{{ tr('프로젝트를 찾을 수 없어요.') }}</CommonEmptyState
       ><template v-else
         ><div class="subnav">
           <button :aria-pressed="tab === 'tasks'" @click="tab = 'tasks'">
-            태스크 {{ ownTasks.length }}</button
+            {{ tr('태스크') }} {{ ownTasks.length }}</button
           ><button :aria-pressed="tab === 'events'" @click="tab = 'events'">
-            일정 {{ ownEvents.length }}
+            {{ tr('일정') }} {{ ownEvents.length }}
           </button>
         </div>
         <section v-reveal class="panel">
           <div class="heading">
-            <h2>{{ tab === 'tasks' ? '할 일을 차근차근' : '시간이 있는 약속' }}</h2>
+            <h2>{{ tab === 'tasks' ? tr('할 일을 차근차근') : tr('시간이 있는 약속') }}</h2>
             <button
               v-if="!selected.archivedAt"
               class="solid"
               @click="edit(tab === 'tasks' ? 'task' : 'event')"
             >
-              + {{ tab === 'tasks' ? '태스크' : '일정' }} 추가</button
-            ><span v-else class="badge">보관된 프로젝트</span>
+              + {{ tab === 'tasks' ? tr('태스크') : tr('일정') }} {{ tr('추가') }}</button
+            ><span v-else class="badge">{{ tr('보관된 프로젝트') }}</span>
           </div>
           <template v-if="tab === 'tasks'"
             ><div
@@ -462,7 +467,7 @@ const titles = {
                 type="checkbox"
                 :checked="t.status === 'DONE'"
                 :disabled="busy"
-                :aria-label="t.title + ' 완료'"
+                :aria-label="t.title + tr(' 완료')"
                 @change="
                   mutate(`/api/tasks/${t.id}`, 'PATCH', {
                     status: t.status === 'DONE' ? 'TODO' : 'DONE',
@@ -472,18 +477,19 @@ const titles = {
               <div class="grow">
                 <strong :class="{ done: t.status === 'DONE' }">{{ t.title }}</strong>
                 <p class="small">
-                  {{ datePart(t.startDate) }} ~ {{ datePart(t.dueDate) }} · {{ labels[t.priority] }}
+                  {{ datePart(t.startDate) }} ~ {{ datePart(t.dueDate) }} ·
+                  {{ tr(labels[t.priority]) }}
                 </p>
               </div>
-              <span class="badge lavender">{{ labels[t.status] }}</span
-              ><button class="border-btn" @click="edit('task', t)">수정</button
+              <span class="badge lavender">{{ tr(labels[t.status]) }}</span
+              ><button class="border-btn" @click="edit('task', t)">{{ tr('수정') }}</button
               ><button class="border-btn" :disabled="busy" @click="remove('tasks', t.id)">
-                삭제
+                {{ tr('삭제') }}
               </button>
             </div>
-            <CommonEmptyState v-if="!ownTasks.length" image="/images/cat-loaf.png"
-              >시작일과 마감일을 정해 첫 할 일을 추가해보세요.</CommonEmptyState
-            ></template
+            <CommonEmptyState v-if="!ownTasks.length" image="/images/cat-loaf.png">{{
+              tr('시작일과 마감일을 정해 첫 할 일을 추가해보세요.')
+            }}</CommonEmptyState></template
           ><template v-else
             ><div
               v-for="e in ownEvents"
@@ -496,12 +502,13 @@ const titles = {
                 <p class="small">
                   {{
                     e.allDay
-                      ? datePart(e.startDate) + ' ~ ' + datePart(e.endDate) + ' (종료일 제외)'
-                      : showTime(e.startsAt) + ' ~ ' + showTime(e.endsAt)
+                      ? datePart(e.startDate) + ' ~ ' + datePart(e.endDate) + tr(' (종료일 제외)')
+                      : formatTime(e.startsAt) + ' ~ ' + formatTime(e.endsAt)
                   }}
                 </p>
                 <span v-if="reminderFor(e.id)" class="badge"
-                  >알림 {{ labels[reminderFor(e.id)!.status] || reminderFor(e.id)!.status }}</span
+                  >{{ tr('알림') }}
+                  {{ tr(labels[reminderFor(e.id)!.status]) || reminderFor(e.id)!.status }}</span
                 >
               </div>
               <button
@@ -509,15 +516,15 @@ const titles = {
                 class="border-btn"
                 @click="edit('reminder', e)"
               >
-                알림 설정</button
-              ><button class="border-btn" @click="edit('event', e)">수정</button
+                {{ tr('알림 설정') }}</button
+              ><button class="border-btn" @click="edit('event', e)">{{ tr('수정') }}</button
               ><button class="border-btn" :disabled="busy" @click="remove('events', e.id)">
-                삭제
+                {{ tr('삭제') }}
               </button>
             </div>
-            <CommonEmptyState v-if="!ownEvents.length" image="/images/cat-sleeping.png"
-              >회의나 약속을 일정으로 등록해보세요.</CommonEmptyState
-            ></template
+            <CommonEmptyState v-if="!ownEvents.length" image="/images/cat-sleeping.png">{{
+              tr('회의나 약속을 일정으로 등록해보세요.')
+            }}</CommonEmptyState></template
           >
         </section></template
       ></template
@@ -525,13 +532,15 @@ const titles = {
     <template v-if="view === 'calendar'"
       ><div class="heading calendar-heading">
         <div class="actions">
-          <button class="border-btn" aria-label="이전 달" @click="moveMonth(-1)">←</button>
-          <h2>{{ month }}</h2>
-          <button class="border-btn" aria-label="다음 달" @click="moveMonth(1)">→</button
-          ><button class="border-btn" @click="month = today.slice(0, 7)">이번 달</button>
+          <button class="border-btn" :aria-label="tr('이전 달')" @click="moveMonth(-1)">←</button>
+          <h2>{{ formatMonth(month) }}</h2>
+          <button class="border-btn" :aria-label="tr('다음 달')" @click="moveMonth(1)">→</button
+          ><button class="border-btn" @click="month = today.slice(0, 7)">
+            {{ tr('이번 달') }}
+          </button>
         </div>
         <div ref="projectFilterRoot" class="calendar-project-filter">
-          <span class="calendar-filter-label">프로젝트</span
+          <span class="calendar-filter-label">{{ tr('프로젝트') }}</span
           ><button
             type="button"
             class="calendar-filter-trigger"
@@ -553,7 +562,7 @@ const titles = {
               v-if="projectFilterOpen"
               class="calendar-filter-menu"
               role="listbox"
-              aria-label="프로젝트 필터"
+              :aria-label="tr('프로젝트 필터')"
               @click.stop
             >
               <button
@@ -562,14 +571,16 @@ const titles = {
                 :aria-selected="filter === ''"
                 @click="chooseProject('')"
               >
-                <span>전체 프로젝트</span><span class="calendar-filter-check">✓</span></button
+                <span>{{ tr('전체 프로젝트') }}</span
+                ><span class="calendar-filter-check">✓</span></button
               ><button
                 type="button"
                 role="option"
                 :aria-selected="filter === 'standalone'"
                 @click="chooseProject('standalone')"
               >
-                <span>프로젝트 없음</span><span class="calendar-filter-check">✓</span></button
+                <span>{{ tr('프로젝트 없음') }}</span
+                ><span class="calendar-filter-check">✓</span></button
               ><button
                 v-for="p in active"
                 :key="p.id"
@@ -580,7 +591,7 @@ const titles = {
               >
                 <span
                   class="calendar-filter-dot"
-                  :style="{ background: p.color || '#a9a4b7' }"
+                  :style="{ background: p.color || 'var(--color-project-unassigned)' }"
                 ></span
                 ><span class="calendar-filter-option-name">{{ p.name }}</span
                 ><span class="calendar-filter-check">✓</span>
@@ -589,12 +600,16 @@ const titles = {
           >
         </div>
       </div>
-      <div class="legend">태스크 마감 · 일정</div>
-      <p class="calendar-scroll-hint small">좌우로 밀어서 한 주의 일정을 확인하세요.</p>
-      <div class="calendar-scroll" role="region" aria-label="월간 캘린더" tabindex="0">
+      <div class="legend">{{ tr('태스크 마감 · 일정') }}</div>
+      <p class="calendar-scroll-hint small">{{ tr('좌우로 밀어서 한 주의 일정을 확인하세요.') }}</p>
+      <div class="calendar-scroll" role="region" :aria-label="tr('월간 캘린더')" tabindex="0">
         <div class="calendar">
-          <div v-for="d in ['일', '월', '화', '수', '목', '금', '토']" :key="d" class="weekday">
-            {{ d }}
+          <div
+            v-for="d in [tr('일'), tr('월'), tr('화'), tr('수'), tr('목'), tr('금'), tr('토')]"
+            :key="tr(d)"
+            class="weekday"
+          >
+            {{ tr(d) }}
           </div>
           <div
             v-for="(day, index) in days"
@@ -628,18 +643,20 @@ const titles = {
     >
     <section v-if="view === 'reminders'" class="panel">
       <div class="heading">
-        <h2>예약한 알림</h2>
-        <button class="border-btn" :disabled="pending" @click="refresh()">새로고침</button>
+        <h2>{{ tr('예약한 알림') }}</h2>
+        <button class="border-btn" :disabled="pending" @click="refresh()">
+          {{ tr('새로고침') }}
+        </button>
       </div>
       <div v-if="reminders.length" class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>일정</th>
-              <th>알림 시각</th>
-              <th>방식</th>
-              <th>상태</th>
-              <th>관리</th>
+              <th>{{ tr('일정') }}</th>
+              <th>{{ tr('알림 시각') }}</th>
+              <th>{{ tr('방식') }}</th>
+              <th>{{ tr('상태') }}</th>
+              <th>{{ tr('관리') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -647,13 +664,13 @@ const titles = {
               <td>
                 {{ eventById.get(String(r.eventId))?.title }}
                 <p v-if="r.errorMessage" class="form-error">
-                  {{ reminderErrorText(r.errorMessage) }}
+                  {{ tr(reminderErrorText(r.errorMessage)) }}
                 </p>
               </td>
-              <td>{{ showTime(r.remindAt) }}</td>
-              <td>{{ r.offsetMinutes ? r.offsetMinutes + '분 전' : '직접 지정' }}</td>
+              <td>{{ formatTime(r.remindAt) }}</td>
+              <td>{{ r.offsetMinutes ? r.offsetMinutes + tr('분 전') : tr('직접 지정') }}</td>
               <td>
-                <span class="badge lavender">{{ labels[r.status] || r.status }}</span>
+                <span class="badge lavender">{{ tr(labels[r.status]) || r.status }}</span>
               </td>
               <td>
                 <button
@@ -662,20 +679,20 @@ const titles = {
                   :disabled="busy"
                   @click="askReminderCancel(r.id)"
                 >
-                  예약 취소</button
+                  {{ tr('예약 취소') }}</button
                 ><span
                   v-else-if="['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING'].includes(r.status)"
                   class="small"
-                  >처리 결과 확인 필요</span
+                  >{{ tr('처리 결과 확인 필요') }}</span
                 >
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-      <CommonEmptyState v-else class="reminders-empty" image="/images/cat-sleeping.png"
-        >프로젝트 일정에서 알림을 설정해보세요.</CommonEmptyState
-      >
+      <CommonEmptyState v-else class="reminders-empty" image="/images/cat-sleeping.png">{{
+        tr('프로젝트 일정에서 알림을 설정해보세요.')
+      }}</CommonEmptyState>
     </section>
   </template>
   <WorkspaceItemEditor
@@ -690,9 +707,9 @@ const titles = {
   />
   <CommonConfirmDialog
     :open="!!deleteTarget"
-    title="정말 삭제할까요?"
+    :title="tr('정말 삭제할까요?')"
     :description="deleteTarget?.description || ''"
-    confirm-label="계속하기"
+    :confirm-label="tr('계속하기')"
     :busy="busy"
     @cancel="deleteTarget = undefined"
     @confirm="confirmRemove"

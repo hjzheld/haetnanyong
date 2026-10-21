@@ -86,13 +86,13 @@ main {
 #pdesk > header > nav a {
   padding: 10px 18px;
   border-radius: 12px;
-  color: #858090;
+  color: var(--color-text-lavender-533);
   font-weight: 600;
 }
 #pdesk > header > nav a.selected {
-  background: #eeecf5;
-  color: #615c7b;
-  box-shadow: inset 0 1px 0 #fff;
+  background: var(--color-surface-neutral-943-2);
+  color: var(--color-text-blue-422);
+  box-shadow: inset 0 1px 0 var(--color-shadow-highlight);
 }
 .avatar {
   display: grid;
@@ -147,11 +147,11 @@ main {
   height: 100%;
 }
 .form-error {
-  color: #a64b69 !important;
+  color: var(--color-text-rose-473) !important;
   margin: 12px 0;
 }
 .notice {
-  color: #68785f;
+  color: var(--color-text-sage-422);
   padding: 10px 0;
 }
 .auth-form {
@@ -161,31 +161,31 @@ main {
   order: 4;
   text-align: left;
   padding: 26px;
-  background: #ffffffbd;
-  border: 1px solid white;
+  background: var(--color-surface-neutral-1000-a74);
+  border: 1px solid var(--color-border-neutral-1000);
   border-radius: 22px;
-  box-shadow: 0 12px 40px #7565830c;
+  box-shadow: 0 12px 40px var(--color-shadow-lavender-455-a5);
 }
 .auth-form label {
   display: grid;
   gap: 7px;
   font-size: 13px;
-  color: #7a6d85;
+  color: var(--color-text-lavender-475);
 }
 .auth-form input {
   width: 100%;
   padding: 12px;
-  border: 1px solid #e3dcea;
+  border: 1px solid var(--color-border-lavender-890);
   border-radius: 10px;
-  background: #fff;
-  color: #39354a;
+  background: var(--color-surface);
+  color: var(--color-text-lavender-249);
 }
 .auth-form h2 {
   text-align: center;
 }
 .switch-auth {
   font-size: 12px;
-  color: #8b7d9a;
+  color: var(--color-text-lavender-547);
 }
 .login-screen {
   min-height: 100vh;
@@ -253,7 +253,7 @@ input[type='checkbox'] {
 }
 a:focus-visible,
 button:focus-visible {
-  outline: 3px solid #a396bd;
+  outline: 3px solid var(--color-border-lavender-665);
   outline-offset: 3px;
 }
 dialog input[type='color'] {
@@ -329,25 +329,29 @@ dialog input[type='color']::-moz-color-swatch {
 }
 #pdesk:not(.is-logged-out) .calendar .calendar-item {
   border-left: 4px solid var(--item-color);
-  background: #f5f3f7;
-  background-color: color-mix(in srgb, var(--item-color) 16%, white);
-  color: #343347;
+  background: var(--color-surface-neutral-961);
+  background-color: color-mix(in srgb, var(--item-color) 16%, var(--color-surface));
+  color: var(--color-text-primary);
 }
 .error-screen {
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: 32px;
-  background: linear-gradient(145deg, #faf8f4, #f0edf5);
+  background: linear-gradient(
+    145deg,
+    var(--color-surface-neutral-969),
+    var(--color-surface-neutral-945)
+  );
 }
 .error-card {
   width: min(520px, 100%);
   padding: 48px 36px;
   text-align: center;
-  background: #fff;
-  border: 1px solid rgba(142, 136, 163, 0.22);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-lavender-586-a22);
   border-radius: 32px;
-  box-shadow: 0 22px 60px rgba(75, 66, 91, 0.12);
+  box-shadow: 0 22px 60px var(--color-shadow-lavender-308-a12);
 }
 .error-card img {
   width: 150px;
@@ -356,7 +360,7 @@ dialog input[type='color']::-moz-color-swatch {
 }
 .error-card .error-code {
   margin: 12px 0 4px;
-  color: #8e88a3;
+  color: var(--color-text-lavender-586);
   font-size: 0.86rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -367,7 +371,7 @@ dialog input[type='color']::-moz-color-swatch {
 }
 .error-card > p:last-of-type {
   margin: 0;
-  color: #6f6a75;
+  color: var(--color-text-neutral-437);
   line-height: 1.7;
 }
 .error-actions {

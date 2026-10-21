@@ -4,7 +4,9 @@ export default defineNitroPlugin((nitroApp) => {
   });
   nitroApp.hooks.hook('beforeResponse', (event) => {
     const startedAt = event.context.requestStartedAt as number | undefined;
-    if (startedAt !== undefined) {
+    // Vercel may have already committed a redirect/streaming response by this
+    // hook. Node rejects any header mutation after that point.
+    if (startedAt !== undefined && !event.node.res.headersSent && !event.node.res.writableEnded) {
       appendResponseHeader(
         event,
         'Server-Timing',

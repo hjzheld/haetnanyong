@@ -5,9 +5,6 @@
 .calendar-scroll {
   min-width: 0;
 }
-:root {
-  color-scheme: light;
-}
 #pdesk {
   width: 100%;
 }
@@ -63,7 +60,7 @@
   margin-top: 12px;
 }
 #pdesk .legal-page a {
-  color: #69577e;
+  color: var(--color-text-lavender-418);
   text-decoration: underline;
 }
 #pdesk .login-card h1 {
@@ -78,8 +75,8 @@
   resize: vertical;
 }
 #pdesk input[readonly] {
-  background: #f4f2f6;
-  color: #71697b;
+  background: var(--color-surface-neutral-957-4);
+  color: var(--color-text-lavender-447);
 }
 #pdesk .subnav {
   flex-wrap: wrap;
@@ -93,7 +90,7 @@
 #pdesk dialog {
   margin: auto;
   max-height: calc(100dvh - 32px);
-  color: #39354a;
+  color: var(--color-text-lavender-249);
   font-family: var(--app-font);
 }
 #pdesk dialog:not([open]) {
@@ -114,7 +111,7 @@
   margin-bottom: 10px;
 }
 #pdesk dialog.confirm-dialog .danger {
-  background: #a4565d;
+  background: var(--color-surface-rose-490);
 }
 #pdesk .calendar .day {
   overflow: hidden;

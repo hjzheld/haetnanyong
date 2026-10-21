@@ -17,9 +17,9 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 1px solid #e8e2eb;
+  border: 1px solid var(--color-border-neutral-904);
   border-radius: 14px;
-  background: #fff;
+  background: var(--color-surface);
 }
 .slack-brand-mark svg,
 .slack-result-brand svg {
@@ -37,12 +37,12 @@
 .slack-intro h3 {
   margin-bottom: 10px;
   font-size: 19px;
-  color: #4f4256;
+  color: var(--color-text-lavender-298);
   line-height: 1.5;
 }
 .slack-intro p,
 .slack-result-copy p {
-  color: #797080;
+  color: var(--color-text-lavender-471);
   font-size: 14px;
   line-height: 1.85;
   word-break: keep-all;
@@ -54,8 +54,8 @@
   padding: 18px;
   margin: 0 0 24px;
   list-style: none;
-  background: #ffffffa6;
-  border: 1px solid #e5e9e1;
+  background: var(--color-surface-neutral-1000-a65);
+  border: 1px solid var(--color-border-neutral-898);
   border-radius: 16px;
 }
 .slack-connect-steps li {
@@ -63,15 +63,15 @@
   gap: 12px;
   align-items: center;
   font-size: 14px;
-  color: #675d70;
+  color: var(--color-text-lavender-402);
 }
 .slack-connect-steps li span {
   display: grid;
   place-items: center;
   width: 25px;
   height: 25px;
-  background: #edf1e9;
-  color: #6a8064;
+  background: var(--color-surface-neutral-929);
+  color: var(--color-text-sage-447);
   border-radius: 50%;
   font-size: 12px;
   flex: 0 0 auto;
@@ -81,9 +81,9 @@
   gap: 14px;
   padding: 20px;
   margin: 0 0 22px;
-  border: 1px solid #e7e3e9;
+  border: 1px solid var(--color-border-neutral-902);
   border-radius: 16px;
-  background: #ffffffb8;
+  background: var(--color-surface-neutral-1000-a72);
 }
 .slack-account-details > div {
   display: grid;
@@ -93,11 +93,11 @@
   line-height: 1.6;
 }
 .slack-account-details dt {
-  color: #88808e;
+  color: var(--color-text-lavender-529);
 }
 .slack-account-details dd {
   margin: 0;
-  color: #504657;
+  color: var(--color-text-lavender-308);
   overflow-wrap: anywhere;
 }
 .slack-actions,
@@ -114,11 +114,11 @@
   gap: 10px;
   min-height: 48px;
   padding: 12px 24px;
-  border: 1px solid #ded5e0;
+  border: 1px solid var(--color-border-neutral-857);
   border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 3px 0 #e5dce7;
-  color: #48344c;
+  background: var(--color-surface);
+  box-shadow: 0 3px 0 var(--color-shadow-neutral-884);
+  color: var(--color-text-lavender-251);
   font-weight: 700;
   transition:
     background 0.2s,
@@ -129,31 +129,31 @@
   height: 23px;
 }
 #pdesk .slack-connect-button:hover:not(:disabled) {
-  background: #faf6fc;
-  border-color: #ba9fc0;
+  background: var(--color-surface-neutral-976);
+  border-color: var(--color-border-lavender-688);
 }
 .slack-disconnect {
-  color: #8b7180;
+  color: var(--color-text-lavender-494);
   text-decoration: underline;
   text-underline-offset: 4px;
   font-size: 13px;
 }
 .slack-footnote {
   margin-top: 20px;
-  color: #8c8391;
+  color: var(--color-text-lavender-541);
   font-size: 12px;
   line-height: 1.8;
 }
 .slack-footnote a {
-  color: #87657e;
+  color: var(--color-text-lavender-463);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 .slack-inline-notice {
   padding: 14px 16px;
   border-radius: 12px;
-  background: #fff5e8;
-  color: #8c6a3e;
+  background: var(--color-surface-amber-955);
+  color: var(--color-text-amber-396);
   font-size: 13px;
   line-height: 1.7;
 }
@@ -167,20 +167,20 @@
   width: 100%;
   max-width: 580px;
   padding: 40px;
-  border: 1px solid #e4dde8;
+  border: 1px solid var(--color-border-neutral-888);
   border-radius: 28px;
-  background: linear-gradient(150deg, #fff, #faf7fc);
-  box-shadow: 0 12px 40px #5743650c;
+  background: linear-gradient(150deg, var(--color-surface), var(--color-surface-neutral-978));
+  box-shadow: 0 12px 40px var(--color-shadow-lavender-329-a5);
 }
 .slack-result-brand {
   justify-content: center;
-  color: #7b6e82;
+  color: var(--color-text-lavender-471-2);
   font-size: 14px;
   margin-bottom: 32px;
 }
 .slack-result-brand span span {
   padding: 0 8px;
-  color: #b9afc1;
+  color: var(--color-text-lavender-722);
 }
 .slack-result-symbol {
   display: grid;
@@ -189,17 +189,17 @@
   height: 68px;
   margin: 0 auto 22px;
   border-radius: 23px;
-  background: #f5ecdc;
-  color: #a27b40;
+  background: var(--color-surface-amber-912);
+  color: var(--color-text-amber-443);
   font-size: 32px;
 }
 .slack-result-card.is-success .slack-result-symbol {
-  background: #eaf3e7;
-  color: #6d8e60;
+  background: var(--color-surface-sage-929);
+  color: var(--color-text-sage-467);
 }
 .slack-result-card:is(.is-pending, .is-neutral) .slack-result-symbol {
-  background: #eee8f6;
-  color: #9280a6;
+  background: var(--color-surface-lavender-937);
+  color: var(--color-text-lavender-576);
 }
 .slack-result-copy {
   text-align: center;
@@ -208,7 +208,7 @@
 .slack-result-copy h1 {
   font-size: clamp(22px, 4vw, 28px);
   line-height: 1.5;
-  color: #4f405a;
+  color: var(--color-text-lavender-302);
   margin-bottom: 12px;
   word-break: keep-all;
 }
@@ -216,8 +216,8 @@
   padding: 18px;
   margin-bottom: 24px;
   border-radius: 14px;
-  background: #edf3e9;
-  color: #607459;
+  background: var(--color-surface-neutral-933);
+  color: var(--color-text-sage-402);
   font-size: 13px;
   line-height: 1.8;
 }
@@ -235,13 +235,13 @@
   font-weight: 600;
 }
 #pdesk .slack-result-actions .solid {
-  background: #ad8095;
-  color: #fff;
+  background: var(--color-surface-lavender-590);
+  color: var(--color-text-on-accent);
 }
 #pdesk .slack-result-actions .border-btn {
-  border: 1px solid #dfd3e0;
-  background: #fff;
-  color: #79677f;
+  border: 1px solid var(--color-border-lavender-853);
+  background: var(--color-surface);
+  color: var(--color-text-lavender-451);
 }
 .slack-result-actions {
   flex-direction: column;
@@ -257,7 +257,7 @@
     .slack-result-actions a,
     .slack-result-actions button
   ):focus-visible {
-  outline: 3px solid #b29cc5;
+  outline: 3px solid var(--color-border-lavender-692);
   outline-offset: 4px;
 }
 @media (max-width: 600px) {
@@ -297,39 +297,39 @@
   display: grid;
   gap: 8px;
   font-size: 14px;
-  color: #6e637e;
+  color: var(--color-text-lavender-441);
 }
 .account-form input {
   width: 100%;
-  border: 1px solid #e4dfeb;
+  border: 1px solid var(--color-border-lavender-898);
   border-radius: 14px;
   padding: 13px 14px;
-  background: #fff;
-  color: #39354a;
+  background: var(--color-surface);
+  color: var(--color-text-lavender-249);
   box-shadow:
-    inset 0 2px 4px #45365008,
-    0 3px 0 #f0edf4;
+    inset 0 2px 4px var(--color-shadow-lavender-263-a3),
+    0 3px 0 var(--color-shadow-neutral-943);
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
 }
 .account-form input:focus {
-  border-color: #c496a1;
+  border-color: var(--color-border-rose-678);
   box-shadow:
-    0 0 0 4px #f3dada,
-    0 3px 0 #e6c2c8;
+    0 0 0 4px var(--color-shadow-rose-904),
+    0 3px 0 var(--color-shadow-rose-831);
   outline: 0;
 }
 .account-form input[aria-invalid='true'] {
-  border-color: #c05f79;
-  background: #fff8fa;
+  border-color: var(--color-border-rose-563);
+  background: var(--color-surface-neutral-986);
 }
 .account-form button {
   justify-self: start;
 }
 .password-hint {
   margin: -8px 0 0;
-  color: #b34c69;
+  color: var(--color-text-rose-500);
   font-size: 13px;
 }
 .connection-details {
@@ -344,7 +344,7 @@
 .slack-steps {
   font-size: 13px;
   line-height: 1.9;
-  color: #7a7586;
+  color: var(--color-text-lavender-492);
   padding-left: 20px;
 }
 .slack-banner {
@@ -353,8 +353,8 @@
   gap: 18px;
   align-items: center;
   padding: 24px;
-  border: 1px solid #e5dfed;
-  background: linear-gradient(120deg, #f0ebf5, #fff);
+  border: 1px solid var(--color-border-lavender-902);
+  background: linear-gradient(120deg, var(--color-surface-neutral-941), var(--color-surface));
   border-radius: 18px;
   margin-bottom: 24px;
 }
@@ -368,23 +368,24 @@
   white-space: nowrap;
 }
 .page-tone-account .panel:first-child {
-  background: linear-gradient(145deg, #fff, #fff5f5);
+  background: linear-gradient(145deg, var(--color-surface), var(--color-surface-neutral-980));
 }
 .page-tone-account .panel:last-child {
-  background: linear-gradient(145deg, #fff, #f2f7f1);
+  background: linear-gradient(145deg, var(--color-surface), var(--color-surface-neutral-957));
 }
 .page-tone-account .solid {
-  background: linear-gradient(#c496a1, #a97988);
+  background: linear-gradient(var(--color-surface-rose-678), var(--color-surface-rose-569));
   box-shadow:
-    inset 0 1px 0 #fff7,
-    0 3px 0 #875967,
-    0 8px 18px #c496a133;
+    inset 0 1px 0 var(--color-shadow-neutral-1000-a47),
+    0 3px 0 var(--color-shadow-rose-439),
+    0 8px 18px var(--color-shadow-rose-678-a20);
 }
 .page-tone-account .border-btn {
-  border-color: #dfccd1;
+  border-color: var(--color-border-rose-837);
+  margin-top: 16px;
 }
 .page-tone-account .heading h2 {
-  color: #634a59;
+  color: var(--color-text-lavender-339);
 }
 @media (max-width: 900px) {
   .account-grid {
@@ -403,15 +404,15 @@
 }
 .danger-zone {
   margin-top: 28px;
-  border-color: #e7c6ce !important;
-  background: #fff9fa !important;
+  border-color: var(--color-border-rose-841) !important;
+  background: var(--color-surface-neutral-988) !important;
 }
 .danger-zone h2 {
-  color: #9f4058 !important;
+  color: var(--color-text-rose-437) !important;
 }
 .danger-button {
-  color: #a23f59;
-  border-color: #dcaab6 !important;
+  color: var(--color-text-rose-441);
+  border-color: var(--color-border-rose-765) !important;
 }
 .site-footer {
   display: flex;
@@ -420,7 +421,7 @@
   max-width: 1180px;
   margin: 42px auto 0;
   padding: 24px;
-  color: #77717d;
+  color: var(--color-text-lavender-467);
   font-size: 13px;
 }
 .site-footer nav {
@@ -435,9 +436,9 @@
   max-width: 760px;
   margin: 32px auto;
   padding: 36px;
-  border: 1px solid #e7e1ea;
+  border: 1px solid var(--color-border-neutral-900);
   border-radius: 24px;
-  background: #fff;
+  background: var(--color-surface);
   line-height: 1.8;
 }
 .legal-page h2 {
@@ -460,13 +461,13 @@
   padding: 0 2px;
   font-size: 12px;
   font-weight: 600;
-  color: #625772;
+  color: var(--color-text-lavender-394);
   display: inline-flex;
   gap: 3px;
 }
 #pdesk .day-create span {
   opacity: 0;
-  color: #8e8aa3;
+  color: var(--color-text-blue-590);
 }
 #pdesk .day-create:hover span,
 #pdesk .day-create:focus-visible span {

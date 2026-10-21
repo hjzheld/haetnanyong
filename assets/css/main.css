@@ -1,5 +1,4 @@
 :root {
-  color-scheme: light;
   font-family:
     Inter,
     ui-sans-serif,
@@ -8,8 +7,8 @@
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
-  color: #1f2937;
-  background: #f6f7fb;
+  color: var(--color-text-blue-169);
+  background: var(--color-surface-neutral-975);
 }
 
 * {
@@ -39,7 +38,7 @@ button {
 }
 .eyebrow {
   margin: 0 0 8px;
-  color: #7c5cff;
+  color: var(--color-text-lavender-680);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -65,16 +64,16 @@ h3 {
   font-size: 18px;
 }
 .muted {
-  color: #7b8496;
+  color: var(--color-text-blue-535);
   line-height: 1.65;
 }
 .date-chip,
 .status-pill {
-  border: 1px solid #e4e7ef;
+  border: 1px solid var(--color-border-neutral-916);
   border-radius: 999px;
-  background: #fff;
+  background: var(--color-surface);
   padding: 9px 14px;
-  color: #687386;
+  color: var(--color-text-blue-467);
   font-size: 13px;
 }
 .hero-grid {
@@ -85,14 +84,14 @@ h3 {
 .hero-card,
 .stat-card,
 .empty-card {
-  border: 1px solid #e9ebf2;
+  border: 1px solid var(--color-border-neutral-931);
   border-radius: 24px;
-  background: #fff;
-  box-shadow: 0 12px 36px rgba(31, 41, 55, 0.05);
+  background: var(--color-surface);
+  box-shadow: 0 12px 36px var(--color-shadow-blue-169-a5);
 }
 .hero-card {
   padding: clamp(28px, 6vw, 64px);
-  background: linear-gradient(135deg, #fff 0%, #f1efff 100%);
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-blue-969) 100%);
 }
 .hero-card h2 {
   max-width: 620px;
@@ -110,10 +109,10 @@ h3 {
   margin: 12px 0;
   font-size: 64px;
   letter-spacing: -0.08em;
-  color: #7c5cff;
+  color: var(--color-text-lavender-680);
 }
 .stat-label {
-  color: #687386;
+  color: var(--color-text-blue-467);
   font-size: 14px;
   font-weight: 700;
 }
@@ -131,13 +130,13 @@ h3 {
   font-weight: 700;
 }
 .primary {
-  color: #fff;
-  background: #7c5cff;
+  color: var(--color-text-on-accent);
+  background: var(--color-surface-lavender-680);
 }
 .secondary {
-  color: #596274;
-  background: #fff;
-  border: 1px solid #e1e4ed;
+  color: var(--color-text-blue-402);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-blue-906);
 }
 .section-heading {
   margin: 52px 0 20px;
@@ -159,7 +158,7 @@ h3 {
   width: 34px;
   height: 34px;
   border-radius: 11px;
-  background: #eeeaff;
+  background: var(--color-surface-lavender-959);
 }
 @media (max-width: 760px) {
   .shell {

@@ -53,7 +53,6 @@ export default defineEventHandler(async (event) => {
       timeout: 15000,
       body: new URLSearchParams({
         client_id: config.slackClientId,
-        client_secret: config.slackClientSecret,
         redirect_uri: config.slackRedirectUri,
         code: params.code,
       }),
