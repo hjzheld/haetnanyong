@@ -7,14 +7,20 @@ const { user, logout } = useSession(),
   logoutBusy = ref(false);
 const links = [
   { to: '/', label: '홈' },
-  { to: '/projects', label: '프로젝트' },
-  { to: '/items', label: '일정·태스크' },
+  { to: '/plans', label: '플랜' },
   { to: '/calendar', label: '캘린더' },
   { to: '/reminders', label: '리마인더' },
   { to: '/mypage', label: '마이페이지' },
 ];
 const config = useRuntimeConfig();
 const route = useRoute();
+function activeLink(to: string) {
+  if (to === '/plans')
+    return ['/plans', '/projects', '/items'].some(
+      (path) => route.path === path || route.path.startsWith(path + '/'),
+    );
+  return to === '/' ? route.path === '/' : route.path === to || route.path.startsWith(to + '/');
+}
 const mobileMenuOpen = ref(false);
 const menuButton = ref<HTMLButtonElement>();
 watch(
@@ -87,13 +93,9 @@ async function signOut() {
           :key="link.to"
           :to="link.to"
           @click="mobileMenuOpen = false"
-          :aria-current="
-            (link.to === '/' ? $route.path === '/' : $route.path.startsWith(link.to))
-              ? 'page'
-              : undefined
-          "
+          :aria-current="activeLink(link.to) ? 'page' : undefined"
           :class="{
-            selected: link.to === '/' ? $route.path === '/' : $route.path.startsWith(link.to),
+            selected: activeLink(link.to),
           }"
           >{{ tr(link.label) }}</NuxtLink
         >

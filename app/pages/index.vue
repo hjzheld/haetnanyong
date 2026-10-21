@@ -85,7 +85,7 @@ const { user } = useSession();
               >
                 <path d="m8.25 12.75 2.5 2.5 5-6" />
                 <path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3" /></svg></span
-            ><span class="feature-kind">{{ tr('태스크') }}</span>
+            ><span class="feature-kind">{{ tr('할 일') }}</span>
           </div>
           <div class="feature-card-copy">
             <h3>{{ tr('오늘 할 일을 차근차근') }}</h3>

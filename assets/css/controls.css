@@ -1,0 +1,371 @@
+/* Shared control rules. No decorative left strips or colored corner fragments. */
+#pdesk .priority-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 48px;
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  background: var(--priority-medium-bg);
+  color: var(--priority-medium-text);
+  white-space: nowrap;
+}
+#pdesk .priority-badge[data-priority='HIGH'] {
+  background: var(--priority-high-bg);
+  color: var(--priority-high-text);
+}
+#pdesk .priority-badge[data-priority='LOW'] {
+  background: var(--priority-low-bg);
+  color: var(--priority-low-text);
+}
+#pdesk .app-select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+#pdesk .app-select-trigger {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 14px;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  text-align: left;
+  box-shadow: none;
+  transition:
+    background 150ms,
+    border-color 150ms;
+}
+#pdesk .app-select-trigger > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#pdesk .app-select-trigger > svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#pdesk .app-select-trigger[aria-expanded='true'] > svg {
+  transform: rotate(180deg);
+}
+#pdesk .app-select-trigger:is(:hover, [aria-expanded='true']):not(:disabled) {
+  background: var(--control-hover);
+  border-color: var(--color-accent-lavender-204);
+}
+#pdesk .app-select-trigger:focus-visible {
+  outline: 3px solid var(--color-accent-lavender-204);
+  outline-offset: 3px;
+}
+#pdesk .app-select-menu {
+  position: fixed;
+  inset: auto;
+  z-index: 100;
+  margin: 0;
+  padding: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--app-font);
+  box-shadow: 0 12px 36px var(--color-shadow-lavender-249-a13);
+}
+#pdesk .app-select-menu:popover-open {
+  display: grid;
+  gap: 4px;
+}
+#pdesk .app-select-menu button[role='option'] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  gap: 16px;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  text-align: left;
+  box-shadow: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+#pdesk .app-select-menu button[role='option']:is(:hover, .is-active):not(:disabled) {
+  background: var(--control-hover);
+}
+#pdesk .app-select-menu button[role='option'][aria-selected='true'] {
+  background: var(--control-selected);
+  font-weight: 700;
+}
+#pdesk .app-select-menu button[role='option'][aria-selected='true']:is(:hover, .is-active) {
+  background: color-mix(in srgb, var(--color-accent-sage-569) 28%, var(--color-surface));
+}
+#pdesk .calendar-project-filter {
+  min-width: 250px;
+  gap: 12px;
+}
+#pdesk .calendar-project-filter > .app-select {
+  min-width: 180px;
+  flex: 1;
+}
+#pdesk .page-tone-account .account-actions,
+#pdesk .page-tone-account .slack-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: stretch;
+  width: 100%;
+}
+#pdesk
+  .page-tone-account
+  .panel
+  :is(.solid, .border-btn, .slack-connect-button, .slack-disconnect) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 48px;
+  min-height: 48px;
+  margin: 0;
+  padding: 6px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+}
+#pdesk .page-tone-account .slack-disconnect {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+#pdesk .overdue-panel {
+  margin-top: 24px;
+}
+#pdesk .overdue-panel > .heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#pdesk .list-row {
+  gap: 12px;
+}
+#pdesk .list-row > .grow {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+#pdesk .list-row > input[type='checkbox'] {
+  flex: 0 0 auto;
+  accent-color: var(--color-accent-sage-569);
+}
+#pdesk .item-detail > .heading {
+  align-items: center;
+}
+#pdesk .item-detail dd {
+  line-height: 1.6;
+}
+#pdesk .color-field input[type='color']:disabled {
+  cursor: default;
+  opacity: 1;
+}
+#pdesk button:disabled {
+  cursor: not-allowed;
+}
+#pdesk :is(.solid, .border-btn, .app-select-trigger):disabled {
+  transform: none;
+}
+@media (max-width: 600px) {
+  #pdesk .page-tone-account .account-actions,
+  #pdesk .page-tone-account .slack-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #pdesk
+    .page-tone-account
+    .panel
+    :is(.solid, .border-btn, .slack-connect-button, .slack-disconnect) {
+    width: 100%;
+  }
+  #pdesk .app-select-trigger {
+    font-size: 16px;
+  }
+  #pdesk .calendar-project-filter {
+    min-width: 0;
+    width: 100%;
+  }
+  #pdesk .calendar-project-filter > .app-select {
+    min-width: 0;
+  }
+  #pdesk .list-row {
+    flex-wrap: wrap;
+  }
+  #pdesk .list-row > .grow {
+    flex-basis: calc(100% - 40px);
+  }
+  #pdesk .item-detail .heading {
+    gap: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #pdesk .app-select-trigger {
+    transition: none;
+  }
+}
+
+#pdesk .plan-tabs {
+  margin-bottom: 24px;
+}
+#pdesk .plan-tabs > button {
+  min-width: 100px;
+  min-height: 44px;
+}
+#pdesk dialog:is(.plan-create-dialog, .plan-help-dialog) {
+  width: min(640px, calc(100vw - 32px));
+  padding: 28px;
+}
+#pdesk .plan-dialog-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+#pdesk .plan-dialog-heading h2 {
+  font-size: 22px;
+  line-height: 1.5;
+}
+#pdesk .plan-close {
+  flex: 0 0 44px;
+  width: 44px;
+  min-height: 44px;
+  padding: 6px;
+  font-size: 24px;
+}
+#pdesk .plan-back {
+  min-height: 36px;
+  padding: 0;
+  margin-bottom: 8px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+#pdesk .plan-choices {
+  display: grid;
+  gap: 12px;
+}
+#pdesk .plan-choice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+  gap: 8px 16px;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  text-align: left;
+  justify-content: stretch;
+}
+#pdesk .plan-choice:hover {
+  background: var(--control-hover);
+}
+#pdesk .plan-choice strong {
+  font-size: 16px;
+}
+#pdesk .plan-choice span:first-of-type {
+  grid-row: 2;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+#pdesk .plan-choice span:last-child {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: center;
+}
+#pdesk .plan-kind-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 12px;
+}
+#pdesk .plan-kind-tabs button {
+  min-height: 44px;
+}
+#pdesk .plan-kind-description {
+  margin-bottom: 20px;
+}
+#pdesk .plan-project-field {
+  margin: 20px 0;
+}
+#pdesk .plan-project-field > label {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+}
+#pdesk .plan-empty-projects {
+  display: grid;
+  gap: 16px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+#pdesk .editor-unframed {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+#pdesk .new-project-fields {
+  padding: 0 16px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--control-hover);
+}
+#pdesk .plan-help-content {
+  display: grid;
+  gap: 22px;
+  margin-bottom: 28px;
+}
+#pdesk .plan-help-content h3 {
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+#pdesk .plan-help-content p {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+@media (max-width: 600px) {
+  #pdesk dialog:is(.plan-create-dialog, .plan-help-dialog) {
+    padding: 20px;
+  }
+  #pdesk .plan-choice {
+    padding: 16px;
+  }
+}

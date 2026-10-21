@@ -392,9 +392,6 @@
   #pdesk .calendar-project-filter {
     width: 100%;
   }
-  #pdesk .calendar-filter-trigger {
-    flex: 1;
-  }
   #pdesk .site-footer {
     margin-top: 16px;
     flex-direction: column;

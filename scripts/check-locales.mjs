@@ -29,7 +29,7 @@ assert.equal(
   translate('en', '다른 기기 3곳에서 로그아웃했어요.'),
   'Signed out of 3 other devices.',
 );
-assert.equal(translate('en', '태스크 상세 · 했냐옹'), 'Task Details · Haetnyaong');
+assert.equal(translate('en', '할 일 상세 · 했냐옹'), 'Task Details · Haetnyaong');
 assert.equal(translate('en', '새 이름을 삭제할까요?'), 'Delete 새 이름?');
 assert.equal(
   translate('en', '입력 내용을 확인해주세요. (오류 번호: AB12)'),

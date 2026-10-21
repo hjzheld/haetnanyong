@@ -2,7 +2,7 @@
 const messages: Record<string, string> = {
   '(종료일 제외)': '(end date excluded)',
   '+ 일정 등록': '+ Add event',
-  '+ 태스크 등록': '+ Add task',
+  '+ 할 일 등록': '+ Add task',
   '+ 프로젝트 만들기': '+ New project',
   '8자 이상 입력해주세요': 'Enter at least 8 characters',
   'Neon, Vercel, Slack, Sentry를 사용합니다. 오류 수집에는 비밀번호와 인증 토큰을 의도적으로 전송하지 않습니다.':
@@ -61,7 +61,7 @@ const messages: Record<string, string> = {
   '{0} {1} · 했냐옹': '{0} {1} · Haetnyaong',
   '{0} 일정이 곧 시작해요.': '{0} is starting soon.',
   '{0}을 삭제할까요?': 'Delete {0}?',
-  '← 일정·태스크 목록': '← Events & tasks',
+  '← 일정·할 일 목록': '← Events & tasks',
   '← 프로젝트 목록': '← Projects',
   '가입 중…': 'Creating account…',
   '가입하고 시작하기': 'Sign up and get started',
@@ -141,7 +141,7 @@ const messages: Record<string, string> = {
     'Your session expired. Sign in again, then reconnect Slack from My account.',
   '로그인 정보를 확인하고 있어요. 잠시만 기다려주세요.': 'Checking your session. Please wait.',
   '로그인 중…': 'Signing in…',
-  '로그인, 일정·태스크 관리, Slack 리마인더 발송, 오류 확인과 서비스 보안을 위해 사용합니다.':
+  '로그인, 일정·할 일 관리, Slack 리마인더 발송, 오류 확인과 서비스 보안을 위해 사용합니다.':
     'We use this information for authentication, event and task management, Slack reminders, error diagnostics, and security.',
   '로그인된 다른 기기가 없어요.': 'No other signed-in devices.',
   '로그인이 만료됐어요. 다시 로그인해주세요.': 'Your session expired. Please sign in again.',
@@ -224,7 +224,7 @@ const messages: Record<string, string> = {
     'This cannot be undone. Reminders linked to the event will also be canceled.',
   '삭제한 일정은 되돌릴 수 없고 연결된 Slack 알림도 함께 취소됩니다.':
     'Deleted events cannot be restored. Their linked Slack reminders will also be canceled.',
-  '삭제한 태스크는 되돌릴 수 없어요.': 'Deleted tasks cannot be restored.',
+  '삭제한 할 일은 되돌릴 수 없어요.': 'Deleted tasks cannot be restored.',
   상세: 'Details',
   '상세 보기 →': 'View details →',
   상태: 'Status',
@@ -274,7 +274,7 @@ const messages: Record<string, string> = {
   실패: 'Failed',
   '아직 등록된 항목이 없어요.': 'Nothing here yet.',
   '아직 일정이 없어요. 새 일정을 등록해보세요.': 'No events yet. Add a new event.',
-  '아직 태스크가 없어요. 새 할 일을 등록해보세요.': 'No tasks yet. Add something to do.',
+  '아직 할 일이 없어요. 새 할 일을 등록해보세요.': 'No tasks yet. Add something to do.',
   알림: 'Reminder',
   '알림 닫기': 'Dismiss notification',
   '알림 방식': 'Reminder method',
@@ -338,7 +338,7 @@ const messages: Record<string, string> = {
   완료: 'Done',
   '완료 취소': 'Mark incomplete',
   완료하기: 'Mark complete',
-  '완료한 태스크': 'Completed tasks',
+  '완료한 할 일': 'Completed tasks',
   '외부 처리 서비스': 'External service providers',
   '요청 방식이 올바르지 않아요. 화면을 새로고침해주세요.':
     'The request is invalid. Refresh the page.',
@@ -401,8 +401,8 @@ const messages: Record<string, string> = {
   '일정 알림을 받을 준비가 됐어요': 'Ready to receive event reminders',
   '일정 종료 시각은 시작 시각보다 뒤여야 해요.': 'The event must end after it starts.',
   '일정 종류': 'Event type',
-  '일정·태스크': 'Events & tasks',
-  '일정·태스크 · 했냐옹': 'Events & tasks · Haetnyaong',
+  '일정·할 일': 'Events & tasks',
+  '일정·할 일 · 했냐옹': 'Events & tasks · Haetnyaong',
   '일정에서 알림 시간을 설정하면 연결된 Slack 계정으로 보내드려요.':
     'Set a reminder time on an event to receive it in your connected Slack account.',
   '일정을 찾을 수 없거나 날짜 범위가 올바르지 않아요.': 'Event not found or invalid date range.',
@@ -484,10 +484,11 @@ const messages: Record<string, string> = {
     'Select an event in the calendar and choose a reminder time. Connecting Slack does not automatically enable reminders for every event.',
   '탈퇴 즉시 계정과 서비스 데이터는 운영 데이터베이스에서 삭제합니다. Slack 예약 취소가 확인되지 않은 경우에는 취소에 필요한 채널 ID와 예약 메시지 ID, 워크스페이스의 암호화된 앱 설치 토큰을 임시 보관합니다. 설치 토큰은 다른 연결 사용자가 있거나 예약 취소에 필요한 동안 유지하며, 연결과 취소 작업이 모두 정리되면 정기 정리 작업에서 삭제합니다.':
     'When you delete your account, account and service data are removed from the operational database immediately. If Slack cancellation is unconfirmed, we temporarily retain the channel ID, scheduled message ID, and encrypted workspace installation token needed to retry. Installation tokens remain while other users or cancellation jobs need them and are removed by scheduled cleanup once those connections and jobs are resolved.',
-  태스크: 'Task',
-  '태스크 마감 · 일정': 'Task deadlines · Events',
-  '태스크를 찾을 수 없거나 날짜 범위가 올바르지 않아요.': 'Task not found or invalid date range.',
-  '태스크를 찾을 수 없거나 이미 삭제됐어요.': 'Task not found or already deleted.',
+  '할 일 상세 · 했냐옹': 'Task Details · Haetnyaong',
+  '할 일 등록 · 했냐옹': 'New Task · Haetnyaong',
+  '할 일 수정 · 했냐옹': 'Edit Task · Haetnyaong',
+  '할 일을 찾을 수 없거나 날짜 범위가 올바르지 않아요.': 'Task not found or invalid date range.',
+  '할 일을 찾을 수 없거나 이미 삭제됐어요.': 'Task not found or already deleted.',
   테마: 'Theme',
   토: 'Sat',
   '페이지를 찾지 못했어요': 'Page not found',
@@ -516,7 +517,7 @@ const messages: Record<string, string> = {
   '프로젝트 이름을 입력해주세요.': 'Please enter a project name.',
   '프로젝트 일정에서 알림을 설정해보세요.': 'Set a reminder on a project event.',
   '프로젝트 필터': 'Project filter',
-  '프로젝트, 일정, 태스크와 로그인 정보가 즉시 삭제되며 복구할 수 없어요.':
+  '프로젝트, 일정, 할 일과 로그인 정보가 즉시 삭제되며 복구할 수 없어요.':
     'Projects, events, tasks, and login details are deleted immediately and cannot be recovered.',
   '프로젝트를 찾을 수 없거나 보관된 프로젝트예요.': 'Project not found or archived.',
   '프로젝트를 찾을 수 없거나 이미 삭제됐어요.': 'Project not found or already deleted.',
@@ -571,6 +572,71 @@ const messages: Record<string, string> = {
   영어: 'English',
   뒤로가기: 'Back',
   한국어: '한국어',
+  '프로젝트 없이 진행': 'Continue without a project',
+  '새 프로젝트 등록하기': 'Create a new project',
+  '새 프로젝트 이름': 'New project name',
+  '프로젝트 색상': 'Project color',
+  '새 프로젝트 이름을 1~150자로 입력해주세요.':
+    'Enter a project name between 1 and 150 characters.',
+  '프로젝트와 지금 작성한 항목을 함께 추가해요.': 'Create the project and add this item to it.',
+  '프로젝트는 만들어졌어요. 다시 추가하면 선택된 프로젝트에 항목만 저장해요.':
+    'The project was created. Retrying adds only the item to the selected project.',
+  '프로젝트 목록을 불러오고 있어요.': 'Loading projects.',
+  '플랜 등록에서 할 일이나 일정을 작성하고 프로젝트를 선택해요. 새 프로젝트 등록하기를 고르면 이름과 색상을 함께 정할 수 있어요.':
+    'Create a task or event and choose a project. Select Create a new project to enter its name and color in the same form.',
+  플랜: 'Plans',
+  '플랜 · 했냐옹': 'Plans · Haetnyaong',
+  '+ 플랜 등록': '+ Add plan',
+  개별: 'Individual',
+  도움말: 'Help',
+  '플랜 분류': 'Plan categories',
+  '플랜 도움말': 'About plans',
+  확인했어요: 'Got it',
+  '프로젝트부터 나만의 일정과 할 일까지, 한곳에서 관리해요.':
+    'Manage projects, personal events and tasks in one place.',
+  '새 프로젝트 만들기': 'Create a new project',
+  '기존 프로젝트에 추가': 'Add to an existing project',
+  '프로젝트 없이 추가': 'Add without a project',
+  '여러 일정과 할 일을 묶을 공간을 만들어요.': 'Create a space for related events and tasks.',
+  '진행 중인 프로젝트에 일정이나 할 일을 더해요.': 'Add an event or task to an active project.',
+  '일상의 약속이나 할 일을 개별로 관리해요.': 'Manage a personal event or task on its own.',
+  '어디에 추가할까요?': 'Where would you like to add it?',
+  '새 항목 만들기': 'Create an item',
+  '← 이전': '← Back',
+  '추가할 프로젝트': 'Choose a project',
+  '프로젝트를 선택해주세요': 'Select a project',
+  '진행 중인 프로젝트가 없어요. 먼저 새 프로젝트를 만들어주세요.':
+    'No active projects. Create a new project first.',
+  '마감일까지 끝내고 완료 체크하는 작업이에요.':
+    'A task to finish by its due date and mark complete.',
+  '시작과 종료 시간을 정해두는 약속이에요.': 'An event with a start and end time.',
+  '프로젝트 만들기': 'Create project',
+  '할 일 추가하기': 'Add task',
+  '일정 추가하기': 'Add event',
+  '알림 예약하기': 'Schedule reminder',
+  '변경사항 저장': 'Save changes',
+  '예: 제주도 여행': 'e.g. Trip to Jeju',
+  '예: 발표 자료 준비하기': 'e.g. Prepare presentation slides',
+  '예: 팀 회의': 'e.g. Team meeting',
+  '← 개별 플랜 목록': '← Individual plans',
+  '캘린더에는 일정만 표시돼요. 할 일은 플랜에서 확인해주세요.':
+    'The calendar shows events only. Find tasks in Plans.',
+  '관련된 일정과 할 일을 묶어 관리하는 공간이에요. 진행 중과 보관함으로 나눠 볼 수 있어요.':
+    'Group related events and tasks in a project. Switch between active and archived projects.',
+  '프로젝트에 속하지 않은 개인 일정과 할 일을 모아 보여줘요.':
+    'View personal events and tasks that do not belong to a project.',
+  '일정과 할 일의 차이': 'Events and tasks',
+  '일정은 회의나 약속처럼 시간을 정하는 계획이고, 할 일은 마감일까지 끝내고 완료 체크하는 작업이에요.':
+    'Events reserve time for meetings or appointments. Tasks are work to finish by a due date and mark complete.',
+  '플랜 추가하기': 'Adding a plan',
+  '플랜 등록에서 새 프로젝트를 만들거나, 기존 프로젝트 또는 프로젝트 없이 항목을 추가할 수 있어요.':
+    'Use Add plan to create a project or add an item with or without a project.',
+  '지연된 할 일': 'Overdue tasks',
+  '마감일이 지난 미완료 작업': 'Unfinished tasks past their due date',
+  '지연된 할 일이 없어요.': 'No overdue tasks.',
+  '오늘부터 3일 이내 마감': 'Due today or in the next 3 days',
+  '캘린더에는 일정만 표시돼요. 할 일은 일정·할 일에서 확인해주세요.':
+    'The calendar shows events only. Find tasks in Events & tasks.',
   'Slack 연결 정보를 사용할 수 없어요. 관리자에게 문의해주세요.':
     'Slack connection credentials are unavailable. Contact the administrator.',
   '아직 예약 처리 중이거나 결과가 불확실해요. 2분 후 상태 확인을 누르고 다시 취소해주세요.':
@@ -586,8 +652,8 @@ const messages: Record<string, string> = {
   '일정 상세에서 Slack 알림을 설정해보세요.': 'Set a Slack reminder from an event’s details.',
   '알림은 현재부터 1분 이후, 120일 이내로 설정해주세요.':
     'Schedule reminders at least one minute ahead and within 120 days.',
-  'Slack 연결이 정상이에요. 일정에서 알림을 예약해주세요.':
-    'Your Slack connection works. Schedule a reminder from an event.',
+  'Slack 계정과 예약 목록 조회가 정상이에요. 알림을 예약한 뒤 상태를 확인해주세요.':
+    'Your Slack account and reservation list are accessible. Schedule a reminder, then check its status.',
   'Slack 예약 목록을 확인하지 못했어요. 기존 알림은 유지돼요. 잠시 후 상태 확인을 다시 눌러주세요.':
     'Could not check Slack reservations. Existing reminders are unchanged. Check again shortly.',
   'Slack에서 예약을 찾지 못했어요. 알림 시각을 확인하고 다시 예약해주세요.':

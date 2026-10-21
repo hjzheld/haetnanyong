@@ -66,7 +66,14 @@ const { chromium } = createRequire(packagePath)('playwright');
   signedIn = true;
   for (const width of [1440, 768, 375, 320]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const url of ['/', '/mypage', '/projects', '/items', '/calendar', '/reminders']) {
+    for (const url of [
+      '/',
+      '/mypage',
+      '/plans?tab=projects',
+      '/plans?tab=individual',
+      '/calendar',
+      '/reminders',
+    ]) {
       await page.evaluate((url) => window.$nuxt.$router.push(url), url);
       await page.waitForTimeout(250);
       const result = await page.evaluate(() => ({
@@ -87,13 +94,14 @@ const { chromium } = createRequire(packagePath)('playwright');
           if (await nav.isVisible()) throw new Error('Mobile menu must start closed');
           await toggle.click();
           if (!(await nav.isVisible())) throw new Error('Mobile menu must open');
-          if (!(await page.locator('#account-navigation').isVisible())) throw new Error('Account actions must open');
+          if (!(await page.locator('#account-navigation').isVisible()))
+            throw new Error('Account actions must open');
           await page.screenshot({ path: `site-qa/mobile-menu-${width}.png` });
           await page.keyboard.press('Escape');
           if (await nav.isVisible()) throw new Error('Escape must close menu');
           await toggle.click();
-          await nav.getByRole('link', { name: '프로젝트', exact: true }).click();
-          await page.waitForURL('**/projects');
+          await nav.getByRole('link', { name: '플랜', exact: true }).click();
+          await page.waitForURL('**/plans');
           if (await nav.isVisible()) throw new Error('Navigation must close menu');
           await page.evaluate(() => window.$nuxt.$router.push('/mypage'));
         } else if (!(await nav.isVisible()) || (await toggle.isVisible())) {

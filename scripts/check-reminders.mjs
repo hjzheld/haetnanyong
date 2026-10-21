@@ -23,6 +23,7 @@ function load(path, modules, extra = {}) {
       exports: module.exports,
       require: (id) => modules[id] ?? require(id),
       URLSearchParams,
+      structuredClone,
       Buffer,
       ...globals,
       ...extra,
@@ -33,7 +34,8 @@ function load(path, modules, extra = {}) {
 }
 
 let pages = [],
-  httpError;
+  httpError,
+  lastSlackRequest;
 const slack = load(
   'server/services/slack.ts',
   {
@@ -41,7 +43,11 @@ const slack = load(
     '#server/utils/slack-oauth': { decryptSlackToken: () => 'test-token' },
   },
   {
-    $fetch: async () => {
+    $fetch: async (_url, options) => {
+      lastSlackRequest = options;
+      options.onResponse?.({
+        response: { headers: new Headers({ 'x-slack-req-id': 'req-test-1' }) },
+      });
       if (httpError) throw httpError;
       return pages.shift();
     },
@@ -57,7 +63,17 @@ for (const [code, rejected] of [
     slack.scheduleSlackMessage('D1', 'hello', 123),
     (error) => slack.slackFailure(error).rejected === rejected,
   );
+  assert.equal(lastSlackRequest.body.post_at, 123);
+  assert.equal(lastSlackRequest.headers['Content-Type'], 'application/json; charset=utf-8');
 }
+pages = [{ ok: false, error: 'internal_error' }];
+await assert.rejects(
+  slack.scheduleSlackMessage('D1', 'hello', 123),
+  (error) =>
+    error.data.slackRequestId === 'req-test-1' &&
+    error.data.method === 'chat.scheduleMessage' &&
+    error.data.outcome === 'unknown',
+);
 httpError = { response: { status: 429, headers: new Headers({ 'retry-after': '30' }) } };
 await assert.rejects(
   slack.scheduleSlackMessage('D1', 'hello', 123),

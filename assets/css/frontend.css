@@ -322,13 +322,8 @@ dialog input[type='color']::-moz-color-swatch {
     white-space: nowrap;
   }
 }
-/* Shared project/standalone item colors. */
-#pdesk:not(.is-logged-out) .list-row.colored-item {
-  border-left: 4px solid var(--item-color);
-  padding-left: 12px;
-}
+/* Calendar colors cover the whole event label; avoid decorative edge strips. */
 #pdesk:not(.is-logged-out) .calendar .calendar-item {
-  border-left: 4px solid var(--item-color);
   background: var(--color-surface-neutral-961);
   background-color: color-mix(in srgb, var(--item-color) 16%, var(--color-surface));
   color: var(--color-text-primary);

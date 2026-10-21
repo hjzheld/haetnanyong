@@ -2,6 +2,16 @@ import { openapi } from '#server/utils/openapi';
 
 export default defineEventHandler(() => {
   const document = JSON.parse(JSON.stringify(openapi));
+  document.paths['/calendar'].get.summary = '기간별 일정 조회';
+  document.paths['/calendar'].get.description =
+    '프로젝트 일정과 개인 일정만 반환합니다. 할 일과 보관된 프로젝트의 일정은 제외합니다. KST 날짜 경계와 종일 일정의 종료일 제외 규칙을 적용합니다.';
+  document.paths['/dashboard'].get.description =
+    '다가오는 할 일(upcomingTasks)은 오늘부터 3일 이내, 지연된 할 일(overdueTasks)은 마감일이 지난 미완료 작업입니다. 보관된 프로젝트의 항목은 제외합니다.';
+  const dashboardSchema =
+    document.paths['/dashboard'].get.responses['200'].content['application/json'].schema;
+  dashboardSchema.properties.overdueTasks = structuredClone(
+    dashboardSchema.properties.upcomingTasks,
+  );
   document.paths['/reminders/{id}/reconcile'] = {
     post: {
       tags: ['Reminders'],

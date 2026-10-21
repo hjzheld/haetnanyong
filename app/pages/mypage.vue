@@ -15,7 +15,8 @@ async function checkSlackHealth() {
   slackNotice.value = '';
   try {
     await request('/api/account/slack/health');
-    slackNotice.value = 'Slack 연결이 정상이에요. 일정에서 알림을 예약해주세요.';
+    slackNotice.value =
+      'Slack 계정과 예약 목록 조회가 정상이에요. 알림을 예약한 뒤 상태를 확인해주세요.';
   } catch (error) {
     connectionError.value = errorText(error, 'slack');
   } finally {
@@ -453,7 +454,7 @@ async function deleteAccount() {
       <div class="heading">
         <h2>{{ tr('정말 탈퇴할까요?') }}</h2>
       </div>
-      <p>{{ tr('프로젝트, 일정, 태스크와 로그인 정보가 즉시 삭제되며 복구할 수 없어요.') }}</p>
+      <p>{{ tr('프로젝트, 일정, 할 일과 로그인 정보가 즉시 삭제되며 복구할 수 없어요.') }}</p>
       <label
         >{{ tr('현재 비밀번호')
         }}<input

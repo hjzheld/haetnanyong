@@ -98,7 +98,7 @@ const results = await db.transaction([
   db.query(taskUpdate, [null, null, null, null, null, null, '1', 202, false, '#000000']),
   db.query(eventUpdate, [null, null, null, null, null, null, '1', 202, false, '#000000']),
   db.query(calendar[0], [101, '2026-10-01T00:00:00+09:00', '2026-11-01T00:00:00+09:00']),
-  db.query(calendar[1], [101, '2026-10-01T00:00:00+09:00', '2026-11-01T00:00:00+09:00']),
+  db.query(queries('server/api/tasks/index.get.ts')[0], [101, false]),
   db.query("UPDATE projects SET color='#654321' WHERE id=1"),
   db.query(calendar[0], [101, '2026-10-01T00:00:00+09:00', '2026-11-01T00:00:00+09:00']),
   db.query(queries('server/api/events/[id].delete.ts')[1], ['1', 202]),
@@ -118,11 +118,12 @@ assert.equal(results[9][0].color, '#AABBCC');
 assert.equal(results[10][0].color, '#DDEEFF');
 assert.equal(results[11].length, 0);
 assert.equal(results[12].length, 0);
-assert.equal(results[13].find((r) => r.title === 'project task').color, '#123456');
-assert.equal(results[13].find((r) => r.title === 'standalone').color, '#AABBCC');
-assert.equal(results[14].find((r) => r.title === 'all day').color, '#123456');
-assert.equal(results[14].find((r) => r.title === 'timed').color, '#DDEEFF');
-assert.equal(results[16].find((r) => r.title === 'project task').color, '#654321');
+assert.ok(results[13].every((r) => r.kind === 'event'));
+assert.equal(results[13].find((r) => r.title === 'all day').color, '#123456');
+assert.equal(results[13].find((r) => r.title === 'timed').color, '#DDEEFF');
+assert.equal(results[14].find((r) => r.title === 'project task').color, '#123456');
+assert.equal(results[14].find((r) => r.title === 'standalone').color, '#AABBCC');
+assert.equal(results[16].find((r) => r.title === 'all day').color, '#654321');
 assert.equal(results[17].length, 0);
 assert.equal(results[18].length, 1);
 assert.equal(results[19].length, 1);

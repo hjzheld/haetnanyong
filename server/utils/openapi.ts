@@ -248,7 +248,7 @@ export const openapi = {
       get: {
         tags: ['Dashboard'],
         summary: '작업 화면 통합 조회',
-        description: '프로젝트·태스크·일정·리마인더를 동일한 사용자 인증으로 병렬 조회합니다.',
+        description: '프로젝트·할 일·일정·리마인더를 동일한 사용자 인증으로 병렬 조회합니다.',
         security: [{ sessionCookie: [] }],
         responses: {
           200: {
@@ -274,7 +274,7 @@ export const openapi = {
     '/items': {
       get: {
         tags: ['Tasks', 'Events'],
-        summary: '프로젝트 없는 태스크·일정 통합 조회',
+        summary: '프로젝트 없는 할 일·일정 통합 조회',
         security: [{ sessionCookie: [] }],
         parameters: [
           {
@@ -1244,7 +1244,7 @@ export const openapi = {
       },
       post: {
         tags: ['Tasks'],
-        summary: '태스크 생성',
+        summary: '할 일 생성',
         responses: {
           '200': {
             description: 'Success',
@@ -2036,7 +2036,7 @@ export const openapi = {
     '/tasks/{id}': {
       patch: {
         tags: ['Tasks'],
-        summary: '태스크 수정·완료 상태 변경',
+        summary: '할 일 수정·완료 상태 변경',
         responses: {
           '200': {
             description: 'Success',
@@ -2167,7 +2167,7 @@ export const openapi = {
       },
       delete: {
         tags: ['Tasks'],
-        summary: '태스크 삭제',
+        summary: '할 일 삭제',
         responses: {
           '200': {
             description: 'Success',
@@ -2506,7 +2506,7 @@ export const openapi = {
     '/calendar': {
       get: {
         tags: ['Calendar'],
-        summary: '기간별 태스크·이벤트 통합 목록',
+        summary: '기간별 일정 목록',
         responses: {
           '200': {
             description: 'Success',

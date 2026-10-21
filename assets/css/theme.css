@@ -159,40 +159,6 @@
     padding: 11px 13px;
   }
 }
-.select-control {
-  position: relative;
-  display: block;
-  min-width: 0;
-  width: 100%;
-}
-#pdesk :is(dialog, .item-page-form) .select-control > select {
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: none;
-  width: 100%;
-  min-height: 46px;
-  padding-inline-end: 48px;
-  cursor: pointer;
-  user-select: none;
-}
-#pdesk :is(dialog, .item-page-form) .select-control > select:focus {
-  outline: none;
-}
-.select-control > svg {
-  position: absolute;
-  right: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  width: 16px;
-  height: 16px;
-  color: var(--color-text-muted);
-}
-.select-control:has(select:focus-visible) {
-  outline: 3px solid var(--color-border-rose-678);
-  outline-offset: 3px;
-  border-radius: 14px;
-}
 .legal-back-button {
   display: inline-flex;
   align-items: center;

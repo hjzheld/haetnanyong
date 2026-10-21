@@ -43,9 +43,6 @@
 .item-detail {
   max-width: 800px;
 }
-#pdesk .item-detail.colored-item {
-  border-left: 5px solid var(--item-color) !important;
-}
 .item-description {
   white-space: pre-wrap;
   overflow-wrap: anywhere;

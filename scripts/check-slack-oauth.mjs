@@ -188,6 +188,43 @@ assert.deepEqual(tokens, [
   'Bearer workspace-one-token',
   'Bearer legacy-token',
 ]);
+// Health must check the recipient and reservation access, not just a valid token.
+let healthTeam = 'TONE';
+let healthMember = { id: 'UONE', team_id: 'TONE' };
+let healthReservations = [];
+const healthCalls = [];
+const health = load(
+  'server/api/account/slack/health.get.ts',
+  {
+    '#server/utils/auth': {
+      requireUser: async () => ({ connectedAt: 'now', workspaceId: 'TONE', memberId: 'UONE' }),
+    },
+    '#server/utils/db': { query: async () => [{ channel: 'DONE' }] },
+    '#server/services/slack': {
+      slackTokenForChannel: async () => 'health-test-token',
+      callSlack: async (method, body, token) => {
+        assert.equal(token, 'health-test-token');
+        healthCalls.push(method);
+        if (method === 'auth.test') return { ok: true, team_id: healthTeam };
+        if (method === 'users.info') return { ok: true, user: healthMember };
+        assert.equal(method, 'chat.scheduledMessages.list');
+        assert.equal(body.channel, 'DONE');
+        return { ok: true, scheduled_messages: healthReservations };
+      },
+    },
+  },
+  globals,
+).default;
+assert.equal((await health({})).checks.reservationList, true);
+assert.deepEqual(healthCalls, ['auth.test', 'users.info', 'chat.scheduledMessages.list']);
+healthTeam = 'TOTHER';
+await assert.rejects(health({}), /workspace does not match/);
+healthTeam = 'TONE';
+healthMember = { id: 'UOTHER', team_id: 'TONE' };
+await assert.rejects(health({}), /recipient does not match/);
+healthMember = { id: 'UONE', team_id: 'TONE' };
+healthReservations = undefined;
+await assert.rejects(health({}), /incomplete/);
 console.log(
   'PASS: OAuth session/state/replay/denial/error handling, authenticated encryption, installation token routing. No network or database writes.',
 );

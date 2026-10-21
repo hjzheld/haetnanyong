@@ -57,9 +57,9 @@ for (const resource of ['profile', 'password']) {
     401,
   );
 }
-const redirect = await fetch(base + '/projects', { redirect: 'manual' });
+const redirect = await fetch(base + '/plans', { redirect: 'manual' });
 assert.equal(redirect.status, 302);
-assert.equal(redirect.headers.get('location'), '/login?redirect=/projects');
+assert.equal(redirect.headers.get('location'), '/login?redirect=/plans');
 const missing = await fetch(base + '/missing-page', { headers: { accept: 'text/html' } });
 assert.equal(missing.status, 404);
 assert.ok((await missing.text()).includes('noindex, nofollow'));

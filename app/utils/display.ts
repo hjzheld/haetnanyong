@@ -69,6 +69,7 @@ type ApiErrorLike = {
 };
 
 const friendlyMessages = new Set([
+  '새 프로젝트 이름을 1~150자로 입력해주세요.',
   '알림은 현재부터 1분 이후, 120일 이내로 설정해주세요.',
   '마감일은 시작일 이후여야 해요.',
   '종료는 시작보다 뒤여야 해요.',
@@ -108,12 +109,12 @@ const exactMessages: Record<string, string> = {
   'Session expired': '로그인이 만료됐어요. 다시 로그인해주세요.',
   'Resource not found': '요청한 내용을 찾을 수 없어요.',
   'Project not found': '프로젝트를 찾을 수 없거나 이미 삭제됐어요.',
-  'Task not found': '태스크를 찾을 수 없거나 이미 삭제됐어요.',
+  'Task not found': '할 일을 찾을 수 없거나 이미 삭제됐어요.',
   'Event not found': '일정을 찾을 수 없거나 이미 삭제됐어요.',
   'Reminder not found': '리마인더를 찾을 수 없거나 이미 삭제됐어요.',
   'Project not found or archived': '프로젝트를 찾을 수 없거나 보관된 프로젝트예요.',
   'Event not found or project archived': '일정을 찾을 수 없거나 프로젝트가 보관됐어요.',
-  'Task not found or invalid date range': '태스크를 찾을 수 없거나 날짜 범위가 올바르지 않아요.',
+  'Task not found or invalid date range': '할 일을 찾을 수 없거나 날짜 범위가 올바르지 않아요.',
   'Event not found or invalid date range': '일정을 찾을 수 없거나 날짜 범위가 올바르지 않아요.',
   'Project name is required': '프로젝트 이름을 입력해주세요.',
   'Project name exceeds 150 characters': '프로젝트 이름은 150자 이내로 입력해주세요.',
@@ -174,6 +175,8 @@ const contextFallbacks: Record<ErrorContext, string> = {
 };
 
 function technicalMessage(raw: string) {
+  if (/Slack (?:workspace|recipient) does not match/i.test(raw))
+    return 'Slack 대화방을 찾지 못했어요. Slack 계정을 다시 연결해주세요.';
   if (/missing_scope/i.test(raw)) return 'Slack 앱 권한이 부족해요. 관리자에게 문의해주세요.';
   if (/invalid_auth|not_authed|token_(?:expired|revoked)/i.test(raw))
     return 'Slack 연결 인증이 만료됐어요. 관리자에게 문의해주세요.';

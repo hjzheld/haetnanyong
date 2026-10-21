@@ -42,6 +42,7 @@ export default defineNuxtConfig({
     '~~/assets/css/layout-fixes.css',
     '~~/assets/css/mobile-header.css',
     '~~/assets/css/theme.css',
+    '~~/assets/css/controls.css',
   ],
   typescript: {
     strict: true,

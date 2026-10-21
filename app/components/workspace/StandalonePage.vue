@@ -10,7 +10,7 @@ const resource = String(route.params.kind);
 if (resource !== 'tasks' && resource !== 'events')
   throw createError({ statusCode: 404, statusMessage: 'Page not found' });
 const kind = resource === 'tasks' ? 'task' : 'event',
-  label = kind === 'task' ? '태스크' : '일정',
+  label = kind === 'task' ? '할 일' : '일정',
   id = String(route.params.id || '');
 if (props.mode !== 'create' && !/^[1-9]\d*$/.test(id))
   throw createError({ statusCode: 404, statusMessage: 'Page not found' });
@@ -38,7 +38,7 @@ const loading = computed(
 const projectReturnTo = computed(() =>
   item.value?.projectId
     ? `/projects/${item.value.projectId}${kind === 'event' ? '?tab=events' : ''}`
-    : '/items',
+    : `/plans?tab=individual&kind=${resource}`,
 );
 const {
   data: reminders,
@@ -177,7 +177,7 @@ async function openReminder() {
 <template>
   <p v-if="busy" class="operation-status" role="status">{{ tr('변경 사항을 처리하고 있어요…') }}</p>
   <NuxtLink :to="projectReturnTo" class="border-btn">{{
-    item?.projectId ? tr('← 프로젝트로 돌아가기') : tr('← 일정·태스크 목록')
+    item?.projectId ? tr('← 프로젝트로 돌아가기') : tr('← 개별 플랜 목록')
   }}</NuxtLink>
   <CommonPageHeading
     :title="
@@ -214,14 +214,14 @@ async function openReminder() {
     :item="editorItem"
     inline
     standalone
-    @close="navigateTo(mode === 'create' ? '/items' : `/items/${resource}/${id}`)"
+    @close="
+      navigateTo(
+        mode === 'create' ? `/plans?tab=individual&kind=${resource}` : `/items/${resource}/${id}`,
+      )
+    "
     @saved="saved"
   />
-  <section
-    v-else-if="item"
-    class="panel item-detail colored-item"
-    :style="{ '--item-color': item.color }"
-  >
+  <section v-else-if="item" class="panel item-detail">
     <div class="heading">
       <h2>{{ tr(label) }} {{ tr('정보') }}</h2>
       <span
@@ -235,7 +235,7 @@ async function openReminder() {
       <dt>{{ tr('기간') }}</dt>
       <dd>{{ datePart(task.startDate) }} ~ {{ datePart(task.dueDate) }}</dd>
       <dt>{{ tr('우선순위') }}</dt>
-      <dd>{{ tr(labels[task.priority]) }}</dd>
+      <dd><CommonPriorityBadge :priority="task.priority" /></dd>
       <dt>{{ tr('상태') }}</dt>
       <dd>{{ tr(labels[task.status]) }}</dd>
     </dl>

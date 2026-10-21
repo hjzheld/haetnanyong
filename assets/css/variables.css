@@ -2,6 +2,14 @@
    Neutral transparent/currentColor values and user-saved colors are intentionally dynamic. */
 :root {
   color-scheme: light;
+  --priority-high-bg: #f8e5e7;
+  --priority-high-text: #812f42;
+  --priority-medium-bg: #fbf0d8;
+  --priority-medium-text: #73520d;
+  --priority-low-bg: #e7eee3;
+  --priority-low-text: #3d6040;
+  --control-hover: color-mix(in srgb, var(--color-accent-lavender-204) 12%, var(--color-surface));
+  --control-selected: color-mix(in srgb, var(--color-accent-sage-569) 18%, var(--color-surface));
   /* Reference palette previews remain recognizable in either theme. */
   --color-theme-preview-light: #f5e4e1;
   --color-theme-preview-dark: #29262a;
@@ -391,6 +399,12 @@
 /* Soft aesthetic night: cocoa surfaces, rose accents, sage and mist-blue details. */
 :root[data-theme='dark'] {
   color-scheme: dark;
+  --priority-high-bg: #4d3038;
+  --priority-high-text: #f2b5c2;
+  --priority-medium-bg: #453b28;
+  --priority-medium-text: #ecd198;
+  --priority-low-bg: #2e4034;
+  --priority-low-text: #c5dfbd;
   --color-background-page: #1e1e21;
   --color-surface: #29272a;
   --color-surface-amber-912: #322b26;

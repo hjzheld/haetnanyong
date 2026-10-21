@@ -1,7 +1,7 @@
 <script setup lang="ts">
-const { tr } = useLocale();
-
-definePageMeta({ middleware: 'auth' });
-useHead(() => ({ title: tr('프로젝트 · 했냐옹') }));
+definePageMeta({
+  middleware: 'auth',
+  redirect: (to) => ({ path: '/plans', query: { ...to.query, tab: 'projects' } }),
+});
 </script>
-<template><WorkspaceView view="projects" /></template>
+<template><span /></template>

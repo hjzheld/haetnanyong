@@ -21,13 +21,13 @@ const done = computed(() => props.tasks.filter((t) => t.status === 'DONE').lengt
     </div>
     <div>
       <div class="between small">
-        <span>{{ tr('태스크') }} {{ done }} / {{ tasks.length }} {{ tr('완료') }}</span
+        <span>{{ tr('할 일') }} {{ done }} / {{ tasks.length }} {{ tr('완료') }}</span
         ><strong>{{ rate }}%</strong>
       </div>
       <div class="bar"><span :style="{ width: rate + '%' }" /></div>
     </div>
     <div class="project-foot">
-      {{ tr('태스크') }} {{ tasks.length }}{{ tr('개 · 일정') }} {{ eventCount }}{{ tr('개') }}
+      {{ tr('할 일') }} {{ tasks.length }}{{ tr('개 · 일정') }} {{ eventCount }}{{ tr('개') }}
       <span>{{ tr('열기 →') }}</span>
     </div></NuxtLink
   >

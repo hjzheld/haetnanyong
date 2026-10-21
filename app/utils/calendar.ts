@@ -1,16 +1,12 @@
-import type { CalendarItem, ScheduleEvent, Task } from '~/types/workspace';
+import type { CalendarItem, ScheduleEvent } from '~/types/workspace';
 import { datePart, koreaDate } from './display';
 
-export function toCalendarItems(tasks: Task[], events: ScheduleEvent[]): CalendarItem[] {
-  return [
-    ...tasks.map((task) => ({ ...task, kind: 'task' as const, endDate: task.dueDate })),
-    ...events.map((event) => ({ ...event, kind: 'event' as const })),
-  ];
+export function toCalendarItems(events: ScheduleEvent[]): CalendarItem[] {
+  return events.map((event) => ({ ...event, kind: 'event' as const }));
 }
 
 export function occursOnDay(item: CalendarItem, day: string): boolean {
-  if (item.kind === 'task')
-    return datePart(item.startDate || item.endDate) <= day && datePart(item.endDate) >= day;
+  if (item.kind !== 'event') return false;
   if (item.allDay) return datePart(item.startDate) <= day && datePart(item.endDate) > day;
   if (!item.startsAt || !item.endsAt) return false;
   return (
@@ -25,14 +21,7 @@ export function groupCalendarItems(items: CalendarItem[], days: string[]) {
   const groups = new Map<string, CalendarItem[]>();
   for (const day of days) if (day) groups.set(day, []);
   for (const item of items) {
-    if (item.kind === 'task') {
-      const start = datePart(item.startDate || item.endDate);
-      const end = datePart(item.endDate);
-      for (const [day, entries] of groups) {
-        if (day >= start && day <= end) entries.push(item);
-      }
-      continue;
-    }
+    if (item.kind !== 'event') continue;
     if (!item.allDay && (!item.startsAt || !item.endsAt)) continue;
     const start = item.allDay ? datePart(item.startDate) : koreaDate(new Date(item.startsAt!));
     const end = item.allDay

@@ -113,6 +113,7 @@ const events = [
       await page.waitForURL(base + url);
     };
     await page.goto(base + '/login');
+    await page.waitForFunction(() => Boolean(document.querySelector('#__nuxt')?.__vue_app__));
     await page.locator('input[type=email]').fill(user.email);
     await page.locator('input[type=password]').fill('test-password');
     await page.getByRole('button', { name: '로그인', exact: true }).click();
@@ -135,12 +136,12 @@ const events = [
       'Loading must hide cached calendar content',
     );
     await page.locator('.calendar').waitFor();
-    assert.equal(await page.locator('.calendar-item').count(), 4);
+    assert.equal(await page.locator('.calendar-item').count(), 3);
     assert.equal(await page.locator('.calendar-item', { hasText: '보관 약속' }).count(), 0);
     assert.equal(count('/api/account/slack'), 0, 'Calendar must not request Slack');
-    await page.locator('.calendar-filter-trigger').click();
+    await page.getByRole('combobox', { name: '프로젝트 필터' }).click();
     await page.getByRole('option', { name: '프로젝트 없음' }).click();
-    assert.equal(await page.locator('.calendar-item').count(), 2);
+    assert.equal(await page.locator('.calendar-item').count(), 1);
     await page.getByRole('button', { name: '이전 달' }).click();
     assert.equal(
       await page.locator('.calendar-item').count(),
@@ -174,8 +175,8 @@ const events = [
     ).length;
     await page.getByRole('button', { name: '삭제', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: '계속하기', exact: true }).click();
-    await page.waitForURL(base + '/items');
-    await page.getByRole('button', { name: '태스크 0', exact: true }).waitFor();
+    await page.waitForURL(base + '/plans?tab=individual&kind=tasks');
+    await page.getByRole('button', { name: '할 일 0', exact: true }).waitFor();
     assert.equal(
       calls.filter((call) => call.path === '/api/tasks/1' && call.method === 'GET').length,
       beforeDelete,
@@ -192,7 +193,7 @@ const events = [
 
     for (const width of [1440, 375]) {
       await page.setViewportSize({ width, height: 900 });
-      await navigate('/items');
+      await navigate('/plans?tab=individual');
       await page.getByRole('button', { name: '일정 1', exact: true }).waitFor();
       assert.equal(
         await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),

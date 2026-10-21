@@ -689,6 +689,10 @@
   opacity: 0;
   transform: translate(-50%, calc(-50% + 16px)) scale(0.96);
 }
+.btn-wrap {
+  display: flex;
+  gap: 8px;
+}
 @keyframes toast-attention {
   0%,
   100% {

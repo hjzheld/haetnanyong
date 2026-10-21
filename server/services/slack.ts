@@ -72,39 +72,52 @@ export async function callSlack<T extends SlackResponse>(
   for (const [key, value] of Object.entries(body)) {
     if (value !== undefined && value !== null) form.set(key, String(value));
   }
+  // Keep the scheduling timestamp numeric; other methods retain their form encoding.
+  const scheduling = method === 'chat.scheduleMessage';
+  let slackRequestId: string | undefined;
+  const diagnostic = (slackCode: string) => ({ method, slackCode, slackRequestId });
   const response = await $fetch<T>(`https://slack.com/api/${method}`, {
     method: 'POST',
     retry: 0,
     timeout: 15000,
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+      'Content-Type': scheduling
+        ? 'application/json; charset=utf-8'
+        : 'application/x-www-form-urlencoded; charset=utf-8',
     },
-    body: form,
+    body: scheduling ? body : form,
+    onResponse({ response }) {
+      const id = response.headers.get('x-slack-req-id');
+      if (id && /^[a-zA-Z0-9_-]{1,128}$/.test(id)) slackRequestId = id;
+    },
   }).catch((error: { response?: { status?: number; headers?: Headers } }) => {
     const limited = error.response?.status === 429;
     const retryAfter = Number(error.response?.headers?.get('retry-after')) || undefined;
+    console.warn('[slack-api]', diagnostic(limited ? 'ratelimited' : 'request_failed'));
     throw createError({
       statusCode: limited ? 429 : 502,
       statusMessage: limited
         ? `Slack ${method} failed: ratelimited`
         : `Slack ${method} request failed`,
       data: {
-        slackCode: limited ? 'ratelimited' : 'request_failed',
+        ...diagnostic(limited ? 'ratelimited' : 'request_failed'),
         outcome: limited ? 'rejected' : 'unknown',
         retryAfter,
       },
     });
   });
-  if (!response.ok)
+  if (!response.ok) {
+    console.warn('[slack-api]', diagnostic(response.error || 'unknown_error'));
     throw createError({
       statusCode: 502,
       statusMessage: `Slack ${method} failed: ${response.error || 'unknown_error'}`,
       data: {
-        slackCode: response.error || 'unknown_error',
+        ...diagnostic(response.error || 'unknown_error'),
         outcome: rejectedCodes.has(response.error || '') ? 'rejected' : 'unknown',
       },
     });
+  }
   return response;
 }
 

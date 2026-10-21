@@ -3,9 +3,13 @@ import { query } from '#server/utils/db';
 
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event);
-  const [tasks, events, completion] = await Promise.all([
+  const [tasks, overdueTasks, events, completion] = await Promise.all([
     query(
-      `SELECT t.id, t.title, t.due_date AS "dueDate", t.project_id AS "projectId", COALESCE(p.color,t.color) AS color FROM tasks t LEFT JOIN projects p ON p.id=t.project_id WHERE t.user_id=$1 AND p.archived_at IS NULL AND t.status <> 'DONE' AND t.due_date <= (now() AT TIME ZONE 'Asia/Seoul')::date + 3 ORDER BY t.due_date`,
+      `SELECT t.id, t.title, t.priority, t.due_date AS "dueDate", t.project_id AS "projectId", COALESCE(p.color,t.color) AS color FROM tasks t LEFT JOIN projects p ON p.id=t.project_id WHERE t.user_id=$1 AND p.archived_at IS NULL AND t.status <> 'DONE' AND t.due_date BETWEEN (now() AT TIME ZONE 'Asia/Seoul')::date AND (now() AT TIME ZONE 'Asia/Seoul')::date + 3 ORDER BY t.due_date`,
+      [user.id],
+    ),
+    query(
+      `SELECT t.id, t.title, t.priority, t.due_date AS "dueDate", t.project_id AS "projectId", COALESCE(p.color,t.color) AS color FROM tasks t LEFT JOIN projects p ON p.id=t.project_id WHERE t.user_id=$1 AND p.archived_at IS NULL AND t.status <> 'DONE' AND t.due_date < (now() AT TIME ZONE 'Asia/Seoul')::date ORDER BY t.due_date`,
       [user.id],
     ),
     query(
@@ -24,6 +28,7 @@ export default defineEventHandler(async (event) => {
   return {
     todayEvents: events,
     upcomingTasks: tasks,
+    overdueTasks,
     completion: {
       total: stats.total,
       completed: stats.completed,

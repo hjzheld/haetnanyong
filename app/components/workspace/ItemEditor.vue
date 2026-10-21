@@ -12,16 +12,43 @@ const props = defineProps<{
   initialDate?: string;
   inline?: boolean;
   standalone?: boolean;
+  unframed?: boolean;
+  allowProjectCreation?: boolean;
 }>();
-const emit = defineEmits<{ close: []; saved: [item?: { id: string }] }>();
+const emit = defineEmits<{
+  close: [];
+  saved: [item?: { id: string; projectId?: string | null }];
+  projectCreated: [project: Project];
+}>();
 const { request } = useApi();
 const i = props.item,
   today = props.initialDate || koreaDate();
 const chosenProject = ref(String(i?.projectId || props.projectId || ''));
-const availableProjects = computed(() => props.projects?.filter((p) => !p.archivedAt) || []);
+const createdProject = ref<Project>();
+const newProjectValue = '__new_project__';
+const creatingProject = computed(
+  () => props.allowProjectCreation && chosenProject.value === newProjectValue,
+);
+const availableProjects = computed(() => {
+  const projects = props.projects?.filter((p) => !p.archivedAt) || [];
+  return createdProject.value &&
+    !projects.some((p) => String(p.id) === String(createdProject.value!.id))
+    ? [...projects, createdProject.value]
+    : projects;
+});
+const projectOptions = computed(() => [
+  {
+    value: '',
+    label: tr(props.allowProjectCreation ? '프로젝트 없이 진행' : '프로젝트 없이 만들기'),
+  },
+  ...availableProjects.value.map((p) => ({ value: String(p.id), label: p.name })),
+  ...(props.allowProjectCreation
+    ? [{ value: newProjectValue, label: tr('새 프로젝트 등록하기') }]
+    : []),
+]);
 const inheritedProject = computed(() =>
   props.kind === 'task' || props.kind === 'event'
-    ? props.projects?.find((p) => String(p.id) === chosenProject.value)
+    ? availableProjects.value.find((p) => String(p.id) === chosenProject.value)
     : undefined,
 );
 const projectLocked = computed(() =>
@@ -31,6 +58,8 @@ const projectLocked = computed(() =>
 );
 const f = reactive({
   name: String(i?.name || ''),
+  newProjectName: '',
+  newProjectColor: DEFAULT_ITEM_COLORS.project,
   title: String(i?.title || ''),
   description: String(i?.description || ''),
   color: String(i?.color || DEFAULT_ITEM_COLORS[props.kind]),
@@ -64,6 +93,7 @@ const initialSnapshot = serializeForm();
 const dirty = computed(() => !savedSuccessfully.value && serializeForm() !== initialSnapshot);
 let resolveDiscardPrompt: ((discard: boolean) => void) | undefined;
 function confirmDiscard() {
+  if (busy.value) return Promise.resolve(false);
   if (!dirty.value) return Promise.resolve(true);
   discardPromptOpen.value = true;
   return new Promise<boolean>((resolve) => {
@@ -89,11 +119,12 @@ onMounted(() => {
 });
 onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload));
 onBeforeRouteLeave(() => confirmDiscard());
+defineExpose({ confirmDiscard });
 const title = computed(
   () =>
     ({
       project: tr('프로젝트'),
-      task: tr('태스크'),
+      task: tr('할 일'),
       event: tr('일정'),
       reminder: tr('Slack 알림'),
     })[props.kind] + (i?.id && props.kind !== 'reminder' ? tr(' 수정') : tr(' 추가')),
@@ -155,12 +186,34 @@ async function submit() {
         props.kind
       ],
       editing = Boolean(i?.id && props.kind !== 'reminder');
-    const result = await request<{ id: string }>(`/api/${resource}${editing ? '/' + i?.id : ''}`, {
-      method: editing ? 'PATCH' : 'POST',
-      body,
-    });
+    if (!editing && creatingProject.value && (props.kind === 'task' || props.kind === 'event')) {
+      const name = f.newProjectName.trim();
+      if (!name || [...name].length > 150)
+        throw Error('새 프로젝트 이름을 1~150자로 입력해주세요.');
+      const project = await request<Project>('/api/projects', {
+        method: 'POST',
+        body: { name, color: f.newProjectColor },
+      });
+      createdProject.value = { ...project, archivedAt: project.archivedAt || null };
+      chosenProject.value = String(project.id);
+      body.projectId = String(project.id);
+      delete body.color;
+      emit('projectCreated', createdProject.value);
+    }
+    const result = await request<{ id: string; projectId?: string | null }>(
+      `/api/${resource}${editing ? '/' + i?.id : ''}`,
+      {
+        method: editing ? 'PATCH' : 'POST',
+        body,
+      },
+    );
     savedSuccessfully.value = true;
-    emit('saved', result);
+    emit('saved', {
+      ...result,
+      ...(!editing && (props.kind === 'task' || props.kind === 'event')
+        ? { projectId: body.projectId as string | null }
+        : {}),
+    });
   } catch (e) {
     error.value = errorText(e, props.kind === 'reminder' ? 'reminder' : 'save');
   } finally {
@@ -172,50 +225,71 @@ async function submit() {
   <component
     :is="inline ? 'section' : 'dialog'"
     ref="dialog"
-    :class="{ 'panel item-page-form': inline }"
-    aria-labelledby="editor-title"
+    :class="{ 'item-page-form': inline, panel: inline && !unframed, 'editor-unframed': unframed }"
+    :aria-labelledby="unframed ? undefined : 'editor-title'"
+    :aria-label="unframed ? title : undefined"
     @cancel.prevent="!busy && attemptClose()"
   >
     <form :aria-busy="busy" @submit.prevent="submit">
-      <h2 id="editor-title">{{ tr(title) }}</h2>
+      <h2 v-if="!unframed" id="editor-title">{{ tr(title) }}</h2>
       <fieldset :disabled="busy">
+        <label v-if="kind === 'project'"
+          >{{ tr('프로젝트 이름')
+          }}<input v-model="f.name" required maxlength="150" :placeholder="tr('예: 제주도 여행')"
+        /></label>
+        <label v-else-if="kind !== 'reminder'"
+          >{{ tr('제목')
+          }}<input
+            v-model="f.title"
+            required
+            maxlength="200"
+            :placeholder="kind === 'task' ? tr('예: 발표 자료 준비하기') : tr('예: 팀 회의')"
+        /></label>
         <label
           v-if="
             !standalone && !item?.id && !props.projectId && (kind === 'task' || kind === 'event')
           "
-          >{{ tr('프로젝트 (선택)')
-          }}<span class="select-control"
-            ><select v-model="chosenProject" :aria-label="tr('프로젝트 (선택)')">
-              <option value="">{{ tr('프로젝트 없이 만들기') }}</option>
-              <option v-for="p in availableProjects" :key="p.id" :value="String(p.id)">
-                {{ p.name }}
-              </option></select
-            ><svg
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="m4 6 4 4 4-4" /></svg></span
-        ></label>
-        <label v-if="kind === 'project'"
-          >{{ tr('프로젝트 이름') }}<input v-model="f.name" required maxlength="150"
-        /></label>
-        <label v-else-if="kind !== 'reminder'"
-          >{{ tr('제목') }}<input v-model="f.title" required maxlength="200"
-        /></label>
+        >
+          {{ tr('프로젝트 (선택)')
+          }}<CommonSelect
+            v-model="chosenProject"
+            :label="tr('프로젝트 (선택)')"
+            :options="projectOptions"
+          />
+        </label>
+        <div v-if="creatingProject" class="new-project-fields">
+          <label
+            >{{ tr('새 프로젝트 이름')
+            }}<input
+              v-model="f.newProjectName"
+              required
+              maxlength="150"
+              :placeholder="tr('예: 제주도 여행')"
+          /></label>
+          <label class="color-field"
+            ><span>{{ tr('프로젝트 색상') }}</span
+            ><input v-model="f.newProjectColor" type="color" :aria-label="tr('프로젝트 색상')"
+          /></label>
+          <p class="small">{{ tr('프로젝트와 지금 작성한 항목을 함께 추가해요.') }}</p>
+        </div>
+        <p v-if="createdProject && error" class="small" role="status">
+          {{ tr('프로젝트는 만들어졌어요. 다시 추가하면 선택된 프로젝트에 항목만 저장해요.') }}
+        </p>
         <label v-if="kind !== 'reminder'"
           >{{ tr('설명 (선택)') }}<textarea v-model="f.description" rows="3" />
         </label>
-        <label v-if="kind !== 'reminder' && !projectLocked"
-          >{{ tr('색상') }}<input v-model="displayColor" type="color" :aria-label="tr('표시 색상')"
-        /></label>
-        <p v-if="projectLocked && inheritedProject" class="small">
-          {{ inheritedProject.name }} {{ tr('프로젝트 색상을 따라가요.') }}
-        </p>
+        <label v-if="kind !== 'reminder' && !creatingProject" class="color-field">
+          <span>{{ tr('색상') }}</span>
+          <input
+            v-model="displayColor"
+            type="color"
+            :aria-label="tr('표시 색상')"
+            :disabled="projectLocked"
+          />
+          <span v-if="projectLocked && inheritedProject" class="small"
+            >{{ inheritedProject.name }} {{ tr('프로젝트 색상을 따라가요.') }}</span
+          >
+        </label>
         <template v-if="kind === 'task'">
           <label>{{ tr('시작일') }}<input v-model="f.startDate" type="date" required /></label
           ><label
@@ -223,59 +297,39 @@ async function submit() {
           /></label>
           <label
             >{{ tr('우선순위')
-            }}<span class="select-control"
-              ><select v-model="f.priority" :aria-label="tr('우선순위')">
-                <option value="LOW">{{ tr('낮음') }}</option>
-                <option value="MEDIUM">{{ tr('보통') }}</option>
-                <option value="HIGH">{{ tr('높음') }}</option></select
-              ><svg
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="m4 6 4 4 4-4" /></svg></span
-          ></label>
+            }}<CommonSelect
+              v-model="f.priority"
+              :label="tr('우선순위')"
+              :options="[
+                { value: 'HIGH', label: tr('높음') },
+                { value: 'MEDIUM', label: tr('보통') },
+                { value: 'LOW', label: tr('낮음') },
+              ]"
+          /></label>
           <label v-if="item?.id"
             >{{ tr('상태')
-            }}<span class="select-control"
-              ><select v-model="f.status" :aria-label="tr('상태')">
-                <option value="TODO">{{ tr('할 일') }}</option>
-                <option value="IN_PROGRESS">{{ tr('진행 중') }}</option>
-                <option value="DONE">{{ tr('완료') }}</option></select
-              ><svg
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="m4 6 4 4 4-4" /></svg></span
-          ></label>
+            }}<CommonSelect
+              v-model="f.status"
+              :label="tr('상태')"
+              :options="[
+                { value: 'TODO', label: tr('할 일') },
+                { value: 'IN_PROGRESS', label: tr('진행 중') },
+                { value: 'DONE', label: tr('완료') },
+              ]"
+          /></label>
         </template>
         <template v-if="kind === 'event'">
           <label
             >{{ tr('일정 종류')
-            }}<span class="select-control"
-              ><select v-model="f.allDay" :aria-label="tr('일정 종류')" :disabled="!!item?.id">
-                <option :value="false">{{ tr('시간 일정') }}</option>
-                <option :value="true">{{ tr('종일 일정') }}</option></select
-              ><svg
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="m4 6 4 4 4-4" /></svg></span
-          ></label>
+            }}<CommonSelect
+              v-model="f.allDay"
+              :label="tr('일정 종류')"
+              :disabled="!!item?.id"
+              :options="[
+                { value: false, label: tr('시간 일정') },
+                { value: true, label: tr('종일 일정') },
+              ]"
+          /></label>
           <p class="small">{{ tr('시간은 한국 표준시(KST) 기준이에요.') }}</p>
           <template v-if="f.allDay"
             ><label>{{ tr('시작일') }}<input v-model="f.startDate" type="date" required /></label
@@ -297,24 +351,19 @@ async function submit() {
           <p class="small">{{ tr('알림은 현재부터 1분 이후, 120일 이내로 설정해주세요.') }}</p>
           <label
             >{{ tr('알림 방식')
-            }}<span class="select-control"
-              ><select v-model="f.timing" :aria-label="tr('알림 방식')">
-                <template v-if="!item?.allDay"
-                  ><option value="10">{{ tr('시작 10분 전') }}</option>
-                  <option value="30">{{ tr('시작 30분 전') }}</option></template
-                >
-                <option value="CUSTOM">{{ tr('직접 지정') }}</option></select
-              ><svg
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="m4 6 4 4 4-4" /></svg></span
-          ></label>
+            }}<CommonSelect
+              v-model="f.timing"
+              :label="tr('알림 방식')"
+              :options="[
+                ...(!item?.allDay
+                  ? [
+                      { value: '10', label: tr('시작 10분 전') },
+                      { value: '30', label: tr('시작 30분 전') },
+                    ]
+                  : []),
+                { value: 'CUSTOM', label: tr('직접 지정') },
+              ]"
+          /></label>
           <label v-if="f.timing === 'CUSTOM'"
             >{{ tr('알림 시각 (KST)')
             }}<input v-model="f.scheduledAt" type="datetime-local" required /></label
@@ -328,7 +377,21 @@ async function submit() {
         <button type="button" class="border-btn" :disabled="busy" @click="attemptClose">
           {{ tr('취소') }}</button
         ><button class="solid" :disabled="busy" :aria-busy="busy">
-          {{ busy ? (kind === 'reminder' ? tr('알림 예약 중…') : tr('저장 중…')) : tr('저장하기') }}
+          {{
+            busy
+              ? kind === 'reminder'
+                ? tr('알림 예약 중…')
+                : tr('저장 중…')
+              : i?.id && kind !== 'reminder'
+                ? tr('변경사항 저장')
+                : kind === 'project'
+                  ? tr('프로젝트 만들기')
+                  : kind === 'task'
+                    ? tr('할 일 추가하기')
+                    : kind === 'event'
+                      ? tr('일정 추가하기')
+                      : tr('알림 예약하기')
+          }}
         </button>
       </div>
     </form>
