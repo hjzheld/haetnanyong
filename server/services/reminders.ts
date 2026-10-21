@@ -70,7 +70,9 @@ export async function reconcileReminder(id: string, userId: string) {
       slack_scheduled_message_id=COALESCE($2::varchar,slack_scheduled_message_id),
       reservation_accepted_at=CASE WHEN $2::varchar IS NOT NULL THEN COALESCE(reservation_accepted_at,now()) ELSE reservation_accepted_at END,
       canceled_at=CASE WHEN $1::varchar='CANCELED' THEN now() ELSE canceled_at END,
-      last_error_code=$3,last_error_message=$4,updated_at=now()
+      last_error_code=CASE WHEN $1::varchar='ELAPSED' THEN COALESCE(last_error_code,'delivery_unverified') ELSE $3 END,
+      last_error_message=CASE WHEN $1::varchar='ELAPSED' THEN COALESCE(last_error_message,'Scheduled time passed; delivery is unverified') ELSE $4 END,
+      updated_at=now()
       WHERE id=$5 AND revision=$6 AND status=$7 AND updated_at=$8
       RETURNING id,status,revision`,
     [

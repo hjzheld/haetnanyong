@@ -383,6 +383,10 @@
 .page-tone-account .border-btn {
   border-color: var(--color-border-rose-837);
 }
+.mt-8 {
+  margin-top: 8px !important;
+}
+
 .page-tone-account .heading h2 {
   color: var(--color-text-lavender-339);
 }

@@ -225,6 +225,62 @@ await assert.rejects(health({}), /recipient does not match/);
 healthMember = { id: 'UONE', team_id: 'TONE' };
 healthReservations = undefined;
 await assert.rejects(health({}), /incomplete/);
+let testDmSends = 0;
+let testDmTeam = 'TONE';
+let testDmChannel = 'DONE';
+let testDmConnected = true;
+let testDmReject = false;
+const testDm = load(
+  'server/api/account/slack/test.post.ts',
+  {
+    '#server/utils/auth': {
+      requireUser: async () => ({
+        id: 'owner',
+        connectedAt: testDmConnected ? 'now' : null,
+        workspaceId: 'TONE',
+        memberId: 'UONE',
+      }),
+    },
+    '#server/utils/db': {
+      query: async (_sql, args) => {
+        assert.equal(args[0], 'owner');
+        return [{ channel: 'DONE' }];
+      },
+    },
+    '#server/services/slack': {
+      slackTokenForChannel: async () => 'own-token',
+      callSlack: async (method, body, token) => {
+        assert.equal(token, 'own-token');
+        if (method === 'auth.test') return { ok: true, team_id: testDmTeam };
+        if (method === 'conversations.open') {
+          assert.equal(body.users, 'UONE');
+          return { ok: true, channel: { id: testDmChannel } };
+        }
+        assert.equal(method, 'chat.postMessage');
+        assert.equal(body.channel, 'DONE');
+        testDmSends++;
+        if (testDmReject) throw new Error('Slack chat.postMessage failed: messages_tab_disabled');
+        return { ok: true, channel: 'DONE', ts: '123.456' };
+      },
+    },
+  },
+  globals,
+).default;
+assert.equal((await testDm({})).ok, true);
+assert.equal(testDmSends, 1);
+testDmTeam = 'TOTHER';
+await assert.rejects(testDm({}), /workspace does not match/);
+testDmTeam = 'TONE';
+testDmChannel = 'DOTHER';
+await assert.rejects(testDm({}), /recipient does not match/);
+testDmConnected = false;
+await assert.rejects(testDm({}), /not connected/);
+assert.equal(testDmSends, 1, 'Disconnected and mismatched accounts must never send');
+testDmConnected = true;
+testDmChannel = 'DONE';
+testDmReject = true;
+await assert.rejects(testDm({}), /messages_tab_disabled/);
+assert.equal(testDmSends, 2, 'Do not retry a rejected message');
 console.log(
   'PASS: OAuth session/state/replay/denial/error handling, authenticated encryption, installation token routing. No network or database writes.',
 );

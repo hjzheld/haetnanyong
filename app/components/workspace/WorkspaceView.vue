@@ -593,14 +593,23 @@ const titles = {
         </div>
       </div></template
     >
-    <section v-if="view === 'reminders'" class="panel">
+    <section v-if="view === 'reminders'" class="panel reminders-panel">
       <div class="heading">
         <h2>{{ tr('예약한 알림') }}</h2>
         <button class="border-btn" :disabled="pending" @click="refresh()">
           {{ tr('새로고침') }}
         </button>
       </div>
-      <div v-if="reminders.length" class="table-wrap">
+      <p v-if="reminders.length" class="small reminder-scroll-hint">
+        {{ tr('좌우로 밀어서 알림 상태와 관리 버튼을 확인해주세요.') }}
+      </p>
+      <div
+        v-if="reminders.length"
+        class="table-wrap"
+        role="region"
+        :aria-label="tr('예약한 알림')"
+        tabindex="0"
+      >
         <table>
           <thead>
             <tr>
@@ -615,8 +624,11 @@ const titles = {
             <tr v-for="r in reminders" :key="r.id">
               <td>
                 {{ eventById.get(String(r.eventId))?.title }}
+                <WorkspaceReminderProjectBadge
+                  :project="projectById.get(String(eventById.get(String(r.eventId))?.projectId))"
+                />
                 <p v-if="r.errorMessage" class="form-error">
-                  {{ tr(reminderErrorText(r.errorMessage)) }}
+                  {{ tr(reminderErrorText(r.errorMessage, r.status)) }}
                 </p>
               </td>
               <td>{{ formatTime(r.remindAt) }}</td>
@@ -627,38 +639,42 @@ const titles = {
                   {{ tr('예약 시각이 지났어요. 실제 수신 여부는 Slack에서 확인해주세요.') }}
                 </p>
               </td>
-              <td class="btn-wrap">
-                <button
-                  v-if="
-                    ['SCHEDULED', 'PENDING', 'FAILED', 'CANCEL_FAILED', 'ELAPSED'].includes(
-                      r.status,
-                    )
-                  "
-                  class="border-btn"
-                  :disabled="busy"
-                  @click="askReminderCancel(r.id)"
-                >
-                  {{ tr('예약 취소') }}
-                </button>
-                <button
-                  v-if="['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING', 'SCHEDULED'].includes(r.status)"
-                  class="border-btn"
-                  :disabled="busy"
-                  @click="checkReminder(r.id)"
-                >
-                  {{ tr('상태 확인') }}
-                </button>
-                <button
-                  v-if="
-                    ['FAILED', 'ELAPSED', 'CANCELED'].includes(r.status) &&
-                    eventById.get(String(r.eventId))
-                  "
-                  class="border-btn"
-                  :disabled="busy"
-                  @click="edit('reminder', eventById.get(String(r.eventId)))"
-                >
-                  {{ tr('다시 예약') }}
-                </button>
+              <td class="reminder-management">
+                <div class="reminder-actions">
+                  <button
+                    v-if="
+                      ['SCHEDULED', 'PENDING', 'FAILED', 'CANCEL_FAILED', 'ELAPSED'].includes(
+                        r.status,
+                      )
+                    "
+                    class="border-btn"
+                    :disabled="busy"
+                    @click="askReminderCancel(r.id)"
+                  >
+                    {{ tr('예약 취소') }}
+                  </button>
+                  <button
+                    v-if="
+                      ['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING', 'SCHEDULED'].includes(r.status)
+                    "
+                    class="border-btn"
+                    :disabled="busy"
+                    @click="checkReminder(r.id)"
+                  >
+                    {{ tr('상태 확인') }}
+                  </button>
+                  <button
+                    v-if="
+                      ['FAILED', 'ELAPSED', 'CANCELED'].includes(r.status) &&
+                      eventById.get(String(r.eventId))
+                    "
+                    class="border-btn"
+                    :disabled="busy"
+                    @click="edit('reminder', eventById.get(String(r.eventId)))"
+                  >
+                    {{ tr('다시 예약') }}
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>

@@ -247,7 +247,7 @@ async function main() {
     }
     assert.deepEqual(errors, []);
     console.log(
-      'PASS: unified Plans navigation, archive/tab state, scoped help, three creation flows and payloads, duplicate prevention, discard handling, legacy redirects and mobile modal dropdowns. API mocked.',
+      'PASS: direct plan form, project dropdown, title preservation, inline project creation/color, retry without duplicate project, hidden TODO badge, standalone/existing-project payloads, archive tabs and mobile layout. API mocked.',
     );
     console.log('Screenshots: ' + screenshots);
   } catch (error) {

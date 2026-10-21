@@ -44,6 +44,22 @@
 
 ## 수동 확인
 
+### 실제 DM 수신 확인
+
+Slack 앱 설정 → App Home → Show Tabs에서 Messages Tab을 켭니다.
+Slack의 chat.postMessage는 messages_tab_disabled 오류를 반환할 수 있으므로
+메시지 탭을 끈 상태에서 DM 발송이 정상이라고 가정하지 않습니다.
+이 설정이 모든 internal_error의 원인이라는 뜻은 아닙니다.
+
+마이페이지의 **테스트 DM 보내기**는 클릭한 계정의 저장된 DM에 고정된 테스트 메시지
+한 개를 즉시 보냅니다. 워크스페이스와 conversations.open으로 확인한 수신 DM이
+저장된 연결과 다르면 발송하지 않습니다. 수신자나 본문은 요청으로 지정할 수 없습니다.
+인증·CSRF 검사와 분당 3회 요청 제한이 적용되며 자동 재시도하지 않습니다.
+이 기능으로 일반 DM 실패와 예약 전용 API 실패를 구분합니다.
+
+ELAPSED는 시간이 지났다는 뜻이며 발송 성공을 확인한 상태가 아닙니다.
+상태 확인으로 ELAPSED로 바뀌어도 기존 Slack 오류는 보존합니다.
+
 ### 예약 요청이 internal_error로 실패할 때
 
 1. 변경 코드를 푸시하고 Vercel 배포가 Ready가 되었는지 확인합니다.

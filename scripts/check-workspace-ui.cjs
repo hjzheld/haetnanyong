@@ -325,7 +325,7 @@ async function main() {
     }
     assert.deepEqual(errors, []);
     console.log(
-      'PASS: events-only calendar, overdue separation, dropdown anchor/selection/keyboard/modal focus, project color labels, uniform account buttons, mobile overflow and priority colors. API mocked.',
+      'PASS: events-only calendar, overdue separation, dropdown anchor/selection/keyboard/modal focus, project color labels, desktop inline/mobile full-width account buttons, overflow and priority colors. API mocked.',
     );
     console.log('Screenshots: ' + screenshots);
   } catch (error) {

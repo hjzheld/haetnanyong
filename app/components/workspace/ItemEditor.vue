@@ -1,8 +1,9 @@
 ﻿<script setup lang="ts">
-const { tr } = useLocale();
+const { tr, locale } = useLocale();
 
 import { errorText, koreaDate, datePart, localTime } from '~/utils/display';
 import { DEFAULT_ITEM_COLORS } from '~/utils/item-colors';
+import { defaultReminderMessage } from '~/utils/reminder-message';
 import type { Project } from '~/types/workspace';
 const props = defineProps<{
   kind: 'project' | 'task' | 'event' | 'reminder';
@@ -75,7 +76,17 @@ const f = reactive({
   endsAt: localTime(i?.endsAt as string) || today + 'T15:00',
   timing: i?.allDay ? 'CUSTOM' : '10',
   scheduledAt: localTime(new Date(Date.now() + 5 * 60_000).toISOString()),
-  text: tr(`${i?.title || tr('일정')} 일정이 곧 시작해요.`),
+  text: defaultReminderMessage(
+    {
+      ...i,
+      projectName:
+        i?.projectName ||
+        availableProjects.value.find(
+          (p) => String(p.id) === String(i?.projectId || props.projectId || ''),
+        )?.name,
+    },
+    locale.value,
+  ),
 });
 const displayColor = computed({
   get: () => inheritedProject.value?.color || f.color,
@@ -106,7 +117,10 @@ function resolveDiscard(discard: boolean) {
   resolveDiscardPrompt = undefined;
 }
 async function attemptClose() {
-  if (await confirmDiscard()) emit('close');
+  if (await confirmDiscard()) {
+    savedSuccessfully.value = true;
+    emit('close');
+  }
 }
 function beforeUnload(event: BeforeUnloadEvent) {
   if (!dirty.value) return;
@@ -134,6 +148,8 @@ async function submit() {
   busy.value = true;
   error.value = '';
   try {
+    if ((props.kind === 'task' || props.kind === 'event') && !f.title.trim())
+      throw Error('Title cannot be empty');
     let body: Record<string, unknown> = {};
     const base = {
       title: f.title.trim(),

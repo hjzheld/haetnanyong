@@ -4,6 +4,7 @@ type SlackResponse = { ok: boolean; error?: string; scheduled_message_id?: strin
 
 // Only explicit rejections prove that scheduling did not create a reservation.
 const rejectedCodes = new Set([
+  'messages_tab_disabled',
   'invalid_auth',
   'not_authed',
   'token_revoked',

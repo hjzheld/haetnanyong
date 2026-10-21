@@ -8,6 +8,21 @@ useHead(() => ({ title: tr('마이페이지 · 했냐옹') }));
 const { user, setUser } = useSession();
 const { request } = useApi();
 const checkingSlackHealth = ref(false);
+const sendingSlackTest = ref(false);
+async function sendSlackTest() {
+  if (sendingSlackTest.value) return;
+  sendingSlackTest.value = true;
+  connectionError.value = '';
+  slackNotice.value = '';
+  try {
+    await request('/api/account/slack/test', { method: 'POST' });
+    slackNotice.value = '테스트 DM을 전송했어요. Slack의 Nyang 대화를 확인해주세요.';
+  } catch (error) {
+    connectionError.value = errorText(error, 'slack');
+  } finally {
+    sendingSlackTest.value = false;
+  }
+}
 async function checkSlackHealth() {
   if (checkingSlackHealth.value) return;
   checkingSlackHealth.value = true;
@@ -310,6 +325,14 @@ async function deleteAccount() {
             <button
               v-if="slack.connected"
               class="border-btn"
+              :disabled="sendingSlackTest || checkingSlackHealth || slackBusy"
+              @click="sendSlackTest"
+            >
+              {{ sendingSlackTest ? tr('테스트 DM 전송 중…') : tr('테스트 DM 보내기') }}
+            </button>
+            <button
+              v-if="slack.connected"
+              class="border-btn"
               :disabled="checkingSlackHealth || slackBusy"
               @click="checkSlackHealth"
             >
@@ -369,7 +392,7 @@ async function deleteAccount() {
           )
         }}
       </p>
-      <button class="border-btn danger-button" @click="deleteDialog = true">
+      <button class="border-btn danger-button mt-8" @click="deleteDialog = true">
         {{ tr('회원 탈퇴') }}
       </button>
     </section>

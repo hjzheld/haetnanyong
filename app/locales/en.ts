@@ -314,7 +314,15 @@ const messages: Record<string, string> = {
   '연결을 해제했어요.': 'Disconnected.',
   '연결한 날짜': 'Connected on',
   '열기 →': 'Open →',
-  '예약 시각 경과': 'Scheduled time passed',
+  '시간 경과 · 발송 미확인': 'Time passed · delivery unverified',
+  'Slack 앱의 App Home에서 Messages Tab을 켠 뒤 다시 시도해주세요.':
+    'Enable Messages Tab in the Slack app’s App Home settings, then try again.',
+  '예약 시간이 지났지만 발송 여부는 확인되지 않았어요. 마이페이지에서 테스트 DM을 보내 확인해주세요.':
+    'The scheduled time passed, but delivery is unverified. Send a test DM from My Account to check.',
+  '테스트 DM을 전송했어요. Slack의 Nyang 대화를 확인해주세요.':
+    'Test DM sent. Check your Nyang conversation in Slack.',
+  '테스트 DM 전송 중…': 'Sending test DM…',
+  '테스트 DM 보내기': 'Send test DM',
   '예약 중이거나 결과 확인이 필요한 알림을 먼저 취소·확인해주세요.':
     'Cancel or review pending reminders first.',
   '예약 중이거나 결과 확인이 필요한 알림이 있어요. 리마인더를 정리한 뒤 연결을 변경할 수 있어요.':
@@ -458,6 +466,8 @@ const messages: Record<string, string> = {
   '종일 일정의 시작일과 종료일을 입력해주세요.':
     'Enter the start and end dates for this all-day event.',
   '좌우로 밀어서 한 주의 일정을 확인하세요.': "Swipe horizontally to see the week's events.",
+  '좌우로 밀어서 알림 상태와 관리 버튼을 확인해주세요.':
+    'Swipe horizontally to see reminder statuses and management buttons.',
   '주소가 잘못되었거나 페이지가 이동되었을 수 있어요.':
     'The address may be incorrect, or this page may have moved.',
   '주요 메뉴': 'Main navigation',

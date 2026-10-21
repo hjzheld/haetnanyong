@@ -6,6 +6,13 @@ import { datePart, labels, errorText, reminderErrorText } from '~/utils/display'
 const props = defineProps<{ mode: 'create' | 'detail' | 'edit' }>();
 const route = useRoute(),
   { request } = useApi();
+const router = useRouter();
+function goBack() {
+  const previous = router.options.history.state.back;
+  if (typeof previous === 'string' && previous.startsWith('/') && !previous.startsWith('//'))
+    router.back();
+  else void navigateTo(projectReturnTo.value, { replace: true });
+}
 const resource = String(route.params.kind);
 if (resource !== 'tasks' && resource !== 'events')
   throw createError({ statusCode: 404, statusMessage: 'Page not found' });
@@ -75,7 +82,11 @@ function invalidateLists() {
 async function saved(result?: { id: string }) {
   invalidateLists();
   clearNuxtData(`standalone-${resource}-${id}`);
-  await navigateTo(`/items/${resource}/${result?.id || id}`);
+  if (props.mode === 'edit' && router.options.history.state.back === `/items/${resource}/${id}`) {
+    router.back();
+    return;
+  }
+  await navigateTo(`/items/${resource}/${result?.id || id}`, { replace: true });
 }
 async function remove() {
   if (!busy.value) confirmAction.value = 'delete';
@@ -176,9 +187,7 @@ async function openReminder() {
 </script>
 <template>
   <p v-if="busy" class="operation-status" role="status">{{ tr('변경 사항을 처리하고 있어요…') }}</p>
-  <NuxtLink :to="projectReturnTo" class="border-btn">{{
-    item?.projectId ? tr('← 프로젝트로 돌아가기') : tr('← 개별 플랜 목록')
-  }}</NuxtLink>
+  <button type="button" class="border-btn" @click="goBack">← {{ tr('뒤로가기') }}</button>
   <CommonPageHeading
     :title="
       mode === 'create'
@@ -214,11 +223,7 @@ async function openReminder() {
     :item="editorItem"
     inline
     standalone
-    @close="
-      navigateTo(
-        mode === 'create' ? `/plans?tab=individual&kind=${resource}` : `/items/${resource}/${id}`,
-      )
-    "
+    @close="goBack"
     @saved="saved"
   />
   <section v-else-if="item" class="panel item-detail">
@@ -266,40 +271,46 @@ async function openReminder() {
         {{ tr(errorText(reminderError, 'reminder')) }}
         <button class="border-btn" @click="refreshReminders()">{{ tr('다시 시도') }}</button>
       </p>
-      <div v-else-if="reminder" class="heading">
+      <div v-else-if="reminder" class="reminder-detail-status">
         <div>
           <strong>{{ tr('알림') }} {{ tr(labels[reminder.status]) || reminder.status }}</strong>
           <p class="small">{{ formatTime(reminder.remindAt) }}</p>
           <p v-if="reminder.errorMessage" class="form-error">
-            {{ tr(reminderErrorText(reminder.errorMessage)) }}
+            {{ tr(reminderErrorText(reminder.errorMessage, reminder.status)) }}
           </p>
         </div>
-        <button
-          v-if="
-            ['SCHEDULED', 'PENDING', 'FAILED', 'CANCEL_FAILED', 'ELAPSED'].includes(reminder.status)
-          "
-          class="border-btn"
-          :disabled="busy"
-          @click="cancelReminder"
-        >
-          {{ tr('알림 취소') }}
-        </button>
-        <button
-          v-if="['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING', 'SCHEDULED'].includes(reminder.status)"
-          class="border-btn"
-          :disabled="busy"
-          @click="checkReminder"
-        >
-          {{ tr('상태 확인') }}
-        </button>
-        <button
-          v-if="['FAILED', 'ELAPSED'].includes(reminder.status)"
-          class="border-btn"
-          :disabled="busy || checkingSlack"
-          @click="openReminder"
-        >
-          {{ tr('다시 예약') }}
-        </button>
+        <div class="reminder-actions">
+          <button
+            v-if="
+              ['SCHEDULED', 'PENDING', 'FAILED', 'CANCEL_FAILED', 'ELAPSED'].includes(
+                reminder.status,
+              )
+            "
+            class="border-btn"
+            :disabled="busy"
+            @click="cancelReminder"
+          >
+            {{ tr('알림 취소') }}
+          </button>
+          <button
+            v-if="
+              ['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING', 'SCHEDULED'].includes(reminder.status)
+            "
+            class="border-btn"
+            :disabled="busy"
+            @click="checkReminder"
+          >
+            {{ tr('상태 확인') }}
+          </button>
+          <button
+            v-if="['FAILED', 'ELAPSED'].includes(reminder.status)"
+            class="border-btn"
+            :disabled="busy || checkingSlack"
+            @click="openReminder"
+          >
+            {{ tr('다시 예약') }}
+          </button>
+        </div>
         <p v-if="reminder.status === 'ELAPSED'" class="small">
           {{ tr('예약 시각이 지났어요. 실제 수신 여부는 Slack에서 확인해주세요.') }}
         </p>

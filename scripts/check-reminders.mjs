@@ -54,6 +54,7 @@ const slack = load(
   },
 );
 for (const [code, rejected] of [
+  ['messages_tab_disabled', true],
   ['missing_scope', true],
   ['time_in_past', true],
   ['internal_error', false],
@@ -107,6 +108,11 @@ const db = {
     }
     updates++;
     if (sql.includes('reservation_accepted_at=CASE')) {
+      assert.match(sql, /COALESCE\(last_error_code,'delivery_unverified'\)/);
+      assert.match(
+        sql,
+        /COALESCE\(last_error_message,'Scheduled time passed; delivery is unverified'\)/,
+      );
       assert.equal(args[5], row.revision);
       assert.equal(args[7], row.updatedAt);
       row.status = args[0];

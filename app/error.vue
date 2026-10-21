@@ -33,6 +33,7 @@ function leaveErrorPage() {
         }}
       </p>
       <div class="error-actions">
+        <CommonPageHelp error-page />
         <button class="solid" @click="leaveErrorPage">{{ tr(buttonLabel) }}</button>
         <button v-if="!user" class="border-btn" @click="clearError({ redirect: '/' })">
           {{ tr('소개 페이지 보기') }}

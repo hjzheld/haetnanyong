@@ -7,6 +7,6 @@ defineProps<{ title: string; description?: string }>();
       <h1>{{ title }}</h1>
       <p class="small">{{ description }}</p>
     </div>
-    <div class="actions"><slot /></div>
+    <div class="actions"><CommonPageHelp v-if="$route.path !== '/plans'" /><slot /></div>
   </div>
 </template>

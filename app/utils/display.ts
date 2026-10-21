@@ -13,7 +13,7 @@ export const labels: Record<string, string> = {
   CANCEL_PENDING: '취소 처리 중',
   CANCELED: '취소됨',
   CANCEL_FAILED: '취소 실패',
-  ELAPSED: '예약 시각 경과',
+  ELAPSED: '시간 경과 · 발송 미확인',
 };
 const koreaDateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' });
 const timeOptions: Intl.DateTimeFormatOptions = {
@@ -175,6 +175,10 @@ const contextFallbacks: Record<ErrorContext, string> = {
 };
 
 function technicalMessage(raw: string) {
+  if (/messages_tab_disabled/i.test(raw))
+    return 'Slack 앱의 App Home에서 Messages Tab을 켠 뒤 다시 시도해주세요.';
+  if (/Scheduled time passed; delivery is unverified/i.test(raw))
+    return '예약 시간이 지났지만 발송 여부는 확인되지 않았어요. 마이페이지에서 테스트 DM을 보내 확인해주세요.';
   if (/Slack (?:workspace|recipient) does not match/i.test(raw))
     return 'Slack 대화방을 찾지 못했어요. Slack 계정을 다시 연결해주세요.';
   if (/missing_scope/i.test(raw)) return 'Slack 앱 권한이 부족해요. 관리자에게 문의해주세요.';
@@ -250,6 +254,8 @@ export function errorText(error: unknown, context: ErrorContext = 'default') {
   return status >= 500 && requestId ? `${result} (오류 번호: ${requestId})` : result;
 }
 
-export function reminderErrorText(message?: string | null) {
+export function reminderErrorText(message?: string | null, status?: string) {
+  if (status === 'ELAPSED')
+    return '예약 시간이 지났지만 발송 여부는 확인되지 않았어요. 마이페이지에서 테스트 DM을 보내 확인해주세요.';
   return message ? errorText({ statusCode: 502, statusMessage: message }, 'reminder') : '';
 }
