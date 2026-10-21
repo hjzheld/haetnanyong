@@ -370,9 +370,7 @@ const titles = {
               :aria-label="t.title + tr(' 완료')"
               :disabled="busy"
               @change="mutate(`/api/tasks/${t.id}`, 'PATCH', { status: 'DONE' })"
-            /><NuxtLink
-              :to="t.projectId ? `/projects/${t.projectId}` : `/items/tasks/${t.id}`"
-              class="grow"
+            /><NuxtLink :to="`/items/tasks/${t.id}`" class="grow"
               ><strong>{{ t.title }}</strong>
               <p class="small">
                 {{ projectName(t.projectId) }} · {{ datePart(t.dueDate) }}
@@ -392,9 +390,7 @@ const titles = {
             class="list-row colored-item"
             :style="itemStyle(e, 'event')"
           >
-            <NuxtLink
-              class="grow"
-              :to="e.projectId ? `/projects/${e.projectId}?tab=events` : `/items/events/${e.id}`"
+            <NuxtLink class="grow" :to="`/items/events/${e.id}`"
               ><strong>{{ e.title }}</strong>
               <p class="small">
                 {{ e.allDay ? tr('종일 일정') : formatTime(e.startsAt) }}
@@ -474,13 +470,13 @@ const titles = {
                   })
                 "
               />
-              <div class="grow">
+              <NuxtLink :to="`/items/tasks/${t.id}`" class="grow">
                 <strong :class="{ done: t.status === 'DONE' }">{{ t.title }}</strong>
                 <p class="small">
                   {{ datePart(t.startDate) }} ~ {{ datePart(t.dueDate) }} ·
                   {{ tr(labels[t.priority]) }}
                 </p>
-              </div>
+              </NuxtLink>
               <span class="badge lavender">{{ tr(labels[t.status]) }}</span
               ><button class="border-btn" @click="edit('task', t)">{{ tr('수정') }}</button
               ><button class="border-btn" :disabled="busy" @click="remove('tasks', t.id)">
@@ -497,7 +493,7 @@ const titles = {
               class="list-row colored-item"
               :style="itemStyle(e, 'event')"
             >
-              <div class="grow">
+              <NuxtLink :to="`/items/events/${e.id}`" class="grow">
                 <strong>{{ e.title }}</strong>
                 <p class="small">
                   {{
@@ -510,7 +506,7 @@ const titles = {
                   >{{ tr('알림') }}
                   {{ tr(labels[reminderFor(e.id)!.status]) || reminderFor(e.id)!.status }}</span
                 >
-              </div>
+              </NuxtLink>
               <button
                 v-if="!selected.archivedAt && !reminderFor(e.id)"
                 class="border-btn"
@@ -622,11 +618,7 @@ const titles = {
               ><NuxtLink
                 v-for="e in calendarEntries.get(day) || []"
                 :key="e.kind + e.id"
-                :to="
-                  e.projectId
-                    ? `/projects/${e.projectId}${e.kind === 'event' ? '?tab=events' : ''}`
-                    : `/items/${e.kind === 'task' ? 'tasks' : 'events'}/${e.id}`
-                "
+                :to="`/items/${e.kind === 'task' ? 'tasks' : 'events'}/${e.id}`"
                 :style="calendarStyle(e)"
                 class="calendar-item"
                 :class="{ event: e.kind === 'event' }"

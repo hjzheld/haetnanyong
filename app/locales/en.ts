@@ -499,6 +499,8 @@ const messages: Record<string, string> = {
     'Features may change or the service may stop as this portfolio project evolves. Please keep your own backup of important data.',
   '표시 색상': 'Display color',
   프로젝트: 'Project',
+  '프로젝트로 돌아가기': 'Back to project',
+  '프로젝트에 등록된 항목이에요.': 'This item belongs to a project.',
   '프로젝트 (선택)': 'Project (optional)',
   '프로젝트 · 했냐옹': 'Projects · Haetnyaong',
   '프로젝트 상세 · 했냐옹': 'Project details · Haetnyaong',

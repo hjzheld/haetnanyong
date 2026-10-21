@@ -6,6 +6,7 @@ export function slackOAuthIssues(): string[] {
   const c = useRuntimeConfig();
   const issues: string[] = [];
   if (!c.slackClientId?.trim()) issues.push('SLACK_CLIENT_ID');
+  if (!c.slackClientSecret?.trim()) issues.push('SLACK_CLIENT_SECRET');
   if (!c.slackTokenEncryptionKey || c.slackTokenEncryptionKey.length < 32)
     issues.push('SLACK_TOKEN_ENCRYPTION_KEY');
   try {

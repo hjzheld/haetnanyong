@@ -35,15 +35,10 @@ const {
 const loading = computed(
   () => props.mode !== 'create' && ['idle', 'pending'].includes(itemStatus.value),
 );
-watch(
-  () => item.value?.projectId,
-  (projectId) => {
-    if (projectId)
-      void navigateTo(`/projects/${projectId}${kind === 'event' ? '?tab=events' : ''}`, {
-        replace: true,
-      });
-  },
-  { immediate: true },
+const projectReturnTo = computed(() =>
+  item.value?.projectId
+    ? `/projects/${item.value.projectId}${kind === 'event' ? '?tab=events' : ''}`
+    : '/items',
 );
 const {
   data: reminders,
@@ -161,7 +156,9 @@ async function openReminder() {
 </script>
 <template>
   <p v-if="busy" class="operation-status" role="status">{{ tr('변경 사항을 처리하고 있어요…') }}</p>
-  <NuxtLink to="/items" class="border-btn">{{ tr('← 일정·태스크 목록') }}</NuxtLink>
+  <NuxtLink :to="projectReturnTo" class="border-btn">{{
+    item?.projectId ? tr('← 프로젝트로 돌아가기') : tr('← 일정·태스크 목록')
+  }}</NuxtLink>
   <CommonPageHeading
     :title="
       mode === 'create'
@@ -170,7 +167,13 @@ async function openReminder() {
           ? tr(label) + ' ' + tr('수정')
           : item?.title || tr(label) + ' ' + tr('상세')
     "
-    :description="tr('프로젝트 없는 나의 일정과 할 일이에요.')"
+    :description="
+      tr(
+        item?.projectId
+          ? '프로젝트에 등록된 항목이에요.'
+          : '프로젝트 없는 나의 일정과 할 일이에요.',
+      )
+    "
   >
     <template v-if="mode === 'detail' && item"
       ><NuxtLink class="border-btn" :to="`/items/${resource}/${id}/edit`">{{ tr('수정') }}</NuxtLink
