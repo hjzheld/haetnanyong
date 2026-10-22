@@ -115,10 +115,7 @@ async function signOut() {
     </header>
     <main>
       <p v-if="error" role="alert" class="form-error">{{ tr(error) }}</p>
-      <div
-        v-if="(!user && $route.path === '/') || ['/login', '/slack/callback'].includes($route.path)"
-        class="page-help-toolbar"
-      >
+      <div v-if="['/login', '/slack/callback'].includes($route.path)" class="page-help-toolbar">
         <CommonPageHelp />
       </div>
       <slot />

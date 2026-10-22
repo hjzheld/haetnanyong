@@ -63,7 +63,9 @@ const { chromium } = createRequire(pkg)('playwright');
     if (process.env.CHECK_LAYOUT_ONLY === '1') return;
     await page.setViewportSize({ width: 390, height: 650 });
     await page.evaluate(() =>
-      document.querySelector('#__nuxt').__vue_app__.config.globalProperties.$router.push('/'),
+      document
+        .querySelector('#__nuxt')
+        .__vue_app__.config.globalProperties.$router.push('/slack/callback?result=failed'),
     );
     await page.locator('.page-help-button').first().waitFor();
     await page.evaluate(() => window.scrollTo({ top: 180, behavior: 'instant' }));

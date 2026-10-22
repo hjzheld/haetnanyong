@@ -165,6 +165,10 @@ async function main() {
           );
         }
         const trigger = page.getByRole('button', { name: /도움말/ });
+        if (url === '/') {
+          assert.equal(await trigger.count(), 0, 'Home omits help');
+          continue;
+        }
         if (url === '/privacy' || url === '/terms') {
           assert.equal(await trigger.count(), 0, 'Legal pages omit help');
           const backButton = page.getByRole('button', { name: '뒤로가기', exact: true });
