@@ -5,6 +5,7 @@ import type { Project, Task, ScheduleEvent, Reminder, CalendarItem } from '~/typ
 import { groupCalendarItems, toCalendarItems } from '~/utils/calendar';
 import { dashboardTasks } from '~/utils/dashboard';
 import { DEFAULT_ITEM_COLORS } from '~/utils/item-colors';
+import { isProjectComplete } from '~/utils/project-completion';
 import { labels, koreaDate, datePart, errorText, reminderErrorText } from '~/utils/display';
 const props = defineProps<{
   view: 'home' | 'projects' | 'detail' | 'calendar' | 'reminders';
@@ -66,15 +67,26 @@ const selected = computed(() => projectById.value.get(props.projectId || '')),
   actionError = ref(''),
   notice = ref(''),
   deleteTarget = ref<{ url: string; description: string }>();
+const viewMounted = ref(false);
+onMounted(() => {
+  viewMounted.value = true;
+});
 watchEffect(() => {
-  if (props.view === 'detail' && !pending.value && data.value && !selected.value) {
+  if (
+    props.view === 'detail' &&
+    (!import.meta.client || viewMounted.value) &&
+    status.value === 'success' &&
+    !pending.value &&
+    data.value &&
+    !selected.value
+  ) {
     showError({ statusCode: 404, statusMessage: 'Project not found' });
   }
 });
 const toastText = computed(() => actionError.value || notice.value);
 const workspaceRoute = useRoute();
 watch(archived, (value) => {
-  if (props.embedded)
+  if (props.embedded && (workspaceRoute.query.archived === '1') !== value)
     void navigateTo(
       {
         path: '/plans',
@@ -83,10 +95,22 @@ watch(archived, (value) => {
       { replace: true },
     );
 });
+watch(
+  () => workspaceRoute.query.archived,
+  (value) => {
+    archived.value = value === '1';
+  },
+);
+watch(
+  () => workspaceRoute.query.tab,
+  (value) => {
+    if (props.view === 'detail') tab.value = value === 'events' ? 'events' : 'tasks';
+  },
+);
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 watch(toastText, (value) => {
   if (toastTimer) clearTimeout(toastTimer);
-  if (value && !deleteTarget.value)
+  if (value && !deleteTarget.value && !archivePrompt.value)
     toastTimer = setTimeout(() => {
       notice.value = '';
       actionError.value = '';
@@ -113,11 +137,81 @@ async function edit(kind: Kind, item?: object) {
 }
 const ownTasks = computed(() => tasksByProject.value.get(props.projectId || '') || []),
   ownEvents = computed(() => events.value.filter((e) => String(e.projectId) === props.projectId));
+const archivePrompt = ref(false);
+const archiveDismissed = ref<string>();
+const completionTime = ref(Date.now());
+const completedProject = computed(
+  () =>
+    props.view === 'detail' &&
+    !!selected.value &&
+    !selected.value.archivedAt &&
+    isProjectComplete(ownTasks.value, ownEvents.value, completionTime.value),
+);
+let completionTimer: ReturnType<typeof setInterval> | undefined;
+onMounted(() => {
+  if (!['detail', 'home', 'calendar'].includes(props.view)) return;
+  completionTime.value = Date.now();
+  completionTimer = setInterval(() => {
+    completionTime.value = Date.now();
+  }, 30_000);
+});
+onBeforeUnmount(() => {
+  if (completionTimer) clearInterval(completionTimer);
+});
+watchEffect(() => {
+  if (busy.value) return;
+  if (
+    !viewMounted.value ||
+    !completedProject.value ||
+    pending.value ||
+    error.value ||
+    editor.value ||
+    deleteTarget.value
+  ) {
+    archivePrompt.value = false;
+    return;
+  }
+  if (archiveDismissed.value !== props.projectId) archivePrompt.value = true;
+});
+function dismissArchive() {
+  archiveDismissed.value = props.projectId;
+  archivePrompt.value = false;
+  actionError.value = '';
+}
+async function confirmArchive() {
+  if (busy.value || !selected.value) return;
+  const projectId = String(selected.value.id);
+  // Recheck the current server data before applying the suggested archive.
+  busy.value = true;
+  actionError.value = '';
+  try {
+    await refresh();
+    completionTime.value = Date.now();
+    if (error.value) throw error.value;
+    if (String(selected.value?.id) !== projectId) return;
+    if (!completedProject.value) {
+      archivePrompt.value = false;
+      return;
+    }
+    await request(`/api/projects/${projectId}`, {
+      method: 'PATCH',
+      body: { archived: true, onlyIfComplete: true },
+    });
+    archivePrompt.value = false;
+    archiveDismissed.value = projectId;
+    await refresh();
+    await navigateTo('/plans?tab=projects&archived=1');
+  } catch (error) {
+    actionError.value = errorText(error, 'save');
+  } finally {
+    busy.value = false;
+  }
+}
 const active = computed(() => projects.value.filter((p) => !p.archivedAt));
 const activeIds = computed(() => new Set(active.value.map((p) => String(p.id))));
 const visible = (id: string | null) => id === null || activeIds.value.has(String(id));
-const today = koreaDate();
-const taskGroups = computed(() => dashboardTasks(tasks.value, today, visible));
+const today = computed(() => koreaDate(new Date(completionTime.value)));
+const taskGroups = computed(() => dashboardTasks(tasks.value, today.value, visible));
 const due = computed(() => taskGroups.value.upcoming);
 const overdue = computed(() => taskGroups.value.overdue);
 const todays = computed(() =>
@@ -126,9 +220,9 @@ const todays = computed(() =>
       (e) =>
         visible(e.projectId) &&
         (e.allDay
-          ? datePart(e.startDate) <= today && datePart(e.endDate) > today
-          : Date.parse(e.startsAt!) < Date.parse(today + 'T00:00:00+09:00') + 86400000 &&
-            Date.parse(e.endsAt!) > Date.parse(today + 'T00:00:00+09:00')),
+          ? datePart(e.startDate) <= today.value && datePart(e.endDate) > today.value
+          : Date.parse(e.startsAt!) < Date.parse(today.value + 'T00:00:00+09:00') + 86400000 &&
+            Date.parse(e.endsAt!) > Date.parse(today.value + 'T00:00:00+09:00')),
     )
     .sort(
       (a, b) =>
@@ -153,7 +247,7 @@ function calendarStyle(item: CalendarItem) {
     border: 'none',
   };
 }
-const month = ref(today.slice(0, 7)),
+const month = ref(today.value.slice(0, 7)),
   filter = ref('');
 const projectOptions = computed(() => [
   { value: '', label: tr('전체 프로젝트') },
@@ -195,6 +289,14 @@ async function mutate(url: string, method: 'PATCH' | 'DELETE', body?: object) {
   actionError.value = '';
   try {
     await request(url, { method, body });
+    if (
+      method === 'PATCH' &&
+      url === `/api/projects/${props.projectId}` &&
+      body &&
+      'archived' in body &&
+      body.archived === false
+    )
+      archiveDismissed.value = props.projectId;
     await refresh();
     notice.value = '변경 내용을 저장했어요.';
   } catch (e) {
@@ -557,7 +659,9 @@ const titles = {
         <p class="small">
           {{ tr('캘린더에는 일정만 표시돼요. 할 일은 플랜에서 확인해주세요.') }}
         </p>
-        <NuxtLink class="solid" to="/items/events/new">{{ tr('+ 일정 등록') }}</NuxtLink>
+        <NuxtLink class="solid" to="/plans?tab=individual&kind=events">{{
+          tr('+ 일정 등록')
+        }}</NuxtLink>
       </div>
       <p class="calendar-scroll-hint small">{{ tr('좌우로 밀어서 한 주의 일정을 확인하세요.') }}</p>
       <div class="calendar-scroll" role="region" :aria-label="tr('월간 캘린더')" tabindex="0">
@@ -696,6 +800,19 @@ const titles = {
     :initial-date="editor.date"
     @close="editor = undefined"
     @saved="saved"
+  />
+  <CommonConfirmDialog
+    :open="archivePrompt"
+    :title="tr('프로젝트를 보관할까요?')"
+    :description="
+      tr('모든 일정이 종료되고 할 일이 완료되었어요. 이 프로젝트를 보관함으로 이동할까요?')
+    "
+    :confirm-label="tr('예, 보관하기')"
+    :danger="false"
+    :busy="busy"
+    :error="actionError"
+    @cancel="dismissArchive"
+    @confirm="confirmArchive"
   />
   <CommonConfirmDialog
     :open="!!deleteTarget"

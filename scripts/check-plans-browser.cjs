@@ -21,6 +21,7 @@ const tasks = [],
   calls = [],
   errors = [];
 let failNextTask = false;
+let rejectNextArchive = false;
 const screenshots = fs.mkdtempSync(path.join(os.tmpdir(), 'nyang-plans-'));
 async function main() {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -33,7 +34,7 @@ async function main() {
     await page.route('**/api/**', async (route) => {
       const pathname = new URL(route.request().url()).pathname;
       const method = route.request().method();
-      const body = method === 'POST' ? route.request().postDataJSON() : null;
+      const body = ['POST', 'PATCH'].includes(method) ? route.request().postDataJSON() : null;
       calls.push({ pathname, method, body });
       let data;
       if (pathname.startsWith('/api/auth/')) data = { user };
@@ -48,6 +49,21 @@ async function main() {
           data = { ...body, id: String(projects.length + 1), archivedAt: null };
           projects.push(data);
         } else data = projects;
+      } else if (/^\/api\/projects\/\d+$/.test(pathname) && method === 'PATCH') {
+        if (body.onlyIfComplete && rejectNextArchive) {
+          rejectNextArchive = false;
+          return route.fulfill({
+            status: 409,
+            json: {
+              statusCode: 409,
+              statusMessage:
+                '프로젝트 상태가 변경되었어요. 모든 일정과 할 일의 완료 여부를 다시 확인해주세요.',
+            },
+          });
+        }
+        data = projects.find((project) => project.id === pathname.split('/').pop());
+        assert.ok(data);
+        data.archivedAt = body.archived ? new Date().toISOString() : null;
       } else if (pathname === '/api/tasks' && method === 'POST') {
         await new Promise((resolve) => setTimeout(resolve, 150));
         if (failNextTask) {
@@ -245,6 +261,74 @@ async function main() {
         .click();
       await form.waitFor({ state: 'hidden' });
     }
+    // Route-query changes must update a still-mounted projects list.
+    await navigate('/plans?tab=projects&archived=1');
+    await page.getByRole('heading', { name: '보관 프로젝트', exact: true }).waitFor();
+    await navigate('/plans?tab=projects');
+    await page.getByRole('heading', { name: '진행 프로젝트', exact: true }).waitFor();
+    assert.equal(
+      await page.getByRole('button', { name: '진행 중', exact: true }).getAttribute('aria-pressed'),
+      'true',
+    );
+
+    projects.push({ id: '99', name: '완료 프로젝트', color: '#919D85', archivedAt: null });
+    tasks.push({
+      id: '999',
+      projectId: '99',
+      title: '완료 작업',
+      status: 'DONE',
+      startDate: '2026-01-01',
+      dueDate: '2026-01-01',
+      priority: 'MEDIUM',
+    });
+    events.push({
+      id: '999',
+      projectId: '99',
+      title: '종료 일정',
+      allDay: true,
+      startDate: '2026-01-01',
+      endDate: '2026-01-02',
+    });
+    await navigate('/projects/99');
+    const archivePrompt = page.getByRole('dialog', { name: '프로젝트를 보관할까요?' });
+    await archivePrompt.waitFor();
+    rejectNextArchive = true;
+    await archivePrompt.getByRole('button', { name: '예, 보관하기', exact: true }).click();
+    await archivePrompt.getByRole('alert').waitFor();
+    assert.ok(
+      (await archivePrompt.getByRole('alert').textContent()).includes('프로젝트 상태가 변경'),
+    );
+    assert.ok(page.url().endsWith('/projects/99'));
+    await archivePrompt.getByRole('button', { name: '예, 보관하기', exact: true }).click();
+    await page.waitForURL(base + '/plans?tab=projects&archived=1');
+    await page.getByRole('heading', { name: '완료 프로젝트', exact: true }).waitFor();
+    assert.ok(
+      calls.some(
+        (call) => call.pathname === '/api/projects/99' && call.body?.onlyIfComplete === true,
+      ),
+    );
+    await navigate('/projects/99');
+    await page.getByRole('button', { name: '복원하기', exact: true }).click();
+    await page.getByRole('button', { name: '보관하기', exact: true }).waitFor();
+    assert.equal(
+      await archivePrompt.isVisible(),
+      false,
+      'Restoring must not immediately suggest archiving again',
+    );
+    await navigate('/plans');
+    await navigate('/projects/99');
+    await archivePrompt.waitFor();
+    await archivePrompt.getByRole('button', { name: '취소', exact: true }).click();
+    await page.getByRole('button', { name: '일정 1', exact: true }).click();
+    assert.equal(
+      await archivePrompt.isVisible(),
+      false,
+      'Dismissal persists during the current visit',
+    );
+    await navigate('/calendar');
+    await page.getByRole('link', { name: '+ 일정 등록', exact: true }).click();
+    await page.waitForURL(base + '/plans?tab=individual&kind=events');
+    await page.getByRole('button', { name: /^일정 \d+$/ }).waitFor();
     assert.deepEqual(errors, []);
     console.log(
       'PASS: direct plan form, project dropdown, title preservation, inline project creation/color, retry without duplicate project, hidden TODO badge, standalone/existing-project payloads, archive tabs and mobile layout. API mocked.',

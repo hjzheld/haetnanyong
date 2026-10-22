@@ -350,6 +350,10 @@
   overflow-y: auto;
   overflow-wrap: anywhere;
 }
+#pdesk .plan-help-actions {
+  display: flex;
+  justify-content: flex-end;
+}
 @media (max-width: 600px) {
   #pdesk .reminder-scroll-hint {
     display: block;

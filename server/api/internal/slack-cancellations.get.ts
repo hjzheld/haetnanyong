@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
   const secret = useRuntimeConfig().cronSecret;
   if (!secret || getHeader(event, 'authorization') !== `Bearer ${secret}`)
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized cron request' });
+  const deadline = Date.now() + 25_000;
 
   await query('DELETE FROM slack_cancellation_jobs WHERE purge_after <= now()');
   await query('DELETE FROM api_rate_limits WHERE expires_at <= now()');
@@ -39,7 +40,6 @@ export default defineEventHandler(async (event) => {
       LIMIT 50`,
   );
 
-  const deadline = Date.now() + 25_000;
   let processed = 0;
   let resolved = 0;
   for (const job of jobs) {

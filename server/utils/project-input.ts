@@ -22,11 +22,21 @@ export function validateProjectInput(value: unknown, creating = false) {
   if (input.archived !== undefined && typeof input.archived !== 'boolean') {
     throw createError({ statusCode: 400, statusMessage: 'archived must be a boolean' });
   }
+  if (input.onlyIfComplete !== undefined && typeof input.onlyIfComplete !== 'boolean')
+    throw createError({ statusCode: 400, statusMessage: 'onlyIfComplete must be a boolean' });
+  if (input.onlyIfComplete === true && (creating || input.archived !== true))
+    throw createError({ statusCode: 400, statusMessage: 'onlyIfComplete requires archived=true' });
   if (
     !creating &&
     !['name', 'description', 'color', 'archived'].some((key) => input[key] !== undefined)
   ) {
     throw createError({ statusCode: 400, statusMessage: 'At least one project field is required' });
   }
-  return input as { name?: string; description?: string; color?: string; archived?: boolean };
+  return input as {
+    name?: string;
+    description?: string;
+    color?: string;
+    archived?: boolean;
+    onlyIfComplete?: boolean;
+  };
 }

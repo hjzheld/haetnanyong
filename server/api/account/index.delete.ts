@@ -54,21 +54,31 @@ export default defineEventHandler(async (event) => {
   );
 
   const pendingJobs: Array<Record<string, string>> = [];
+  const cancellationDeadline = Date.now() + 20_000;
+  function queueCancellation(reminder: ReminderCancellation, code: string) {
+    const remindAt = new Date(reminder.remindAt).getTime();
+    const purgeAfter = new Date(Math.max(Date.now(), remindAt) + 24 * 60 * 60_000).toISOString();
+    pendingJobs.push({
+      channelId: reminder.channelId,
+      scheduledMessageId: reminder.scheduledMessageId,
+      purgeAfter,
+      errorCode: code,
+    });
+  }
   for (const reminder of reminders) {
+    // Preserve remaining cancellations in the existing durable queue instead of
+    // making account deletion wait for many consecutive 15-second Slack calls.
+    if (cancellationDeadline - Date.now() < 15_000) {
+      queueCancellation(reminder, 'deferred_cancellation');
+      continue;
+    }
     try {
       await cancelSlackMessage(reminder.channelId, reminder.scheduledMessageId);
     } catch (error) {
       const code = slackErrorCode(error);
       // Slack uses this code when a reservation is already deleted or has already posted.
       if (code === 'invalid_scheduled_message_id') continue;
-      const remindAt = new Date(reminder.remindAt).getTime();
-      const purgeAfter = new Date(Math.max(Date.now(), remindAt) + 24 * 60 * 60_000).toISOString();
-      pendingJobs.push({
-        channelId: reminder.channelId,
-        scheduledMessageId: reminder.scheduledMessageId,
-        purgeAfter,
-        errorCode: code,
-      });
+      queueCancellation(reminder, code);
     }
   }
 

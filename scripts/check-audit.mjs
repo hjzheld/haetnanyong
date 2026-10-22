@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
+import { loadTsModule } from './load-ts-module.mjs';
 
 function load(file, modules = {}, globals = {}) {
   const module = { exports: {} };
@@ -22,6 +23,10 @@ function load(file, modules = {}, globals = {}) {
   return module.exports;
 }
 const input = load('server/utils/input.ts');
+assert.throws(
+  () => input.inputDate('0000-01-01', 'startDate'),
+  (error) => error.statusCode === 400,
+);
 for (const value of [
   ['1'],
   {},
@@ -56,6 +61,10 @@ for (const value of ['2024-02-29T12:00:00+09:00', '2026-10-22T12:00Z', '2026-10-
 let password = 'wrong';
 let unresolved = false;
 let deletes = 0;
+let deletionClock = Date.now();
+let cancellations = [];
+let cancellationCalls = 0;
+let queuedCancellations = [];
 const remove = load(
   'server/api/account/index.delete.ts',
   {
@@ -63,20 +72,34 @@ const remove = load(
     '#server/utils/input': input,
     '#server/utils/password': { verifyPassword: async (value) => value === 'correct' },
     '#server/services/slack': {
-      cancelSlackMessage: async () =>
-        assert.fail('No messages should be canceled in this scenario'),
+      cancelSlackMessage: async () => {
+        cancellationCalls++;
+        deletionClock += 15_000;
+      },
     },
     '#server/utils/db': {
       query: async (sql, args) => {
         assert.equal(args[0], 'owner');
         if (sql.includes('SELECT password_hash')) return [{ passwordHash: 'hash' }];
         if (sql.includes('SELECT r.id')) return unresolved ? [{ id: 'unknown' }] : [];
-        if (sql.includes('SELECT delete_user_account')) deletes++;
+        if (sql.includes('SELECT r.slack_dm_channel_id')) return cancellations;
+        if (sql.includes('SELECT delete_user_account')) {
+          deletes++;
+          queuedCancellations = JSON.parse(args[1]);
+        }
         return [];
       },
     },
   },
-  { readBody: async () => ({ password }), deleteCookie: () => {} },
+  {
+    readBody: async () => ({ password }),
+    deleteCookie: () => {},
+    Date: class extends Date {
+      static now() {
+        return deletionClock;
+      }
+    },
+  },
 ).default;
 await assert.rejects(remove({}), (error) => error.statusCode === 400);
 assert.equal(deletes, 0, 'Wrong password must not delete the account or expire its session');
@@ -87,6 +110,20 @@ assert.equal(deletes, 0, 'Unresolved reservations must survive account deletion 
 unresolved = false;
 assert.equal((await remove({})).ok, true);
 assert.equal(deletes, 1);
+assert.equal(cancellationCalls, 0);
+cancellations = ['1', '2', '3'].map((scheduledMessageId) => ({
+  channelId: 'DTEST',
+  scheduledMessageId,
+  remindAt: new Date(deletionClock + 86400_000).toISOString(),
+}));
+assert.equal((await remove({})).pendingSlackCancellations, 2);
+assert.equal(cancellationCalls, 1, 'Do not start another slow cancellation after using the budget');
+assert.equal(deletes, 2);
+assert.deepEqual(
+  queuedCancellations.map((job) => job.scheduledMessageId),
+  ['2', '3'],
+);
+assert.ok(queuedCancellations.every((job) => job.errorCode === 'deferred_cancellation'));
 
 let period = { from: '2026-01-01T00:00:00Z', to: '2028-01-01T00:00:00Z' };
 let queries = 0;
@@ -111,6 +148,67 @@ assert.equal(queries, 0);
 period = { from: '2026-10-22T12:00:00+09:00', to: '2026-10-22T13:00:00+09:00' };
 await calendar({});
 assert.equal(queries, 1);
+
+const { isProjectComplete } = await loadTsModule('app/utils/project-completion.ts');
+const now = Date.parse('2026-10-22T12:00:00+09:00');
+assert.equal(isProjectComplete([], [], now), false, 'Empty projects are not finished');
+assert.equal(isProjectComplete([{ status: 'DONE' }], [], now), true);
+assert.equal(isProjectComplete([{ status: 'IN_PROGRESS' }], [], now), false);
+assert.equal(
+  isProjectComplete([], [{ allDay: false, endsAt: '2026-10-22T12:00:00+09:00' }], now),
+  true,
+);
+assert.equal(
+  isProjectComplete([], [{ allDay: false, endsAt: '2026-10-22T12:01:00+09:00' }], now),
+  false,
+);
+assert.equal(isProjectComplete([], [{ allDay: true, endDate: '2026-10-23' }], now), false);
+assert.equal(isProjectComplete([], [{ allDay: true, endDate: '2026-10-22' }], now), true);
+assert.equal(isProjectComplete([], [{ allDay: false, endsAt: null }], now), false);
+const projectInput = load('server/utils/project-input.ts');
+for (const body of [
+  { archived: true, onlyIfComplete: 'true' },
+  { archived: false, onlyIfComplete: true },
+])
+  assert.throws(
+    () => projectInput.validateProjectInput(body),
+    (error) => error.statusCode === 400,
+  );
+let projectBody = { archived: true, onlyIfComplete: true };
+let projectOwned = true;
+let projectComplete = false;
+const updateProject = load(
+  'server/api/projects/[id].patch.ts',
+  {
+    '#server/utils/auth': { requireUser: async () => ({ id: 'owner' }) },
+    '#server/utils/input': input,
+    '#server/utils/project-input': projectInput,
+    '#server/utils/db': {
+      query: async (sql, params) => {
+        if (sql.startsWith('SELECT id')) {
+          assert.equal(params[1], 'owner');
+          return projectOwned ? [{ id: '1' }] : [];
+        }
+        assert.equal(params[5], 'owner');
+        assert.match(sql, /NOT EXISTS \(SELECT 1 FROM tasks/);
+        assert.match(sql, /e\.end_date::timestamp AT TIME ZONE 'Asia\/Seoul'/);
+        return projectOwned && (!params[6] || projectComplete)
+          ? [{ id: '1', archivedAt: 'now' }]
+          : [];
+      },
+    },
+  },
+  { getRouterParam: () => '1', readBody: async () => projectBody },
+).default;
+await assert.rejects(updateProject({}), (error) => error.statusCode === 409);
+projectOwned = false;
+await assert.rejects(updateProject({}), (error) => error.statusCode === 404);
+projectOwned = true;
+projectComplete = true;
+assert.equal((await updateProject({})).id, '1');
+projectComplete = false;
+projectBody = { archived: true };
+assert.equal((await updateProject({})).id, '1', 'Manual archiving remains available');
 console.log(
-  'PASS: strict IDs and timestamps, account-deletion safety, calendar ranges. No external writes.',
+  'PASS: strict IDs and timestamps, account-deletion safety, calendar ranges, completion boundaries and guarded project archiving. No external writes.',
 );

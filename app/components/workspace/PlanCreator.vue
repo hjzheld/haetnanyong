@@ -16,23 +16,39 @@ const kind = ref<'task' | 'event'>('task');
 const projects = ref<Project[]>([]);
 const loading = ref(false);
 const error = ref('');
+let projectLoadGeneration = 0;
+let decidingDiscard = false;
 async function loadProjects() {
+  const generation = ++projectLoadGeneration;
   loading.value = true;
   error.value = '';
   try {
-    projects.value = (await request<Project[]>('/api/projects')).filter((p) => !p.archivedAt);
+    const result = await request<Project[]>('/api/projects');
+    if (generation === projectLoadGeneration && props.open)
+      projects.value = result.filter((p) => !p.archivedAt);
   } catch (e) {
-    error.value = errorText(e, 'load');
+    if (generation === projectLoadGeneration && props.open) error.value = errorText(e, 'load');
   } finally {
-    loading.value = false;
+    if (generation === projectLoadGeneration) loading.value = false;
   }
 }
 async function requestClose() {
-  if (!editor.value || (await editor.value.confirmDiscard())) emit('close');
+  if (decidingDiscard) return;
+  decidingDiscard = true;
+  try {
+    if (!editor.value || (await editor.value.confirmDiscard())) emit('close');
+  } finally {
+    decidingDiscard = false;
+  }
 }
 async function changeKind(value: 'task' | 'event') {
-  if (kind.value !== value && (!editor.value || (await editor.value.confirmDiscard())))
-    kind.value = value;
+  if (kind.value === value || decidingDiscard) return;
+  decidingDiscard = true;
+  try {
+    if (!editor.value || (await editor.value.confirmDiscard())) kind.value = value;
+  } finally {
+    decidingDiscard = false;
+  }
 }
 function projectCreated(project: Project) {
   if (!projects.value.some((p) => String(p.id) === String(project.id)))
@@ -49,19 +65,24 @@ function saved(result?: { id: string; projectId?: string | null }) {
 }
 watch(
   () => props.open,
-  async (open) => {
-    if (open) {
+  async () => {
+    ++projectLoadGeneration;
+    if (props.open) {
       kind.value = 'task';
       projects.value = [];
       error.value = '';
       await nextTick();
-      dialog.value?.showModal();
+      if (!props.open) return;
+      if (!dialog.value?.open) dialog.value?.showModal();
       dialog.value?.querySelector<HTMLInputElement>('input')?.focus();
       void loadProjects();
     } else dialog.value?.close();
   },
   { immediate: true },
 );
+onBeforeUnmount(() => {
+  ++projectLoadGeneration;
+});
 </script>
 <template>
   <dialog

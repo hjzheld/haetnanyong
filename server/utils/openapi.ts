@@ -1926,6 +1926,11 @@ export const openapi = {
                   archived: {
                     type: 'boolean',
                   },
+                  onlyIfComplete: {
+                    type: 'boolean',
+                    description:
+                      'archived=true와 함께 사용. 비어 있지 않고 모든 할 일 완료·모든 일정 종료 조건을 UPDATE 시점에 검사하며 불충족 시 409 반환.',
+                  },
                 },
                 minProperties: 1,
               },

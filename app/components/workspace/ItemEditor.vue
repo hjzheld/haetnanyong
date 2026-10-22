@@ -151,7 +151,7 @@ const title = computed(
     })[props.kind] + (i?.id && props.kind !== 'reminder' ? tr(' 수정') : tr(' 추가')),
 );
 async function submit() {
-  if (busy.value) return;
+  if (busy.value || savedSuccessfully.value) return;
   busy.value = true;
   error.value = '';
   try {
@@ -255,7 +255,7 @@ async function submit() {
   >
     <form :aria-busy="busy" @submit.prevent="submit">
       <h2 v-if="!unframed" id="editor-title">{{ tr(title) }}</h2>
-      <fieldset :disabled="busy">
+      <fieldset :disabled="busy || savedSuccessfully">
         <label v-if="kind === 'project'"
           >{{ tr('프로젝트 이름')
           }}<input v-model="f.name" required maxlength="150" :placeholder="tr('예: 제주도 여행')"
@@ -399,7 +399,7 @@ async function submit() {
       <div class="actions">
         <button type="button" class="border-btn" :disabled="busy" @click="attemptClose">
           {{ tr('취소') }}</button
-        ><button class="solid" :disabled="busy" :aria-busy="busy">
+        ><button class="solid" :disabled="busy || savedSuccessfully" :aria-busy="busy">
           {{
             busy
               ? kind === 'reminder'

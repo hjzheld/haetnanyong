@@ -97,6 +97,16 @@ async function saved(result: {
         </p>
       </section>
       <section>
+        <h3>{{ tr('보관함') }}</h3>
+        <p>
+          {{
+            tr(
+              '프로젝트 탭의 보관함에서 보관한 프로젝트를 확인할 수 있어요. 프로젝트 상세에서 모든 일정이 종료되고 할 일이 전부 완료되면 보관 여부를 물어요. 예, 보관하기를 누르면 보관함으로 이동해요. 취소하면 같은 화면에서는 다시 묻지 않고, 빈 프로젝트에는 안내가 뜨지 않아요. 상세에서 직접 보관하거나 보관한 프로젝트를 복원할 수도 있어요.',
+            )
+          }}
+        </p>
+      </section>
+      <section>
         <h3>{{ tr('개별') }}</h3>
         <p>{{ tr('프로젝트에 속하지 않은 개인 일정과 할 일을 모아 보여줘요.') }}</p>
       </section>
@@ -121,7 +131,7 @@ async function saved(result: {
         </p>
       </section>
     </div>
-    <div class="actions">
+    <div class="actions plan-help-actions">
       <button type="button" class="solid" @click="closeHelp">{{ tr('확인했어요') }}</button>
     </div>
   </dialog>

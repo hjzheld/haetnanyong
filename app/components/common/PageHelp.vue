@@ -44,8 +44,8 @@ const content = computed(() => {
         section(
           '일정 등록',
           'Create an event',
-          '일정 등록 버튼으로 새 일정을 만들어요. 시간 일정은 한국 표준시(KST) 기준이며, 종일 일정의 종료일은 포함하지 않아요.',
-          'Use the create button to add an event. Timed events use Korean Standard Time (KST). All-day events exclude the end date.',
+          '일정 등록 버튼을 누르면 플랜의 개별 일정 목록으로 이동해요. 그곳에서 플랜 등록 버튼으로 새 일정을 만들 수 있어요. 시간 일정은 한국 표준시(KST) 기준이며, 종일 일정의 종료일은 포함하지 않아요.',
+          'The add event button opens the individual events list in Plans. Use Add plan there to create an event. Timed events use Korean Standard Time (KST). All-day events exclude the end date.',
         ),
       ],
     };
@@ -130,8 +130,8 @@ const content = computed(() => {
         section(
           '보관함',
           'Archive',
-          '끝난 프로젝트는 보관함으로 옮겨 관리할 수 있어요. 다시 진행하려면 복원해주세요. 삭제는 보관과 달리 되돌릴 수 없으므로 확인 후 진행해주세요.',
-          'Archive finished projects and restore them when needed. Deletion is permanent, unlike archiving; read the confirmation carefully.',
+          '프로젝트 상세에서 모든 일정이 종료되고 할 일이 전부 완료되면 보관 여부를 물어요. 예, 보관하기를 누르면 보관함으로 이동하고, 취소하면 같은 화면에서는 다시 묻지 않아요. 빈 프로젝트에는 안내가 뜨지 않아요. 직접 보관하기를 누를 수도 있어요. 보관한 프로젝트는 플랜의 프로젝트 탭에서 보관함을 선택해 확인하고, 상세에서 복원하기를 누르면 다시 진행할 수 있어요.',
+          'When all events have ended and all tasks are complete, the project detail asks whether to archive it. Choose Yes, archive to move it to the archive. Cancel dismisses the prompt for the current visit. Empty projects do not trigger it. You can also archive a project manually. Find archived projects under Plans → Projects → Archive, then open a project and choose Restore to resume it.',
         ),
       ],
     };
@@ -238,6 +238,8 @@ watch(
         <p>{{ section.text }}</p>
       </section>
     </div>
-    <button type="button" class="solid" @click="close">{{ tr('확인했어요') }}</button>
+    <div class="plan-help-actions">
+      <button type="button" class="solid" @click="close">{{ tr('확인했어요') }}</button>
+    </div>
   </dialog>
 </template>
