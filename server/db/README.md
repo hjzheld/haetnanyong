@@ -15,3 +15,6 @@ Neon 연결 확인 API: `GET /api/health/db`
 5. `reminders` — Slack 예약 ID, 상태, 변경 버전
 
 모든 사용자 데이터 조회는 `user_id` 소유권 조건을 포함하고, 프로젝트 부모 관계도 같은 요청에서 검증합니다.
+
+사용자별 목록 조회 인덱스는 `migrations/007-user-query-indexes.sql`입니다.
+신규 DB 스냅샷에는 포함되어 있으며, 기존 DB에는 해당 마이그레이션만 별도로 적용합니다.

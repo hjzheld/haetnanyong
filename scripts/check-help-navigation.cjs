@@ -131,6 +131,20 @@ async function main() {
       ]) {
         await navigate(url);
         const trigger = page.getByRole('button', { name: /도움말/ });
+        if (url === '/privacy' || url === '/terms') {
+          assert.equal(await trigger.count(), 0, 'Legal pages omit help');
+          const backButton = page.getByRole('button', { name: '뒤로가기', exact: true });
+          assert.equal(await backButton.count(), 1);
+          assert.equal(await page.locator('.legal-page .legal-back-button').count(), 0);
+          assert.equal(
+            await backButton.evaluate((el) => getComputedStyle(el).borderTopWidth),
+            '0px',
+          );
+          const backRect = await backButton.boundingBox();
+          const cardRect = await page.locator('.legal-page').boundingBox();
+          assert.ok(backRect.y + backRect.height <= cardRect.y, 'Back is above the card');
+          continue;
+        }
         assert.equal(await trigger.count(), 1, url + ' has one help button');
         await trigger.click();
         const dialog = page.getByRole('dialog');
@@ -195,6 +209,27 @@ async function main() {
         fullPage: true,
       });
     }
+    await page.route('**/api/events/11', (r) =>
+      r.request().method() === 'DELETE'
+        ? r.fulfill({
+            status: 409,
+            json: {
+              statusCode: 409,
+              statusMessage: 'Cancel or reconcile the reminder before editing this event',
+            },
+          })
+        : r.fallback(),
+    );
+    await navigate('/items/events/11');
+    await page.getByRole('button', { name: '삭제', exact: true }).click();
+    const confirmation = page.locator('.confirm-dialog[open]');
+    await confirmation.getByRole('button', { name: '계속하기', exact: true }).click();
+    await confirmation.getByRole('alert').waitFor();
+    assert.ok(
+      (await confirmation.getByRole('alert').innerText()).length > 0,
+      'Errors are visible inside the active modal',
+    );
+    await confirmation.getByRole('button', { name: '취소', exact: true }).click();
     assert.deepEqual(errors, []);
     console.log(
       'PASS: history back, saved-event back, per-page help/focus, reminder layout at 1440/768/390/320px',

@@ -49,6 +49,7 @@ export async function callSlack<T extends SlackResponse>(
   method: string,
   body: Record<string, unknown>,
   explicitToken?: string,
+  deadline?: number,
 ): Promise<T> {
   let token = explicitToken;
   if (!token && typeof body.channel === 'string') {
@@ -77,10 +78,13 @@ export async function callSlack<T extends SlackResponse>(
   const scheduling = method === 'chat.scheduleMessage';
   let slackRequestId: string | undefined;
   const diagnostic = (slackCode: string) => ({ method, slackCode, slackRequestId });
+  const timeout = deadline === undefined ? 15000 : Math.min(15000, deadline - Date.now());
+  if (timeout <= 0)
+    throw createError({ statusCode: 503, statusMessage: 'Slack operation time budget exhausted' });
   const response = await $fetch<T>(`https://slack.com/api/${method}`, {
     method: 'POST',
     retry: 0,
-    timeout: 15000,
+    timeout,
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': scheduling
@@ -129,7 +133,7 @@ export interface ScheduledSlackMessage {
   text: string;
 }
 
-export async function listScheduledSlackMessages(channel: string) {
+export async function listScheduledSlackMessages(channel: string, deadline?: number) {
   const messages: ScheduledSlackMessage[] = [];
   let cursor = '';
   // Absence is meaningful only after the entire channel's list has been read.
@@ -139,7 +143,12 @@ export async function listScheduledSlackMessages(channel: string) {
         scheduled_messages: ScheduledSlackMessage[];
         response_metadata?: { next_cursor?: string };
       }
-    >('chat.scheduledMessages.list', { channel, limit: 100, ...(cursor ? { cursor } : {}) });
+    >(
+      'chat.scheduledMessages.list',
+      { channel, limit: 100, ...(cursor ? { cursor } : {}) },
+      undefined,
+      deadline,
+    );
     if (!Array.isArray(result.scheduled_messages))
       throw createError({ statusCode: 502, statusMessage: 'Slack reservation list is incomplete' });
     messages.push(...result.scheduled_messages);

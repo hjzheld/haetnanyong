@@ -168,6 +168,7 @@ async function revokeOtherSessions() {
   }
 }
 async function disconnect() {
+  connectionError.value = '';
   if (!slackBusy.value) disconnectConfirm.value = true;
 }
 async function confirmDisconnect() {
@@ -511,6 +512,7 @@ async function deleteAccount() {
     "
     :confirm-label="tr('연결 해제')"
     :busy="slackBusy"
+    :error="connectionError"
     @cancel="disconnectConfirm = false"
     @confirm="confirmDisconnect"
   />

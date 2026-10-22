@@ -11,18 +11,12 @@ export default defineNuxtPlugin((nuxtApp) => {
               observer?.unobserve(el);
               if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !el.animate)
                 continue;
-              const animation = el.animate(
-                [
-                  { opacity: 0, transform: 'translateY(16px)' },
-                  { opacity: 1, transform: 'translateY(0)' },
-                ],
-                {
-                  duration: 440,
-                  delay: delays.get(el) || 0,
-                  fill: 'backwards',
-                  easing: 'cubic-bezier(.22,1,.36,1)',
-                },
-              );
+              const animation = el.animate([{ opacity: 0 }, { opacity: 1 }], {
+                duration: 440,
+                delay: delays.get(el) || 0,
+                fill: 'backwards',
+                easing: 'cubic-bezier(.22,1,.36,1)',
+              });
               animations.set(el, animation);
             }
           },

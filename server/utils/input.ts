@@ -4,6 +4,8 @@ export function inputBody(value: unknown): Record<string, any> {
   return value as Record<string, any>;
 }
 export function inputId(value: unknown): string {
+  if (typeof value !== 'string' && (typeof value !== 'number' || !Number.isSafeInteger(value)))
+    throw createError({ statusCode: 400, statusMessage: 'Invalid numeric ID' });
   const id = String(value ?? '');
   if (!/^[1-9]\d*$/.test(id) || BigInt(id) > BigInt('9223372036854775807'))
     throw createError({ statusCode: 400, statusMessage: 'Invalid numeric ID' });
@@ -39,15 +41,26 @@ export function inputDate(value: unknown, field: string): string {
   return value;
 }
 export function inputTime(value: unknown, field: string): string {
+  const parts =
+    typeof value === 'string'
+      ? /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,6})?)?(Z|[+-]\d{2}:\d{2})$/.exec(
+          value,
+        )
+      : null;
   if (
     typeof value !== 'string' ||
-    !/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value) ||
+    !parts ||
+    Number(parts[2]) > 23 ||
+    Number(parts[3]) > 59 ||
+    Number(parts[4] || 0) > 59 ||
     !Number.isFinite(Date.parse(value))
   )
     throw createError({
       statusCode: 400,
       statusMessage: `${field} must be an ISO timestamp with timezone`,
     });
+  // Date.parse silently normalizes dates such as February 30. Never schedule that value.
+  inputDate(parts[1], field);
   return value;
 }
 export function inputEnum(value: unknown, allowed: string[], field: string) {

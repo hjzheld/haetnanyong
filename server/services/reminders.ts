@@ -33,14 +33,14 @@ async function ownedReminder(id: string, userId: string) {
   return row;
 }
 
-export async function reconcileReminder(id: string, userId: string) {
+export async function reconcileReminder(id: string, userId: string, deadline?: number) {
   const row = await ownedReminder(id, userId);
   if (!['SCHEDULING', 'UNKNOWN', 'SCHEDULED', 'CANCEL_PENDING'].includes(row.status)) return row;
   // Do not reconcile an HTTP request that may still be in flight.
   if (Date.now() - new Date(row.updatedAt).getTime() < 120_000) return row;
   if (!row.channel)
     throw createError({ statusCode: 409, statusMessage: 'Stored Slack channel is missing' });
-  const messages = await listScheduledSlackMessages(row.channel);
+  const messages = await listScheduledSlackMessages(row.channel, deadline);
   const at = Math.floor(new Date(row.remindAt).getTime() / 1000);
   const candidates = messages.filter(
     (m) => m.channel_id === row.channel && Number(m.post_at) === at,

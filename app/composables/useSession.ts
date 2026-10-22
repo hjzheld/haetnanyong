@@ -3,6 +3,7 @@ export function useSession() {
   const user = useState<User | null>('session-user', () => null);
   const request = useRequestFetch();
   const checkedAt = useState('session-checked-at', () => 0);
+  const generation = useState('session-generation', () => 0);
   const nuxtApp = useNuxtApp();
   const sessionRequests = nuxtApp as typeof nuxtApp & { _sessionRestore?: Promise<void> };
   async function restore() {
@@ -15,11 +16,15 @@ export function useSession() {
       return;
     }
     if (sessionRequests._sessionRestore) return sessionRequests._sessionRestore;
+    const startedGeneration = generation.value;
     sessionRequests._sessionRestore = (async () => {
       try {
-        user.value = (await request<{ user: User }>('/api/auth/me')).user;
+        const result = await request<{ user: User }>('/api/auth/me');
+        if (generation.value !== startedGeneration) return;
+        user.value = result.user;
         checkedAt.value = Date.now();
       } catch (e: unknown) {
+        if (generation.value !== startedGeneration) return;
         const status = e as { statusCode?: number; status?: number };
         if ((status.statusCode || status.status) !== 401) throw e;
         user.value = null;
@@ -33,6 +38,7 @@ export function useSession() {
     }
   }
   function setUser(value: User | null) {
+    generation.value++;
     user.value = value;
     checkedAt.value = Date.now();
   }

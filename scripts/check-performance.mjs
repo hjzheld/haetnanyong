@@ -10,7 +10,9 @@ const require = createRequire(import.meta.url);
 function load(path, overrides = {}, globals = {}) {
   const module = { exports: {} };
   const js = ts.transpileModule(
-    readFileSync(path, 'utf8').replaceAll('import.meta.server', 'false'),
+    readFileSync(path, 'utf8')
+      .replaceAll('import.meta.server', 'false')
+      .replaceAll('import.meta.client', 'true'),
     {
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
     },
@@ -109,6 +111,53 @@ states.get('session-checked-at').value = 0;
 await useSession().restore();
 assert.equal(sessionQueries, 2, 'Expired session state revalidates');
 assert.equal(useSession().user.value.id, '1');
+states.get('session-checked-at').value = 0;
+const oldRestore = useSession().restore();
+useSession().setUser(null);
+await oldRestore;
+assert.equal(useSession().user.value, null, 'Late restoration cannot undo logout');
+states.get('session-checked-at').value = 0;
+const previousAccount = useSession().restore();
+useSession().setUser({ id: 'new-account' });
+await previousAccount;
+assert.equal(
+  useSession().user.value.id,
+  'new-account',
+  'Late restoration cannot replace a new login',
+);
+let rejectRequest;
+let redirects = 0;
+const { useApi } = load(
+  'app/composables/useApi.ts',
+  {},
+  {
+    useState: (key, init) => {
+      if (!states.has(key)) states.set(key, { value: init() });
+      return states.get(key);
+    },
+    useRoute: () => ({ path: '/plans', fullPath: '/plans' }),
+    useRequestFetch: () => () =>
+      new Promise((_resolve, reject) => {
+        rejectRequest = reject;
+      }),
+    clearNuxtData: () => {},
+    navigateTo: async () => {
+      redirects++;
+    },
+  },
+);
+const api = useApi();
+const oldRequest = api.request('/api/projects');
+useSession().setUser({ id: 'latest-login' });
+rejectRequest({ statusCode: 401 });
+await assert.rejects(oldRequest);
+assert.equal(useSession().user.value.id, 'latest-login');
+assert.equal(redirects, 0, 'Old API responses must not log out a new session');
+const expiredRequest = api.request('/api/projects');
+rejectRequest({ statusCode: 401 });
+await assert.rejects(expiredRequest);
+assert.equal(useSession().user.value, null);
+assert.equal(redirects, 1, 'A current session expiry must still redirect');
 console.log(
   'PASS: non-blocking password hashes, legacy compatibility, request-scoped authentication and session deduplication. No external writes.',
 );

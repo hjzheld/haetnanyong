@@ -86,7 +86,7 @@ watch(archived, (value) => {
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 watch(toastText, (value) => {
   if (toastTimer) clearTimeout(toastTimer);
-  if (value)
+  if (value && !deleteTarget.value)
     toastTimer = setTimeout(() => {
       notice.value = '';
       actionError.value = '';
@@ -210,6 +210,7 @@ async function saved() {
   notice.value = '저장했어요.';
 }
 function remove(kind: 'tasks' | 'events', id: string) {
+  actionError.value = '';
   deleteTarget.value = {
     url: `/api/${kind}/${id}`,
     description:
@@ -219,6 +220,7 @@ function remove(kind: 'tasks' | 'events', id: string) {
   };
 }
 function askReminderCancel(id: string) {
+  actionError.value = '';
   deleteTarget.value = {
     url: `/api/reminders/${id}`,
     description: '예약된 Slack 알림을 취소할까요?',
@@ -701,6 +703,7 @@ const titles = {
     :description="deleteTarget?.description || ''"
     :confirm-label="tr('계속하기')"
     :busy="busy"
+    :error="actionError"
     @cancel="deleteTarget = undefined"
     @confirm="confirmRemove"
   />

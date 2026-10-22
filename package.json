@@ -12,6 +12,7 @@
     "preview": "nuxt preview",
     "prepare": "nuxt prepare",
     "lint": "nuxt typecheck",
+    "test:audit": "node scripts/check-audit.mjs",
     "test:reminders": "node scripts/check-reminders.mjs && node scripts/check-slack-oauth.mjs",
     "test:workspace": "node scripts/check-calendar.mjs && node scripts/check-dashboard.mjs && node scripts/check-locales.mjs",
     "test:workspace:browser": "node scripts/check-workspace-ui.cjs",

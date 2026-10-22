@@ -132,6 +132,9 @@ CREATE INDEX idx_projects_user_archived ON public.projects USING btree (user_id,
 CREATE INDEX idx_tasks_project_due_date ON public.tasks USING btree (project_id, due_date);
 CREATE INDEX idx_events_project_starts_at ON public.events USING btree (project_id, starts_at);
 CREATE INDEX idx_sessions_user_id ON public.sessions USING btree (user_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_user_due_date ON public.tasks (user_id, due_date);
+CREATE INDEX IF NOT EXISTS idx_events_user_starts_at ON public.events (user_id, starts_at);
+CREATE INDEX IF NOT EXISTS idx_events_user_start_date ON public.events (user_id, start_date);
 CREATE INDEX idx_tasks_project_start_date ON public.tasks USING btree (project_id, start_date);
 CREATE INDEX idx_tasks_project_status ON public.tasks USING btree (project_id, status);
 CREATE INDEX idx_reminders_status_remind_at ON public.reminders USING btree (status, remind_at);

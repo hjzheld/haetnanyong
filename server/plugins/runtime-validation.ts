@@ -15,6 +15,12 @@ export default defineNitroPlugin((nitroApp) => {
     if (!event) return;
     const requestId = String(event.context.requestId || 'UNKNOWN');
     const status = Number((error as { statusCode?: number }).statusCode || 500);
-    if (status >= 500) console.error(`[request:${requestId}]`, error);
+    // Fetch/DB error objects may contain credentials, SQL parameters or message text.
+    const code = (error as { code?: unknown }).code;
+    if (status >= 500)
+      console.error(`[request:${requestId}]`, {
+        status,
+        code: typeof code === 'string' && /^[A-Z0-9_]{1,64}$/i.test(code) ? code : 'server_error',
+      });
   });
 });

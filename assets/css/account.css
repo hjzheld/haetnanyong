@@ -435,9 +435,12 @@
 .site-footer a {
   color: inherit;
 }
-.legal-page {
+.legal-layout {
   max-width: 760px;
   margin: 32px auto;
+}
+.legal-page {
+  margin: 0;
   padding: 36px;
   border: 1px solid var(--color-border-neutral-900);
   border-radius: 24px;
@@ -452,8 +455,10 @@
   .site-footer {
     flex-direction: column;
   }
-  .legal-page {
+  .legal-layout {
     margin: 16px;
+  }
+  .legal-page {
     padding: 24px;
   }
 }

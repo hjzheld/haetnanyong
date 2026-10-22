@@ -2,6 +2,7 @@ import { requireUser } from '#server/utils/auth';
 import { query } from '#server/utils/db';
 import { verifyPassword } from '#server/utils/password';
 import { cancelSlackMessage } from '#server/services/slack';
+import { inputBody, inputPassword } from '#server/utils/input';
 
 interface ReminderCancellation {
   channelId: string;
@@ -16,17 +17,28 @@ function slackErrorCode(error: unknown) {
 
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event);
-  const body = await readBody<{ password?: unknown }>(event);
-  const password = typeof body?.password === 'string' ? body.password : '';
-  if (!password)
-    throw createError({ statusCode: 400, statusMessage: 'Current password is required' });
+  const body = inputBody(await readBody(event));
+  const password = inputPassword(body.password);
 
   const [account] = await query<{ passwordHash: string }>(
     'SELECT password_hash AS "passwordHash" FROM users WHERE id=$1',
     [user.id],
   );
   if (!account || !(await verifyPassword(password, account.passwordHash)))
-    throw createError({ statusCode: 401, statusMessage: 'Current password is incorrect' });
+    throw createError({ statusCode: 400, statusMessage: '현재 비밀번호가 일치하지 않아요.' });
+
+  // Losing an unknown reservation ID on deletion would make later cancellation impossible.
+  const unresolved = await query(
+    `SELECT r.id FROM reminders r JOIN events e ON e.id=r.event_id
+      WHERE e.user_id=$1 AND r.status IN ('SCHEDULING','UNKNOWN','CANCEL_PENDING')
+        AND r.slack_scheduled_message_id IS NULL LIMIT 1`,
+    [user.id],
+  );
+  if (unresolved.length)
+    throw createError({
+      statusCode: 409,
+      statusMessage: '예약 중이거나 결과 확인이 필요한 알림을 먼저 취소·확인해주세요.',
+    });
 
   const reminders = await query<ReminderCancellation>(
     `SELECT r.slack_dm_channel_id AS "channelId",

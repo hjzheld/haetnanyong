@@ -39,8 +39,13 @@ export default defineEventHandler(async (event) => {
       LIMIT 50`,
   );
 
+  const deadline = Date.now() + 25_000;
+  let processed = 0;
   let resolved = 0;
   for (const job of jobs) {
+    // Each Slack call may take 15 seconds. Leave room before starting another.
+    if (deadline - Date.now() < 15_000) break;
+    processed++;
     try {
       await cancelSlackMessage(job.channelId, job.scheduledMessageId);
       await query('DELETE FROM slack_cancellation_jobs WHERE id=$1', [job.id]);
@@ -70,15 +75,14 @@ export default defineEventHandler(async (event) => {
       ORDER BY r.updated_at LIMIT 10`,
   );
   let reconciled = 0;
-  const deadline = Date.now() + 20_000;
   for (const reminder of reminders) {
-    if (Date.now() >= deadline) break;
+    if (deadline - Date.now() < 15_000) break;
     try {
-      await reconcileReminder(reminder.id, reminder.userId);
+      await reconcileReminder(reminder.id, reminder.userId, deadline);
       reconciled++;
     } catch {
       // Keep uncertain reservations intact; another run or the owner can retry.
     }
   }
-  return { ok: true, processed: jobs.length, resolved, reconciled };
+  return { ok: true, processed, resolved, reconciled };
 });

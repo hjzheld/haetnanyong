@@ -103,18 +103,22 @@ const serializeForm = () => JSON.stringify({ chosenProject: chosenProject.value,
 const initialSnapshot = serializeForm();
 const dirty = computed(() => !savedSuccessfully.value && serializeForm() !== initialSnapshot);
 let resolveDiscardPrompt: ((discard: boolean) => void) | undefined;
+let pendingDiscard: Promise<boolean> | undefined;
 function confirmDiscard() {
   if (busy.value) return Promise.resolve(false);
   if (!dirty.value) return Promise.resolve(true);
+  if (pendingDiscard) return pendingDiscard;
   discardPromptOpen.value = true;
-  return new Promise<boolean>((resolve) => {
+  pendingDiscard = new Promise<boolean>((resolve) => {
     resolveDiscardPrompt = resolve;
   });
+  return pendingDiscard;
 }
 function resolveDiscard(discard: boolean) {
   discardPromptOpen.value = false;
   resolveDiscardPrompt?.(discard);
   resolveDiscardPrompt = undefined;
+  pendingDiscard = undefined;
 }
 async function attemptClose() {
   if (await confirmDiscard()) {
@@ -131,7 +135,10 @@ onMounted(() => {
   if (!props.inline) dialog.value?.showModal();
   window.addEventListener('beforeunload', beforeUnload);
 });
-onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload));
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', beforeUnload);
+  resolveDiscard(false);
+});
 onBeforeRouteLeave(() => confirmDiscard());
 defineExpose({ confirmDiscard });
 const title = computed(

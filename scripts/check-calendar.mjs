@@ -1,16 +1,7 @@
 import assert from 'node:assert/strict';
-import { build } from 'esbuild';
-
-const { outputFiles } = await build({
-  entryPoints: ['app/utils/calendar.ts'],
-  bundle: true,
-  write: false,
-  platform: 'node',
-  format: 'esm',
-});
-const { occursOnDay, toCalendarItems, groupCalendarItems } = await import(
-  `data:text/javascript;base64,${Buffer.from(outputFiles[0].text).toString('base64')}`
-);
+import { loadTsModule } from './load-ts-module.mjs';
+const { occursOnDay, toCalendarItems, groupCalendarItems } =
+  await loadTsModule('app/utils/calendar.ts');
 
 const items = toCalendarItems([
   { id: 'all-day', projectId: '1', allDay: true, startDate: '2026-10-31', endDate: '2026-11-02' },

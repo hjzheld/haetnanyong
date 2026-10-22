@@ -89,6 +89,7 @@ async function saved(result?: { id: string }) {
   await navigateTo(`/items/${resource}/${result?.id || id}`, { replace: true });
 }
 async function remove() {
+  actionError.value = '';
   if (!busy.value) confirmAction.value = 'delete';
 }
 async function confirmRemove() {
@@ -125,6 +126,7 @@ async function toggleTask() {
   }
 }
 async function cancelReminder() {
+  actionError.value = '';
   if (!busy.value && reminder.value) confirmAction.value = 'cancelReminder';
 }
 async function confirmReminderCancel() {
@@ -340,6 +342,7 @@ async function openReminder() {
     "
     :confirm-label="tr('계속하기')"
     :busy="busy"
+    :error="actionError"
     @cancel="confirmAction = undefined"
     @confirm="confirmAction === 'delete' ? confirmRemove() : confirmReminderCancel()"
   />

@@ -28,7 +28,7 @@ The live Neon schema was read using information_schema and pg_catalog. No produc
 
 ## Operational limits
 
-- Slack delivery/cancellation was not invoked during validation. UNKNOWN reservations require reconciliation with Slack before retrying; automatic reconciliation is not implemented.
+- Slack delivery/cancellation was not invoked during validation. UNKNOWN reservations require reconciliation with Slack before retrying; the internal cancellation cron also reconciles outstanding reminders. See `code-audit-2026-10-22.md` for the latest review and limits.
 - Event PATCH edits fields within the existing timed/all-day type; changing allDay is not supported.
 - schema.sql is a fresh-database snapshot, not a migration to rerun against the existing database.
 - Backend code now catches SQL constraint errors; EXPLAIN validates names/types but does not prove all data-dependent constraints or external Slack outcomes.

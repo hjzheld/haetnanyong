@@ -19,7 +19,7 @@ export const accountPaths = {
       tags: ['Account'],
       summary: '회원 탈퇴 및 개인정보 삭제',
       description:
-        '현재 비밀번호를 확인하고 계정 데이터를 삭제합니다. Slack 예약 취소가 확인되지 않으면 개인정보를 제외한 채널 ID와 예약 메시지 ID만 임시 취소 작업으로 보관합니다.',
+        '현재 비밀번호를 확인하고 계정 데이터를 삭제합니다. 예약 ID가 없는 미확정 알림은 먼저 결과 확인이 필요합니다(409). 알려진 Slack 예약의 취소 실패는 임시 작업으로 보관합니다.',
       security,
       requestBody: request(
         { password: { type: 'string', format: 'password', minLength: 1, maxLength: 200 } },
@@ -40,8 +40,9 @@ export const accountPaths = {
   '/account/profile': {
     patch: {
       tags: ['Account'],
-      summary: '이메일·닉네임 변경',
-      description: '이메일 변경 시 현재 비밀번호가 필요하며 다른 기기의 세션을 해제합니다.',
+      summary: '닉네임 변경',
+      description:
+        '현재 이메일과 새 닉네임을 전달합니다. 이메일 변경은 새 주소 인증이 지원될 때까지 차단됩니다(409).',
       security,
       requestBody: request(
         {

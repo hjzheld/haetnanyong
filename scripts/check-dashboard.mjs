@@ -1,15 +1,6 @@
 import assert from 'node:assert/strict';
-import { build } from 'esbuild';
-const { outputFiles } = await build({
-  entryPoints: ['app/utils/dashboard.ts'],
-  bundle: true,
-  write: false,
-  platform: 'node',
-  format: 'esm',
-});
-const { dashboardTasks } = await import(
-  `data:text/javascript;base64,${Buffer.from(outputFiles[0].text).toString('base64')}`
-);
+import { loadTsModule } from './load-ts-module.mjs';
+const { dashboardTasks } = await loadTsModule('app/utils/dashboard.ts');
 const task = (id, dueDate, status = 'TODO', projectId = null) => ({
   id,
   dueDate,

@@ -29,9 +29,9 @@ const db = {
     if (sql.includes('SELECT r.id')) return active ? [{ id: '1' }] : [];
     if (sql.includes('SELECT password_hash'))
       return [{ password_hash: await password.hashPassword('old-password') }];
-    if (sql.includes('WITH updated')) {
+    if (sql.includes('WITH updated') || sql.startsWith('UPDATE users SET nickname=')) {
       profileWrites++;
-      return [{ ...user, nickname: args[0], email: args[1] }];
+      return [{ ...user, nickname: args[0] }];
     }
     if (sql.includes('UPDATE users')) {
       connectionWrites++;
