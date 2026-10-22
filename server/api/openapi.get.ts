@@ -2,6 +2,26 @@ import { openapi } from '#server/utils/openapi';
 
 export default defineEventHandler(() => {
   const document = JSON.parse(JSON.stringify(openapi));
+  for (const [path, description] of [
+    [
+      '/auth/register',
+      '같은 IP에서 정각 기준 1시간당 20회까지 허용합니다. 실패·차단 요청도 집계합니다.',
+    ],
+    [
+      '/auth/login',
+      '같은 IP에서 고정 10분 구간당 10회까지 허용합니다. 실패·차단 요청도 집계합니다.',
+    ],
+  ]) {
+    const operation = document.paths[path!].post;
+    operation.description = `${operation.description || ''} ${description}`.trim();
+    operation.responses['429'] = {
+      description: '요청 제한. 다음 고정 시간 구간부터 다시 시도할 수 있습니다.',
+      headers: {
+        'Retry-After': { description: '해제까지 남은 초', schema: { type: 'integer' } },
+        'X-RateLimit-Reset': { description: '해제 시각 (Unix 초)', schema: { type: 'integer' } },
+      },
+    };
+  }
   document.paths['/calendar'].get.summary = '기간별 일정 조회';
   document.paths['/calendar'].get.description =
     '프로젝트 일정과 개인 일정만 반환합니다. 할 일과 보관된 프로젝트의 일정은 제외합니다. 최대 366일의 반열린 구간(from 포함, to 제외)을 지원하며 종일 일정도 KST 기준 실제 시간 구간과 겹치는지 확인합니다.';
@@ -56,7 +76,7 @@ export default defineEventHandler(() => {
       tags: ['Slack'],
       summary: '현재 로그인 사용자의 Slack 연결 인증 확인',
       description:
-        'OAuth로 연결한 DM의 설치 토큰과 워크스페이스를 확인합니다. 메시지는 발송하지 않으며 실제 수신이나 기기 알림 설정은 검증하지 않습니다.',
+        '연결 토큰으로 워크스페이스·사용자·예약 목록 접근을 확인합니다. 메시지는 발송하지 않으며 실제 수신이나 기기 알림 설정은 검증하지 않습니다.',
       security: [{ sessionCookie: [] }],
       responses: {
         200: {

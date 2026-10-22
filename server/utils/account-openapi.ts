@@ -6,10 +6,10 @@ const request = (properties: Record<string, object>, required: string[]) => ({
 });
 const responses = {
   200: { description: '성공', content: json({ type: 'object' }) },
-  400: { description: '입력값·현재 비밀번호·인증 코드 오류' },
+  400: { description: '입력값·현재 비밀번호 오류' },
   401: { description: '로그인 필요' },
-  409: { description: '중복 이메일/닉네임 또는 활성 알림으로 연결 변경 불가' },
-  429: { description: '인증 코드 재발송 대기' },
+  409: { description: '닉네임 중복·이메일 변경 차단·활성 알림 또는 상태 충돌' },
+  429: { description: '요청 횟수 초과. Retry-After와 X-RateLimit-Reset 확인' },
   502: { description: 'Slack 인증/권한/호출 오류' },
   503: { description: '서버 Slack 설정 누락' },
 };
@@ -48,7 +48,6 @@ export const accountPaths = {
         {
           email: { type: 'string', format: 'email' },
           nickname: { type: 'string', minLength: 2, maxLength: 30 },
-          currentPassword: { type: 'string', format: 'password' },
         },
         ['email', 'nickname'],
       ),
@@ -76,7 +75,7 @@ export const accountPaths = {
       tags: ['Account'],
       summary: '본인 Slack 연결 상태',
       description:
-        'configured, connected, workspaceId, memberId, connectedAt 반환. 봇 토큰은 반환하지 않습니다.',
+        'configured, oauthConfigured, setupIssues, connected, workspaceId, memberId, connectedAt 반환. setupIssues는 설정 문제의 환경변수 이름이며 비밀 값·토큰은 반환하지 않습니다.',
       security,
       responses,
     },
@@ -92,28 +91,69 @@ export const accountPaths = {
   '/account/slack/challenge': {
     post: {
       tags: ['Account'],
-      summary: 'Slack 연결 인증 코드 DM 보내기',
+      summary: '종료된 Slack 코드 인증 요청',
+      deprecated: true,
       description:
-        '서버 봇과 같은 워크스페이스의 활성 멤버에게 실제 인증 DM 1건을 보냅니다. memberId는 U/W로 시작. 코드는 10분 유효, 현재 로그인 세션에 귀속되며 1분 재발송 대기. HttpOnly 인증 쿠키를 같은 브라우저에서 verify에 전송해야 합니다. 봇 권한 users:read, im:write, chat:write 필요.',
+        '로그인 검사 후 410을 반환합니다. DM 발송이나 연결 변경을 하지 않습니다. OAuth 시작 API를 사용하세요.',
       security,
-      requestBody: request(
-        { memberId: { type: 'string', pattern: '^[UW][A-Z0-9]{8,49}$', example: 'U0123456789' } },
-        ['memberId'],
-      ),
-      responses,
+      responses: {
+        401: responses[401],
+        410: { description: '코드 인증 종료' },
+        429: responses[429],
+      },
     },
   },
   '/account/slack/verify': {
     post: {
       tags: ['Account'],
-      summary: 'DM 인증 코드를 검증하고 Slack 연결 저장',
-      description:
-        '12자리 코드를 검증한 후 users의 네 Slack 연결 필드를 함께 저장합니다. DM 채널과 워크스페이스 ID를 직접 입력받지 않습니다.',
+      summary: '종료된 Slack 코드 검증',
+      deprecated: true,
+      description: '로그인 검사 후 410을 반환합니다. Slack 호출이나 연결 저장을 하지 않습니다.',
       security,
-      requestBody: request(
-        { code: { type: 'string', minLength: 12, maxLength: 12, example: 'A1B2C3D4E5F6' } },
-        ['code'],
-      ),
+      responses: { 401: responses[401], 410: { description: '코드 인증 종료' } },
+    },
+  },
+  '/account/slack/start': {
+    post: {
+      tags: ['Account'],
+      summary: 'Slack OAuth 연결 시작',
+      description:
+        '기존 알림을 검사하고 세션에 귀속된 10분 유효 state를 생성합니다. 반환한 url로 같은 브라우저에서 이동하세요. 같은 IP에서 시간당 10회까지 허용합니다.',
+      security,
+      responses: {
+        ...responses,
+        200: {
+          description: 'Slack 승인 URL',
+          content: json({ type: 'object', properties: { url: { type: 'string', format: 'uri' } } }),
+        },
+      },
+    },
+  },
+  '/account/slack/callback': {
+    get: {
+      tags: ['Account'],
+      summary: 'Slack OAuth 콜백',
+      description:
+        '쿠키·로그인 세션·일회용 state를 대조하고 승인 코드를 교환합니다. 일반 워크스페이스 설치만 지원하며 Org 전체 설치·Token Rotation은 지원하지 않습니다. 결과 화면으로 이동합니다.',
+      security,
+      parameters: ['code', 'state', 'error'].map((name) => ({
+        name,
+        in: 'query',
+        schema: { type: 'string' },
+      })),
+      responses: {
+        303: { description: '/slack/callback 결과 화면으로 이동' },
+        401: responses[401],
+      },
+    },
+  },
+  '/account/slack/test': {
+    post: {
+      tags: ['Account'],
+      summary: '본인 Slack 연결에 테스트 DM 보내기',
+      description:
+        '연결된 워크스페이스·사용자·DM 경로를 확인하고 고정 테스트 메시지 한 건을 보냅니다. 수신자·본문을 요청에서 지정할 수 없습니다. 같은 IP에서 분당 3회까지 허용하며 자동 재시도하지 않습니다.',
+      security,
       responses,
     },
   },

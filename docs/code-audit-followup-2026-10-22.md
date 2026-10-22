@@ -4,6 +4,8 @@
 세션/소유권, 데이터 API, Slack 예약·취소·탈퇴·정기 작업을 다시 점검했습니다.
 이 문서는 이전 `code-audit-2026-10-22.md` 이후의 수정 내용입니다.
 
+이후 언어·테마 포커스 처리, 가입 제한 20회, 재시도 시각 표시와 문서 정합성을 추가로 보완했습니다. 최신 변경·검증 범위는 [문서·구현 대조 기록](documentation-consistency-2026-10-22.md)을 함께 확인합니다. 아래 결과는 당시 점검 범위입니다.
+
 ## 발견한 문제와 수정
 
 | 영역          | 문제                                                                                      | 수정                                                                                                                                                   |
@@ -33,8 +35,7 @@
   복원 직후 제안 억제, 취소 유지, URL로 탭 변경, 캘린더→일정 플랜 이동 확인.
 - `node scripts/check-workspace-ui.cjs`, `node scripts/check-help-navigation.cjs`: 통과.
 - 빌드된 프로덕션 서버에서도 `check-plans-browser.cjs`의 등록·상세 진입·보관·복원·캘린더 이동 검사를 통과했습니다.
-- `npm run build`: 통과. 처음에는 Windows 샌드박스의 상위 경로 readlink 제한으로
-  Nitro 패키징이 중단됐고, 권한 검토 후 동일 명령으로 완료.
+- `npm run build`: 통과.
 
 브라우저와 API 검사는 모의 데이터를 사용했습니다. 실제 DB 변경이나 Slack 발송·취소,
 계정 탈퇴, Vercel 배포는 실행하지 않았습니다.

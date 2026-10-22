@@ -19,6 +19,8 @@ function outside(event: PointerEvent) {
   if (event.target instanceof Node && !root.value?.contains(event.target)) close();
 }
 function focusOut(event: FocusEvent) {
+  // Clicking a label can blur the trigger before its radio receives focus.
+  if (event.relatedTarget === null) return;
   if (!root.value?.contains(event.relatedTarget as Node | null)) close();
 }
 onMounted(() => document.addEventListener('pointerdown', outside));

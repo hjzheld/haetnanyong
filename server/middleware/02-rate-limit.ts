@@ -3,7 +3,7 @@ import { query } from '#server/utils/db';
 const limits: Record<string, { max: number; windowMs: number }> = {
   '/api/account/slack/test': { max: 3, windowMs: 60_000 },
   '/api/auth/login': { max: 10, windowMs: 10 * 60_000 },
-  '/api/auth/register': { max: 5, windowMs: 60 * 60_000 },
+  '/api/auth/register': { max: 20, windowMs: 60 * 60_000 },
   '/api/account/slack/challenge': { max: 10, windowMs: 60 * 60_000 },
   '/api/account/slack/start': { max: 10, windowMs: 60 * 60_000 },
 };

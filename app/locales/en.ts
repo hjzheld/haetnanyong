@@ -1,7 +1,9 @@
 // Korean source messages are stable keys. Never pass user-authored text to translation.
 const messages: Record<string, string> = {
+  '다시 시도 가능한 시각': 'You can try again at',
   '(종료일 제외)': '(end date excluded)',
   '+ 일정 등록': '+ Add event',
+  '일정 등록 페이지로 이동 →': 'Go to event registration →',
   '+ 할 일 등록': '+ Add task',
   '+ 프로젝트 만들기': '+ New project',
   '8자 이상 입력해주세요': 'Enter at least 8 characters',
@@ -381,8 +383,8 @@ const messages: Record<string, string> = {
   '이메일 또는 비밀번호를 다시 확인해주세요.': 'Please check your email and password.',
   '이메일 주소를 입력해주세요': 'Enter your email address',
   '이메일 형식을 확인해주세요.': 'Please enter a valid email address.',
-  '이메일은 인증된 계정 식별자라 현재 변경할 수 없고, 닉네임만 수정할 수 있어요.':
-    'Your email identifies your account and cannot currently be changed. You can update your nickname.',
+  '이메일은 로그인에 사용하는 정보로 현재 변경할 수 없어요. 닉네임만 수정할 수 있어요.':
+    'Your email is used to sign in and cannot currently be changed. You can update your nickname.',
   '이미 가입된 계정이 있나요?': 'Already have an account?',
   '이미 가입된 이메일이에요.': 'This email is already registered.',
   '이미 사용 중인 값이 있어요. 입력 내용을 확인해주세요.':

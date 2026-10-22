@@ -64,6 +64,26 @@ async function main() {
       else throw new Error('Unexpected API: ' + p);
       await r.fulfill({ json: data });
     });
+    for (const width of [1440, 768, 390, 320]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const mode of ['login', 'register']) {
+        await page.goto(base + '/login?mode=' + mode);
+        await page.waitForFunction(() => Boolean(document.querySelector('#__nuxt')?.__vue_app__));
+        await page.locator('input[type=email]').fill('unchanged@example.test');
+        const help = page.getByRole('button', { name: '도움말', exact: true });
+        await help.click();
+        await page.getByRole('dialog', { name: '로그인·회원가입 도움말' }).waitFor();
+        await page.keyboard.press('Escape');
+        assert.equal(
+          await page.locator('input[type=email]').inputValue(),
+          'unchanged@example.test',
+        );
+        assert.ok(await help.evaluate((el) => el === document.activeElement));
+        assert.ok(
+          await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+        );
+      }
+    }
     await page.goto(base + '/login');
     await page.waitForFunction(() => Boolean(document.querySelector('#__nuxt')?.__vue_app__));
     await page.locator('input[type=email]').fill(user.email);
@@ -86,6 +106,12 @@ async function main() {
     };
     const back = () => page.getByRole('button', { name: '← 뒤로가기', exact: true }).click();
     await navigate('/calendar');
+    assert.equal(
+      await page
+        .getByRole('link', { name: '일정 등록 페이지로 이동 →', exact: true })
+        .getAttribute('href'),
+      '/plans?tab=individual&kind=events',
+    );
     await navigate('/items/events/new');
     await back();
     await page.waitForURL(base + '/calendar');
@@ -130,6 +156,17 @@ async function main() {
         '/slack/callback?result=failed',
       ]) {
         await navigate(url);
+        if (url === '/mypage') {
+          assert.equal(
+            await page
+              .getByText(
+                '이메일은 로그인에 사용하는 정보로 현재 변경할 수 없어요. 닉네임만 수정할 수 있어요.',
+                { exact: true },
+              )
+              .count(),
+            1,
+          );
+        }
         const trigger = page.getByRole('button', { name: /도움말/ });
         if (url === '/privacy' || url === '/terms') {
           assert.equal(await trigger.count(), 0, 'Legal pages omit help');

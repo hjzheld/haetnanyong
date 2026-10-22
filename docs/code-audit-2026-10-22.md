@@ -1,5 +1,7 @@
 # 코드 점검 및 수정 — 2026-10-22
 
+당시 점검 기록입니다. 운영 DB 미적용·배포 여부는 이 점검 시점의 기록이며 현재 상태를 새로 조회한 결과가 아닙니다. 이후 변경은 [추가 점검](code-audit-followup-2026-10-22.md), [문서 대조 기록](documentation-consistency-2026-10-22.md)을 함께 확인합니다.
+
 Nuxt 화면·공통 컨트롤·세션·입력 검증·데이터 API·Slack 예약/취소·정기 작업·배포 설정을
 점검했습니다. 기존 약관 UI와 README/제출 문서의 작업 내용은 보존했습니다.
 
@@ -40,8 +42,7 @@ events의 사용자/시간 시작 및 사용자/종일 시작 인덱스를 추�
 - `node scripts/check-workspace-ui.cjs`, `node scripts/check-plans-browser.cjs`,
   `node scripts/check-help-navigation.cjs`: 모의 API로 PC/태블릿/모바일, 입력·등록·재시도,
   드롭다운·모달 초점·삭제 오류 표시·뒤로가기·약관 UI 확인.
-- `npm run lint`: 통과. `npm run build`: 통과. 초기 샌드박스의 상위 디렉터리
-  readlink 제한으로 패키징이 실패했으나 권한 검토 후 동일 명령으로 완료했습니다.
+- `npm run lint`: 통과. `npm run build`: 통과.
 - 빌드된 프로덕션 서버에서도 도움말·뒤로가기·약관 UI·모달 오류 표시 브라우저 검사를 통과했습니다.
 
 브라우저 검사는 DB·Slack API를 모의 처리하며 실제 사용자에게 메시지를 보내지 않습니다.

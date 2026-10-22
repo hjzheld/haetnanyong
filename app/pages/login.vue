@@ -1,9 +1,10 @@
 ﻿<script setup lang="ts">
-const { tr } = useLocale();
+const { tr, locale } = useLocale();
 
 import type { User } from '~/types/workspace';
 import { errorText } from '~/utils/display';
 import { safeInternalRedirect } from '~/utils/navigation';
+import { rateLimitResetAt } from '~/utils/rate-limit';
 definePageMeta({ layout: false, middleware: 'guest' });
 useHead(() => ({ title: tr('로그인 · 했냐옹') }));
 const { setUser } = useSession();
@@ -14,10 +15,25 @@ const register = ref(route.query.mode === 'register'),
   nickname = ref(''),
   busy = ref(false),
   error = ref('');
+const retryAt = ref<number | null>(null);
+const retryTime = computed(() =>
+  retryAt.value === null
+    ? ''
+    : new Intl.DateTimeFormat(locale.value === 'en' ? 'en-GB' : 'ko-KR', {
+        timeZone: 'Asia/Seoul',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23',
+      }).format(new Date(retryAt.value)),
+);
 async function submit() {
   if (busy.value) return;
   busy.value = true;
   error.value = '';
+  retryAt.value = null;
   try {
     const result = await $fetch<{ user: User }>(
       `/api/auth/${register.value ? 'register' : 'login'}`,
@@ -35,6 +51,7 @@ async function submit() {
     await navigateTo(safeInternalRedirect(route.query.redirect), { replace: true });
   } catch (e) {
     const status = (e as { statusCode?: number }).statusCode;
+    if (status === 429) retryAt.value = rateLimitResetAt(e);
     error.value =
       status === 401
         ? '이메일 또는 비밀번호를 다시 확인해주세요.'
@@ -54,6 +71,7 @@ async function submit() {
       <div class="login-card">
         <img class="login-cat" src="/images/cat.png" :alt="tr('했냐옹 고양이')" />
         <h1>{{ tr('잊지 말고, 오늘도 했냐옹') }}</h1>
+        <div class="auth-help-toolbar"><CommonPageHelp /></div>
         <form class="auth-form" :aria-busy="busy" @submit.prevent="submit">
           <h2>{{ register ? tr('회원가입') : tr('로그인') }}</h2>
           <fieldset :disabled="busy" class="auth-fields">
@@ -91,6 +109,9 @@ async function submit() {
             /></label>
           </fieldset>
           <p v-if="error" role="alert" class="form-error">{{ tr(error) }}</p>
+          <p v-if="retryTime" class="form-error" role="status">
+            {{ tr('다시 시도 가능한 시각') }}: {{ retryTime }} (KST)
+          </p>
           <button class="login-button" :disabled="busy" :aria-busy="busy">
             {{
               busy
@@ -119,6 +140,7 @@ async function submit() {
             @click="
               register = !register;
               error = '';
+              retryAt = null;
             "
           >
             <span>{{ register ? tr('이미 가입된 계정이 있나요?') : tr('처음이신가요?') }}</span

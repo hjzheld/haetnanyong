@@ -27,3 +27,5 @@
 
 확인: `node scripts/check-locales.mjs`. 브라우저에서 전환·재방문·모바일 레이아웃과
 원문 보존을 추가 확인했습니다. 테스트 중 Slack 메시지나 실제 DB 쓰기는 실행하지 않습니다.
+
+선택 메뉴의 `focusout.relatedTarget`이 null이면 즉시 닫지 않도록 보완했습니다. 바깥 pointerdown, 포커스가 실제 외부 요소로 이동한 경우, Escape로 닫습니다. `node scripts/check-appearance-focus.cjs`는 실행 중인 로컬 서버(기본 4320, `CHECK_BASE_URL`로 변경)에서 모션 감소 켬·끔, 의심 이벤트 주입, 쿠키·재방문·닫힘 동작을 모의 API로 검사합니다. 문제 PC의 실제 마우스 조작과 배포본 동작은 별도로 재확인해야 합니다.

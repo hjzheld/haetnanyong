@@ -333,6 +333,12 @@
   justify-content: flex-end;
   margin-bottom: 16px;
 }
+#pdesk .auth-help-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  width: min(360px, 100%);
+  margin: 20px auto 12px;
+}
 #pdesk .page-help-button {
   white-space: nowrap;
   min-height: 44px;

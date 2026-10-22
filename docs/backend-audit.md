@@ -1,5 +1,7 @@
 # Neon / backend audit
 
+Historical audit record: SQL checks and schema observations below describe that audit run. They do not establish the current production migration state. See [current database setup](../server/db/README.md) and [latest documentation review](documentation-consistency-2026-10-22.md).
+
 The live Neon schema was read using information_schema and pg_catalog. No production rows or schema were modified by the audit.
 
 ## Fixed

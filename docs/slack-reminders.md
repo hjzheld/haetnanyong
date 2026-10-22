@@ -5,7 +5,7 @@
 ## 설정과 확인
 
 - Slack App Home의 Home 탭을 구현하지 않아도 메시지를 예약할 수 있습니다. 메시지를 확인하려면 Slack 앱 설정의 App Home → Show Tabs → Messages Tab을 켭니다.
-- 설치 권한은 `users:read`, `chat:write`, `im:write`입니다. 마이페이지의 연결 상태 확인은 현재 사용자의 OAuth 설치 토큰으로 `auth.test`를 호출합니다. 테스트 메시지는 보내지 않습니다.
+- 설치 권한은 `users:read`, `chat:write`, `im:write`입니다. 마이페이지의 연결 상태 확인은 현재 연결 토큰으로 `auth.test`, `users.info`, `chat.scheduledMessages.list`를 호출해 워크스페이스·사용자·예약 목록 접근을 검사합니다. 테스트 메시지는 보내지 않습니다. OAuth 설정은 [Slack 연결 안내](slack-oauth.md)를 참고합니다.
 - 알림은 KST 입력을 명시적 UTC 오프셋으로 보내며, 현재부터 최소 1분 이후~120일 이내로 예약합니다. 테스트 시에는 직접 지정으로 5분 후를 권장합니다.
 - 예약 성공은 Slack 예약 ID가 저장된 `SCHEDULED` 상태입니다. 기기 푸시 여부는 Slack의 알림 허용·방해 금지·앱 활성 상태 설정에도 영향을 받습니다.
 

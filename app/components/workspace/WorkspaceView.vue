@@ -660,7 +660,7 @@ const titles = {
           {{ tr('캘린더에는 일정만 표시돼요. 할 일은 플랜에서 확인해주세요.') }}
         </p>
         <NuxtLink class="solid" to="/plans?tab=individual&kind=events">{{
-          tr('+ 일정 등록')
+          tr('일정 등록 페이지로 이동 →')
         }}</NuxtLink>
       </div>
       <p class="calendar-scroll-hint small">{{ tr('좌우로 밀어서 한 주의 일정을 확인하세요.') }}</p>

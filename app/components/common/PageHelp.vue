@@ -44,8 +44,8 @@ const content = computed(() => {
         section(
           '일정 등록',
           'Create an event',
-          '일정 등록 버튼을 누르면 플랜의 개별 일정 목록으로 이동해요. 그곳에서 플랜 등록 버튼으로 새 일정을 만들 수 있어요. 시간 일정은 한국 표준시(KST) 기준이며, 종일 일정의 종료일은 포함하지 않아요.',
-          'The add event button opens the individual events list in Plans. Use Add plan there to create an event. Timed events use Korean Standard Time (KST). All-day events exclude the end date.',
+          '일정 등록 페이지로 이동 버튼을 누르면 플랜의 개별 일정 목록으로 이동해요. 그곳에서 플랜 등록 버튼으로 새 일정을 만들 수 있어요. 시간 일정은 한국 표준시(KST) 기준이며, 종일 일정의 종료일은 포함하지 않아요.',
+          'Go to event registration opens the individual events list in Plans. Use Add plan there to create an event. Timed events use Korean Standard Time (KST). All-day events exclude the end date.',
         ),
       ],
     };
@@ -213,7 +213,7 @@ watch(
     aria-haspopup="dialog"
     @click="dialog?.showModal()"
   >
-     {{ tr('도움말') }}
+    {{ tr('도움말') }}
   </button>
   <dialog
     ref="dialog"

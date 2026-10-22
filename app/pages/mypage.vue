@@ -237,7 +237,9 @@ async function deleteAccount() {
             /></label>
             <p class="small">
               {{
-                tr('이메일은 인증된 계정 식별자라 현재 변경할 수 없고, 닉네임만 수정할 수 있어요.')
+                tr(
+                  '이메일은 로그인에 사용하는 정보로 현재 변경할 수 없어요. 닉네임만 수정할 수 있어요.',
+                )
               }}
             </p>
           </fieldset>

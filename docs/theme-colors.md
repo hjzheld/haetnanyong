@@ -14,7 +14,9 @@ Vue에서는 동일한 쿠키로 선택 상태를 복원합니다.
 
 선택 UI는 `app/components/common/ThemeSwitcher.vue`, 상태는 `app/composables/useTheme.ts`,
 배치는 `assets/css/theme.css`에 있습니다. 버튼 문구는 후속 다국어 작업을 위해 한 객체에
-모았습니다. 브랜드와 사용자가 지정한 일정 색상은 테마 변경 시 유지합니다.
+모았으며 현재는 `tr`을 통해 한국어·영어로 표시합니다. 브랜드와 사용자가 지정한 일정 색상은 테마 변경 시 유지합니다.
+
+언어 메뉴와 함께 `focusout.relatedTarget`이 null일 때 즉시 닫지 않도록 보완했습니다. 모션 감소 켬·끔과 의심 이벤트를 넣은 로컬 Chrome 검사는 통과했지만 문제 PC의 실제 마우스 조작은 재확인이 필요합니다. 검사 명령과 범위는 [언어 선택 안내](localization.md)를 참조합니다.
 
 ## 이름과 역할
 
