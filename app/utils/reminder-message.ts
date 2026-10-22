@@ -26,6 +26,6 @@ export function defaultReminderMessage(event: ReminderMessageEvent, locale: 'ko'
   }
   const allDay = event.allDay ? (locale === 'en' ? ' (all day)' : ' (종일 일정)') : '';
   return locale === 'en'
-    ? `:paw_prints: Haetnyaong ${project}${title} starts on ${start}.${allDay}`
-    : `:paw_prints: 했냐옹 ${project}${title} 일정이 ${start}에 시작해요.${allDay}`;
+    ? `${project}${title} starts on ${start}.${allDay}`
+    : `${project}${title} 일정이 ${start}에 시작해요.${allDay}`;
 }

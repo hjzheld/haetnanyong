@@ -30,10 +30,27 @@
   line-height: 1;
 }
 #pdesk .calendar-title {
+  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+#pdesk .calendar .calendar-ended-label {
+  flex: none;
+  white-space: nowrap;
+  font-size: 0.85em;
+  font-weight: 700;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 1px 3px;
+}
+#pdesk .calendar .calendar-item.is-ended-event {
+  opacity: 0.6;
+  filter: saturate(0.25);
+}
+#pdesk .calendar .calendar-item.is-ended-event:focus-visible {
+  opacity: 1;
 }
 #pdesk:not(.is-logged-out) .calendar .day {
   padding: 10px 8px;

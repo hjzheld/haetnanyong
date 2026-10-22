@@ -203,12 +203,94 @@ await assert.rejects(
   (error) => error.statusCode === 404,
 );
 
+// UI elapsed states must not leave event edits and Slack changes permanently
+// blocked by a SCHEDULED database row. Slack absence must be checked first.
+let guardRows = [],
+  guardMessages = [],
+  guardListError,
+  guardLists = 0;
+const activeStatuses = new Set(['CANCELED', 'FAILED', 'ELAPSED']);
+const guardService = load('server/services/reminders.ts', {
+  '#server/services/slack': {
+    ...slack,
+    listScheduledSlackMessages: async () => {
+      guardLists++;
+      if (guardListError) throw guardListError;
+      return guardMessages;
+    },
+  },
+  '#server/utils/db': {
+    query: async (sql, args) => {
+      if (sql.startsWith('SELECT') && sql.includes('updated_at::text')) {
+        assert.equal(args[1], 'owner');
+        return guardRows.filter((r) => r.id === args[0]).map((r) => ({ ...r }));
+      }
+      if (sql.startsWith('SELECT')) {
+        assert.equal(args[0], 'owner');
+        return guardRows
+          .filter((r) => !activeStatuses.has(r.status) && (!args[1] || r.eventId === args[1]))
+          .map((r) => ({ ...r }));
+      }
+      const current = guardRows.find((r) => r.id === args[4]);
+      assert.ok(current);
+      current.status = args[0];
+      return [{ ...current }];
+    },
+  },
+});
+function guardReset(status = 'SCHEDULED', future = false) {
+  guardRows = [
+    {
+      id: '1',
+      eventId: '4',
+      status,
+      revision: 1,
+      channel: 'D1',
+      message: 'Q1',
+      key: '',
+      remindAt: new Date(Date.now() + (future ? 600_000 : -600_000)).toISOString(),
+      updatedAt: new Date(Date.now() - 180_000).toISOString(),
+    },
+  ];
+  guardLists = 0;
+  guardMessages = [];
+  guardListError = undefined;
+}
+guardReset();
+assert.equal(await guardService.hasActiveReminders('owner', '4'), false);
+assert.equal(guardRows[0].status, 'ELAPSED');
+assert.equal(guardLists, 1);
+guardReset();
+guardMessages = [{ id: 'Q1', channel_id: 'D1' }];
+assert.equal(await guardService.hasActiveReminders('owner', '4'), true);
+assert.equal(guardRows[0].status, 'SCHEDULED', 'Pending Slack messages continue to block edits');
+guardReset();
+guardListError = new Error('Slack unavailable');
+await assert.rejects(guardService.hasActiveReminders('owner'), /unavailable/);
+assert.equal(guardRows[0].status, 'SCHEDULED', 'A failed list cannot release an active guard');
+for (const [status, future] of [
+  ['UNKNOWN', false],
+  ['SCHEDULED', true],
+]) {
+  guardReset(status, future);
+  assert.equal(await guardService.hasActiveReminders('owner'), true);
+  assert.equal(guardLists, 0, 'Future and uncertain reservations do not trigger extra Slack calls');
+}
+guardReset();
+guardRows.push({ ...guardRows[0], id: '2', eventId: '5', message: 'Q2' });
+assert.equal(await guardService.hasActiveReminders('owner'), false);
+assert.equal(guardLists, 1, 'Elapsed reservations share one complete list per channel');
+guardReset();
+assert.equal(await guardService.hasActiveReminders('owner', 'other-event'), false);
+assert.equal(guardLists, 0, 'An unrelated event never triggers a Slack lookup');
+
 // Check schedule handler persistence: explicit rejection is retryable; ambiguous failure is not.
 for (const [code, expected] of [
   ['missing_scope', 'FAILED'],
   ['internal_error', 'UNKNOWN'],
 ]) {
   let writtenStatus;
+  let checkedPastReservation = 0;
   const handler = load(
     'server/api/reminders/index.post.ts',
     {
@@ -219,15 +301,32 @@ for (const [code, expected] of [
         inputText: (x) => x,
         inputTime: (x) => x,
       },
-      '#server/services/reminders': reminders,
+      '#server/services/reminders': {
+        ...reminders,
+        reconcileReminder: async (id, userId) => {
+          assert.equal(id, 'previous');
+          assert.equal(userId, 'owner');
+          checkedPastReservation++;
+        },
+      },
       '#server/services/slack': {
         ...slack,
-        scheduleSlackMessage: async () => {
+        scheduleSlackMessage: async (channel, text) => {
+          assert.equal(channel, 'D1');
+          assert.equal(text, ':paw_prints: 했냐옹\nhello', 'Server must add the fixed heading');
           throw new Error('Slack chat.scheduleMessage failed: ' + code);
         },
       },
       '#server/utils/db': {
         query: async (sql, args) => {
+          if (sql.startsWith('SELECT id,status,remind_at'))
+            return [
+              {
+                id: 'previous',
+                status: 'SCHEDULED',
+                remindAt: new Date(Date.now() - 1000).toISOString(),
+              },
+            ];
           if (sql.startsWith('SELECT')) return [{ channel: 'D1', is_all_day: false }];
           if (sql.startsWith('INSERT')) return [{ id: '1', revision: 1 }];
           writtenStatus = args[0];
@@ -244,6 +343,11 @@ for (const [code, expected] of [
     },
   ).default;
   await assert.rejects(handler({}));
+  assert.equal(
+    checkedPastReservation,
+    1,
+    'Past scheduled reservations must be reconciled before replacement',
+  );
   assert.equal(writtenStatus, expected);
 }
 
@@ -260,9 +364,9 @@ assert.ok(document.paths['/account/slack/health'].get.security.length);
 assert.equal(
   document.paths['/reminders'].post.requestBody.content['application/json'].schema.properties.text
     .maxLength,
-  4000,
+  3983,
 );
 
 console.log(
-  'PASS: reminder failure classification, Retry-After, pagination, in-flight protection, recovery, ambiguity, expiry, cancellation, ownership, schedule persistence. No external messages or database writes.',
+  'PASS: reminder failure classification, Retry-After, pagination, in-flight protection, recovery, ambiguity, expiry, cancellation, ownership, elapsed edit/connection guards and schedule persistence. No external messages or database writes.',
 );

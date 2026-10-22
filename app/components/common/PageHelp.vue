@@ -184,8 +184,8 @@ const content = computed(() => {
       section(
         '오늘의 계획 확인',
         'Your daily overview',
-        '홈에서 오늘과 내일의 계획을 확인해요. 기한이 지난 미완료 할 일은 지연된 할 일 카드에 따로 보여요. 항목을 누르면 상세로 이동해요.',
-        'Home summarizes today and tomorrow. Overdue unfinished tasks appear in a separate card. Open an item to view its details.',
+        '홈에서 오늘 일정과 오늘부터 3일 이내 마감인 미완료 할 일을 확인해요. 기한이 지난 미완료 할 일은 지연된 할 일 카드에 따로 보여요. 항목을 누르면 상세로 이동해요.',
+        'Home shows today’s events and unfinished tasks due within three days from today. Overdue unfinished tasks appear in a separate card. Open an item to view its details.',
       ),
       section(
         '시작하기',

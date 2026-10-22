@@ -71,7 +71,6 @@ async function submit() {
       <div class="login-card">
         <img class="login-cat" src="/images/cat.png" :alt="tr('했냐옹 고양이')" />
         <h1>{{ tr('잊지 말고, 오늘도 했냐옹') }}</h1>
-        <div class="auth-help-toolbar"><CommonPageHelp /></div>
         <form class="auth-form" :aria-busy="busy" @submit.prevent="submit">
           <h2>{{ register ? tr('회원가입') : tr('로그인') }}</h2>
           <fieldset :disabled="busy" class="auth-fields">

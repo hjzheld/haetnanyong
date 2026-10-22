@@ -326,7 +326,7 @@ async function main() {
       'Dismissal persists during the current visit',
     );
     await navigate('/calendar');
-    await page.getByRole('link', { name: '+ 일정 등록', exact: true }).click();
+    await page.getByRole('link', { name: '일정 등록 페이지로 이동 →', exact: true }).click();
     await page.waitForURL(base + '/plans?tab=individual&kind=events');
     await page.getByRole('button', { name: /^일정 \d+$/ }).waitFor();
     assert.deepEqual(errors, []);

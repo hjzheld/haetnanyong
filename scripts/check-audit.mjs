@@ -137,6 +137,12 @@ const calendar = load(
         queries++;
         assert.equal(params[0], 'owner');
         assert.match(sql, /e\.start_date::timestamp AT TIME ZONE 'Asia\/Seoul'/);
+        assert.doesNotMatch(
+          sql,
+          /p\.archived_at IS NULL/,
+          'Calendar history includes archived projects',
+        );
+        assert.match(sql, /WHERE e\.user_id=\$1/, 'Calendar must still enforce ownership');
         return [];
       },
     },
@@ -209,6 +215,63 @@ assert.equal((await updateProject({})).id, '1');
 projectComplete = false;
 projectBody = { archived: true };
 assert.equal((await updateProject({})).id, '1', 'Manual archiving remains available');
+
+for (const [resource, alias] of [
+  ['tasks', 't'],
+  ['events', 'e'],
+]) {
+  let owned = true;
+  const detail = load(
+    `server/api/${resource}/[id].get.ts`,
+    {
+      '#server/utils/auth': { requireUser: async () => ({ id: 'owner' }) },
+      '#server/utils/input': input,
+      '#server/utils/db': {
+        query: async (sql, args) => {
+          assert.deepEqual(Array.from(args), ['1', 'owner']);
+          assert.ok(sql.includes(`COALESCE(p.color,${alias}.color) AS color`));
+          assert.ok(sql.includes(`p.user_id=${alias}.user_id`));
+          assert.ok(sql.includes(`${alias}.id=$1 AND ${alias}.user_id=$2`));
+          return owned ? [{ id: '1', color: '#123456' }] : [];
+        },
+      },
+    },
+    { getRouterParam: () => '1' },
+  ).default;
+  assert.equal((await detail({})).color, '#123456');
+  owned = false;
+  await assert.rejects(detail({}), (error) => error.statusCode === 404);
+}
+
+let reminderActive = true;
+let eventWrites = 0;
+const editEvent = load(
+  'server/api/events/[id].patch.ts',
+  {
+    '#server/utils/auth': { requireUser: async () => ({ id: 'owner' }) },
+    '#server/utils/input': input,
+    '#server/services/reminders': {
+      hasActiveReminders: async (userId, eventId) => {
+        assert.equal(userId, 'owner');
+        assert.equal(eventId, '1');
+        return reminderActive;
+      },
+    },
+    '#server/utils/db': {
+      query: async (_sql, args) => {
+        eventWrites++;
+        assert.equal(args[7], 'owner');
+        return [{ id: '1' }];
+      },
+    },
+  },
+  { getRouterParam: () => '1', readBody: async () => ({ title: 'updated' }) },
+).default;
+await assert.rejects(editEvent({}), (error) => error.statusCode === 409);
+assert.equal(eventWrites, 0, 'Active reminders must still protect event edits');
+reminderActive = false;
+assert.equal((await editEvent({})).id, '1');
+assert.equal(eventWrites, 1);
 console.log(
-  'PASS: strict IDs and timestamps, account-deletion safety, calendar ranges, completion boundaries and guarded project archiving. No external writes.',
+  'PASS: strict IDs and timestamps, account-deletion safety, calendar ranges, completion boundaries, guarded project archiving, inherited detail colors and reminder-protected event edits. No external writes.',
 );

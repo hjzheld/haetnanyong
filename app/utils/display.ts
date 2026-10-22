@@ -13,7 +13,7 @@ export const labels: Record<string, string> = {
   CANCEL_PENDING: '취소 처리 중',
   CANCELED: '취소됨',
   CANCEL_FAILED: '취소 실패',
-  ELAPSED: '시간 경과 · 발송 미확인',
+  ELAPSED: '예약 시간 지남',
 };
 const koreaDateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' });
 const timeOptions: Intl.DateTimeFormatOptions = {
@@ -256,7 +256,6 @@ export function errorText(error: unknown, context: ErrorContext = 'default') {
 }
 
 export function reminderErrorText(message?: string | null, status?: string) {
-  if (status === 'ELAPSED')
-    return '예약 시간이 지났지만 발송 여부는 확인되지 않았어요. 마이페이지에서 테스트 DM을 보내 확인해주세요.';
+  if (status === 'ELAPSED') return '';
   return message ? errorText({ statusCode: 502, statusMessage: message }, 'reminder') : '';
 }

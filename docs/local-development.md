@@ -69,9 +69,17 @@ npm run preview
 추가 준비가 필요합니다.
 
 - `node scripts/check-auth-rate-limit.mjs`: 재시도 시각 헤더 해석 검사
+- `node scripts/check-plan-time.mjs`: 종료 시각·KST 종일 경계·경과 알림 표시 검사
 - `node scripts/check-appearance-focus.cjs`: 언어·테마 선택 검사. 기본 서버는
   `http://127.0.0.1:4320`이며 `CHECK_BASE_URL`로 변경할 수 있습니다.
   모의 API를 사용하고 실제 계정이나 Slack을 변경하지 않습니다.
+
+추가 브라우저 검사도 모의 API를 사용하며 `CHECK_BASE_URL`로 실행 중인 서버를 지정합니다.
+
+- `node scripts/check-calendar-ended.cjs`: 지난 시간·종일 일정과 보관된 프로젝트의 캘린더 표시
+- `node scripts/check-modal-mobile.cjs`: 모달 배경 잠금·복원, 767px 고정 바와 약관 링크. `CHECK_LAYOUT_ONLY=1`이면 배치만 검사하므로 전체 검사 통과와 구분합니다.
+- `node scripts/check-project-item-color.cjs`: 프로젝트 색상 상속·편집 잠금과 개별 색상 편집
+- `node scripts/check-task-toggle.cjs`: 완료 처리·취소 요청의 성공/실패 시 화면 상태
 
 검사별 모의 처리 여부와 실제 DB·네트워크 접근 여부를 확인한 뒤 실행해주세요.
 

@@ -136,8 +136,12 @@ const events = [
       'Loading must hide cached calendar content',
     );
     await page.locator('.calendar').waitFor();
-    assert.equal(await page.locator('.calendar-item').count(), 3);
-    assert.equal(await page.locator('.calendar-item', { hasText: '보관 약속' }).count(), 0);
+    assert.equal(await page.locator('.calendar-item').count(), 4);
+    assert.equal(
+      await page.locator('.calendar-item', { hasText: '보관 약속' }).count(),
+      1,
+      'Archived project events must remain in calendar history',
+    );
     assert.equal(count('/api/account/slack'), 0, 'Calendar must not request Slack');
     await page.getByRole('combobox', { name: '프로젝트 필터' }).click();
     await page.getByRole('option', { name: '프로젝트 없음' }).click();

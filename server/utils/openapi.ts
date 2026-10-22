@@ -1771,7 +1771,7 @@ export const openapi = {
           },
         },
         description:
-          'scheduledAt 지정 시 CUSTOM, offsetMinutes 동시 지정 금지. 생략 시 시간 이벤트 시작 10/30분 전(BEFORE_START). 종일 이벤트는 scheduledAt 필수. 미래 120일 이내. CANCELED 상태만 재예약 가능. 불명확한 결과는 UNKNOWN으로 보존.',
+          'scheduledAt 지정 시 CUSTOM, offsetMinutes 동시 지정 금지. 생략 시 시간 이벤트 시작 10/30분 전(BEFORE_START). 종일 이벤트는 scheduledAt 필수. 최소 1분 이후부터 120일 이내. CANCELED, FAILED, ELAPSED 상태는 재예약 가능하며, 예약 시각이 지난 SCHEDULED는 Slack 예약 목록과 대조한 뒤 처리합니다. text는 본문만 전달하고 서버가 고정 머리말을 붙이며 전체 메시지는 4,000자 이내입니다. 불명확한 결과는 UNKNOWN으로 보존.',
         security: [
           {
             sessionCookie: [],
@@ -1792,6 +1792,9 @@ export const openapi = {
                   text: {
                     type: 'string',
                     minLength: 1,
+                    maxLength: 3983,
+                    description:
+                      '알림 본문. 서버가 고정 머리말 :paw_prints: 했냐옹과 줄바꿈을 추가합니다.',
                   },
                   scheduledAt: {
                     type: 'string',

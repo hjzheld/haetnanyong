@@ -30,7 +30,9 @@ function queries(file) {
 const taskCreate = queries('server/api/tasks/index.post.ts')[0];
 const eventCreate = queries('server/api/events/index.post.ts')[0];
 const taskUpdate = queries('server/api/tasks/[id].patch.ts')[0];
-const eventUpdate = queries('server/api/events/[id].patch.ts')[1];
+const eventUpdate = queries('server/api/events/[id].patch.ts').find((sql) =>
+  sql.startsWith('UPDATE events'),
+);
 const calendar = queries('server/api/calendar.get.ts');
 // Temporary tables shadow production tables only within this transaction.
 // No real user data or Slack reservations are created or changed.

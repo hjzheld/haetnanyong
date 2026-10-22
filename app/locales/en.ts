@@ -1,5 +1,25 @@
 // Korean source messages are stable keys. Never pass user-authored text to translation.
 const messages: Record<string, string> = {
+  종료됨: 'Ended',
+  '예약 시간 지남': 'Scheduled time passed',
+  '예약 시각 지남': 'Scheduled time passed',
+  '해당 예약 메시지는 Slack DM에서 확인해주세요.':
+    'Check the scheduled message in your Slack DM.',
+  '고정 머리말': 'Fixed heading',
+  '시행일: 2026년 10월 22일': 'Effective date: October 22, 2026',
+  '쿠키의 사용과 관리': 'Cookie use and controls',
+  '로그인 유지, Slack 연결 요청 검증, 언어와 테마 설정 저장을 위해 다음 쿠키를 사용합니다.':
+    'We use the following cookies to maintain sign-in, validate Slack connection requests, and save language and theme preferences.',
+  '로그인 유지 · 유효기간 7일. 로그아웃 시 삭제합니다.':
+    'Sign-in session · expires after 7 days. Deleted on sign-out.',
+  'Slack 연결 요청 검증 · 유효기간 10분. 콜백 처리 시 삭제합니다.':
+    'Slack connection validation · expires after 10 minutes. Deleted when the callback is processed.',
+  '언어 선택 저장 · 유효기간 1년': 'Language preference · expires after 1 year',
+  '테마 선택 저장 · 유효기간 1년': 'Theme preference · expires after 1 year',
+  '언어와 테마는 해당 브라우저에 저장하며 계정 DB에 저장하거나 다른 기기로 동기화하지 않습니다.':
+    'Language and theme preferences are saved in this browser, not in your account database or synced across devices.',
+  '브라우저의 개인정보 및 사이트 데이터 설정에서 쿠키를 삭제하거나 차단할 수 있습니다. 로그인·Slack 연결 쿠키를 차단하면 해당 기능을 이용하기 어렵고, 언어·테마 쿠키를 차단하거나 삭제하면 선택한 설정이 유지되지 않을 수 있습니다. 공용 기기에서는 사용 후 로그아웃해주세요.':
+    'You can delete or block cookies in your browser privacy and site data settings. Blocking sign-in or Slack connection cookies may prevent those features from working. Blocking or deleting preference cookies may stop your language and theme choices from being remembered. Sign out after using a shared device.',
   '다시 시도 가능한 시각': 'You can try again at',
   '(종료일 제외)': '(end date excluded)',
   '+ 일정 등록': '+ Add event',

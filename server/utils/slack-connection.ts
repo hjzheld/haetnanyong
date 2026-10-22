@@ -1,7 +1,7 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import type { H3Event } from 'h3';
-import { query } from '#server/utils/db';
 import { hashSessionToken } from '#server/utils/session';
+import { hasActiveReminders } from '#server/services/reminders';
 
 export interface SlackChallenge {
   userId: string;
@@ -47,11 +47,7 @@ export function readChallenge(event: H3Event): SlackChallenge | null {
   }
 }
 export async function assertSlackChangeAllowed(userId: string) {
-  const rows = await query(
-    `SELECT r.id FROM reminders r JOIN events e ON e.id=r.event_id WHERE e.user_id=$1 AND r.status NOT IN ('CANCELED','FAILED','ELAPSED') LIMIT 1`,
-    [userId],
-  );
-  if (rows.length)
+  if (await hasActiveReminders(userId))
     throw createError({
       statusCode: 409,
       statusMessage: '예약 중이거나 결과 확인이 필요한 알림을 먼저 취소·확인해주세요.',

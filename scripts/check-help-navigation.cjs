@@ -71,14 +71,11 @@ async function main() {
         await page.waitForFunction(() => Boolean(document.querySelector('#__nuxt')?.__vue_app__));
         await page.locator('input[type=email]').fill('unchanged@example.test');
         const help = page.getByRole('button', { name: '도움말', exact: true });
-        await help.click();
-        await page.getByRole('dialog', { name: '로그인·회원가입 도움말' }).waitFor();
-        await page.keyboard.press('Escape');
+        assert.equal(await help.count(), 0);
         assert.equal(
           await page.locator('input[type=email]').inputValue(),
           'unchanged@example.test',
         );
-        assert.ok(await help.evaluate((el) => el === document.activeElement));
         assert.ok(
           await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         );

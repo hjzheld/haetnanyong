@@ -1,14 +1,16 @@
 import { requireUser } from '#server/utils/auth';
 import { query } from '#server/utils/db';
 import { scheduleSlackMessage, slackFailure } from '#server/services/slack';
-import { reminderKey } from '#server/services/reminders';
+import { reminderKey, reconcileReminder } from '#server/services/reminders';
 import { inputBody, inputId, inputText, inputTime } from '#server/utils/input';
 
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event);
   const body = inputBody(await readBody(event));
   const eventId = inputId(body.eventId);
-  const text = inputText(body.text, 'text');
+  // The client supplies only the editable body; branding is enforced here.
+  const messageBody = inputText(body.text, 'text');
+  const text = `:paw_prints: 했냐옹\n${messageBody}`;
   if ([...text].length > 4000)
     throw createError({ statusCode: 400, statusMessage: 'text exceeds 4000 characters' });
   const [item] = await query<{
@@ -52,6 +54,13 @@ export default defineEventHandler(async (event) => {
       statusCode: 409,
       statusMessage: '마이페이지에서 본인의 Slack 계정을 먼저 연결해주세요.',
     });
+  // Before replacing a past reservation, ensure Slack no longer has it pending.
+  const [previous] = await query<{ id: string; status: string; remindAt: string }>(
+    'SELECT id,status,remind_at AS "remindAt" FROM reminders WHERE event_id=$1',
+    [eventId],
+  );
+  if (previous?.status === 'SCHEDULED' && Date.parse(previous.remindAt) <= Date.now())
+    await reconcileReminder(previous.id, user.id);
   const key = reminderKey(eventId, when.toISOString(), text);
   const [pending] = await query<{ id: string; revision: number }>(
     "INSERT INTO reminders (event_id,timing_type,offset_minutes,remind_at,status,idempotency_key,slack_dm_channel_id) VALUES ($1,$2,$3,$4,'SCHEDULING',$5,$6) ON CONFLICT (event_id) DO UPDATE SET timing_type=EXCLUDED.timing_type, offset_minutes=EXCLUDED.offset_minutes, remind_at=EXCLUDED.remind_at, status='SCHEDULING', idempotency_key=EXCLUDED.idempotency_key, slack_dm_channel_id=EXCLUDED.slack_dm_channel_id, slack_scheduled_message_id=NULL, reservation_accepted_at=NULL, canceled_at=NULL, last_error_code=NULL, last_error_message=NULL, revision=reminders.revision+1, updated_at=now() WHERE reminders.status IN ('CANCELED','FAILED','ELAPSED') RETURNING id,revision",

@@ -10,7 +10,7 @@ const { public: config } = useRuntimeConfig();
     <CommonLegalBackButton />
     <article class="legal-page">
       <h1>{{ tr('개인정보처리방침') }}</h1>
-      <p class="small">{{ tr('시행일: 2026년 10월 21일') }}</p>
+      <p class="small">{{ tr('시행일: 2026년 10월 22일') }}</p>
       <h2>{{ tr('수집하는 정보') }}</h2>
       <p>
         {{
@@ -29,6 +29,39 @@ const { public: config } = useRuntimeConfig();
         {{
           tr(
             '로그인, 일정·할 일 관리, Slack 리마인더 발송, 오류 확인과 서비스 보안을 위해 사용합니다.',
+          )
+        }}
+      </p>
+      <h2>{{ tr('쿠키의 사용과 관리') }}</h2>
+      <p>
+        {{
+          tr(
+            '로그인 유지, Slack 연결 요청 검증, 언어와 테마 설정 저장을 위해 다음 쿠키를 사용합니다.',
+          )
+        }}
+      </p>
+      <ul>
+        <li>
+          <code>session</code>: {{ tr('로그인 유지 · 유효기간 7일. 로그아웃 시 삭제합니다.') }}
+        </li>
+        <li>
+          <code>slack_oauth_state</code>:
+          {{ tr('Slack 연결 요청 검증 · 유효기간 10분. 콜백 처리 시 삭제합니다.') }}
+        </li>
+        <li><code>nyang-locale</code>: {{ tr('언어 선택 저장 · 유효기간 1년') }}</li>
+        <li><code>nyang-theme</code>: {{ tr('테마 선택 저장 · 유효기간 1년') }}</li>
+      </ul>
+      <p>
+        {{
+          tr(
+            '언어와 테마는 해당 브라우저에 저장하며 계정 DB에 저장하거나 다른 기기로 동기화하지 않습니다.',
+          )
+        }}
+      </p>
+      <p>
+        {{
+          tr(
+            '브라우저의 개인정보 및 사이트 데이터 설정에서 쿠키를 삭제하거나 차단할 수 있습니다. 로그인·Slack 연결 쿠키를 차단하면 해당 기능을 이용하기 어렵고, 언어·테마 쿠키를 차단하거나 삭제하면 선택한 설정이 유지되지 않을 수 있습니다. 공용 기기에서는 사용 후 로그아웃해주세요.',
           )
         }}
       </p>

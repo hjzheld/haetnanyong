@@ -6,6 +6,8 @@ import { groupCalendarItems, toCalendarItems } from '~/utils/calendar';
 import { dashboardTasks } from '~/utils/dashboard';
 import { DEFAULT_ITEM_COLORS } from '~/utils/item-colors';
 import { isProjectComplete } from '~/utils/project-completion';
+import { eventHasEnded, displayReminder } from '~/utils/plan-time';
+const planNow = usePlanClock();
 import { labels, koreaDate, datePart, errorText, reminderErrorText } from '~/utils/display';
 const props = defineProps<{
   view: 'home' | 'projects' | 'detail' | 'calendar' | 'reminders';
@@ -32,7 +34,9 @@ const { data, pending, status, error, refresh } = useAsyncData(
 const projects = computed(() => data.value?.projects || []),
   tasks = computed(() => data.value?.tasks || []),
   events = computed(() => data.value?.events || []),
-  reminders = computed(() => data.value?.reminders || []);
+  reminders = computed(() =>
+    (data.value?.reminders || []).map((r) => displayReminder(r, planNow.value)),
+  );
 const projectById = computed(() => new Map(projects.value.map((p) => [String(p.id), p])));
 const eventById = computed(() => new Map(events.value.map((e) => [String(e.id), e])));
 const tasksByProject = computed(() => {
@@ -252,7 +256,10 @@ const month = ref(today.value.slice(0, 7)),
 const projectOptions = computed(() => [
   { value: '', label: tr('전체 프로젝트') },
   { value: 'standalone', label: tr('프로젝트 없음') },
-  ...active.value.map((p) => ({ value: String(p.id), label: p.name })),
+  ...projects.value.map((p) => ({
+    value: String(p.id),
+    label: p.archivedAt ? `${p.name} (${tr('보관됨')})` : p.name,
+  })),
 ]);
 const loading = computed(() => status.value === 'idle' || pending.value);
 const calendar = computed(() => toCalendarItems(events.value));
@@ -274,11 +281,10 @@ const calendarEntries = computed(() =>
   groupCalendarItems(
     calendar.value.filter(
       (e) =>
-        visible(e.projectId) &&
-        (!filter.value ||
-          (filter.value === 'standalone'
-            ? e.projectId === null
-            : String(e.projectId) === filter.value)),
+        !filter.value ||
+        (filter.value === 'standalone'
+          ? e.projectId === null
+          : String(e.projectId) === filter.value),
     ),
     days.value,
   ),
@@ -489,9 +495,15 @@ const titles = {
             <h2>{{ tr('오늘의 일정') }}</h2>
             <NuxtLink to="/calendar" class="border-btn">{{ tr('캘린더 보기') }}</NuxtLink>
           </div>
-          <div v-for="e in todays" :key="e.id" class="list-row">
+          <div
+            v-for="e in todays"
+            :key="e.id"
+            class="list-row"
+            :class="{ 'is-ended-event': eventHasEnded(e, planNow) }"
+          >
             <NuxtLink class="grow" :to="`/items/events/${e.id}`"
               ><strong>{{ e.title }}</strong>
+              <span v-if="eventHasEnded(e, planNow)" class="badge">{{ tr('종료됨') }}</span>
               <p class="small">
                 {{ e.allDay ? tr('종일 일정') : formatTime(e.startsAt) }}
               </p></NuxtLink
@@ -607,9 +619,15 @@ const titles = {
               tr('시작일과 마감일을 정해 첫 할 일을 추가해보세요.')
             }}</CommonEmptyState></template
           ><template v-else
-            ><div v-for="e in ownEvents" :key="e.id" class="list-row">
+            ><div
+              v-for="e in ownEvents"
+              :key="e.id"
+              class="list-row"
+              :class="{ 'is-ended-event': eventHasEnded(e, planNow) }"
+            >
               <NuxtLink :to="`/items/events/${e.id}`" class="grow">
                 <strong>{{ e.title }}</strong>
+                <span v-if="eventHasEnded(e, planNow)" class="badge">{{ tr('종료됨') }}</span>
                 <p class="small">
                   {{
                     e.allDay
@@ -687,13 +705,16 @@ const titles = {
                 :to="`/items/${e.kind === 'task' ? 'tasks' : 'events'}/${e.id}`"
                 :style="calendarStyle(e)"
                 class="calendar-item"
-                :class="{ event: e.kind === 'event' }"
-                :title="e.title"
+                :class="{ event: e.kind === 'event', 'is-ended-event': eventHasEnded(e, planNow) }"
+                :title="e.title + (eventHasEnded(e, planNow) ? ' · ' + tr('종료됨') : '')"
                 ><span class="calendar-kind" aria-hidden="true">{{
                   e.kind === 'task' ? '□' : '•'
                 }}</span
-                ><span class="calendar-title">{{ e.title }}</span></NuxtLink
-              ></template
+                ><span class="calendar-title">{{ e.title }}</span>
+                <span v-if="eventHasEnded(e, planNow)" class="calendar-ended-label">{{
+                  tr('종료됨')
+                }}</span>
+              </NuxtLink></template
             >
           </div>
         </div>
@@ -733,7 +754,7 @@ const titles = {
                 <WorkspaceReminderProjectBadge
                   :project="projectById.get(String(eventById.get(String(r.eventId))?.projectId))"
                 />
-                <p v-if="r.errorMessage" class="form-error">
+                <p v-if="r.errorMessage && r.status !== 'ELAPSED'" class="form-error">
                   {{ tr(reminderErrorText(r.errorMessage, r.status)) }}
                 </p>
               </td>
@@ -742,17 +763,13 @@ const titles = {
               <td>
                 <span class="badge lavender">{{ tr(labels[r.status]) || r.status }}</span>
                 <p v-if="r.status === 'ELAPSED'" class="small">
-                  {{ tr('예약 시각이 지났어요. 실제 수신 여부는 Slack에서 확인해주세요.') }}
+                  {{ tr('해당 예약 메시지는 Slack DM에서 확인해주세요.') }}
                 </p>
               </td>
               <td class="reminder-management">
                 <div class="reminder-actions">
                   <button
-                    v-if="
-                      ['SCHEDULED', 'PENDING', 'FAILED', 'CANCEL_FAILED', 'ELAPSED'].includes(
-                        r.status,
-                      )
-                    "
+                    v-if="['SCHEDULED', 'PENDING', 'FAILED', 'CANCEL_FAILED'].includes(r.status)"
                     class="border-btn"
                     :disabled="busy"
                     @click="askReminderCancel(r.id)"
@@ -760,9 +777,7 @@ const titles = {
                     {{ tr('예약 취소') }}
                   </button>
                   <button
-                    v-if="
-                      ['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING', 'SCHEDULED'].includes(r.status)
-                    "
+                    v-if="['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING'].includes(r.status)"
                     class="border-btn"
                     :disabled="busy"
                     @click="checkReminder(r.id)"

@@ -54,7 +54,7 @@ const inheritedProject = computed(() =>
 );
 const projectLocked = computed(() =>
   props.kind === 'task' || props.kind === 'event'
-    ? Boolean(props.projectId || inheritedProject.value)
+    ? Boolean(props.projectId || i?.projectId || inheritedProject.value)
     : false,
 );
 const f = reactive({
@@ -161,7 +161,7 @@ async function submit() {
     const base = {
       title: f.title.trim(),
       description: f.description,
-      ...(!inheritedProject.value ? { color: f.color } : {}),
+      ...(!projectLocked.value ? { color: f.color } : {}),
     };
     if (props.kind === 'project')
       body = { name: f.name.trim(), description: f.description, color: f.color };
@@ -309,8 +309,8 @@ async function submit() {
             :aria-label="tr('표시 색상')"
             :disabled="projectLocked"
           />
-          <span v-if="projectLocked && inheritedProject" class="small"
-            >{{ inheritedProject.name }} {{ tr('프로젝트 색상을 따라가요.') }}</span
+          <span v-if="projectLocked" class="small"
+            >{{ inheritedProject?.name }} {{ tr('프로젝트 색상을 따라가요.') }}</span
           >
         </label>
         <template v-if="kind === 'task'">
@@ -389,9 +389,11 @@ async function submit() {
           /></label>
           <label v-if="f.timing === 'CUSTOM'"
             >{{ tr('알림 시각 (KST)')
-            }}<input v-model="f.scheduledAt" type="datetime-local" required /></label
-          ><label
-            >{{ tr('메시지') }}<textarea v-model="f.text" required maxlength="4000" rows="3" />
+            }}<input v-model="f.scheduledAt" type="datetime-local" required
+          /></label>
+          <p class="small">🐾 했냐옹 · {{ tr('고정 머리말') }}</p>
+          <label
+            >{{ tr('메시지') }}<textarea v-model="f.text" required maxlength="3983" rows="3" />
           </label>
         </template>
       </fieldset>

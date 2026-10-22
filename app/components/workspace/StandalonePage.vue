@@ -3,6 +3,8 @@ const { tr, formatTime } = useLocale();
 
 import type { Task, ScheduleEvent, Reminder } from '~/types/workspace';
 import { datePart, labels, errorText, reminderErrorText } from '~/utils/display';
+import { displayReminder, eventHasEnded } from '~/utils/plan-time';
+const planNow = usePlanClock();
 const props = defineProps<{ mode: 'create' | 'detail' | 'edit' }>();
 const route = useRoute(),
   { request } = useApi();
@@ -61,7 +63,9 @@ const {
   { lazy: true, immediate: kind === 'event' && props.mode === 'detail' },
 );
 const reminder = computed(() =>
-  reminders.value?.find((r) => String(r.eventId) === id && r.status !== 'CANCELED'),
+  reminders.value
+    ?.map((r) => displayReminder(r, planNow.value))
+    .find((r) => String(r.eventId) === id && r.status !== 'CANCELED'),
 );
 const task = computed(() => (kind === 'task' ? (item.value as Task | null) : null));
 const schedule = computed(() => (kind === 'event' ? (item.value as ScheduleEvent | null) : null));
@@ -229,6 +233,7 @@ async function openReminder() {
     @saved="saved"
   />
   <section v-else-if="item" class="panel item-detail">
+    <p v-if="schedule && eventHasEnded(schedule, planNow)" class="badge">{{ tr('종료됨') }}</p>
     <div class="heading">
       <h2>{{ tr(label) }} {{ tr('정보') }}</h2>
       <span
@@ -277,17 +282,13 @@ async function openReminder() {
         <div>
           <strong>{{ tr('알림') }} {{ tr(labels[reminder.status]) || reminder.status }}</strong>
           <p class="small">{{ formatTime(reminder.remindAt) }}</p>
-          <p v-if="reminder.errorMessage" class="form-error">
+          <p v-if="reminder.errorMessage && reminder.status !== 'ELAPSED'" class="form-error">
             {{ tr(reminderErrorText(reminder.errorMessage, reminder.status)) }}
           </p>
         </div>
         <div class="reminder-actions">
           <button
-            v-if="
-              ['SCHEDULED', 'PENDING', 'FAILED', 'CANCEL_FAILED', 'ELAPSED'].includes(
-                reminder.status,
-              )
-            "
+            v-if="['SCHEDULED', 'PENDING', 'FAILED', 'CANCEL_FAILED'].includes(reminder.status)"
             class="border-btn"
             :disabled="busy"
             @click="cancelReminder"
@@ -295,9 +296,7 @@ async function openReminder() {
             {{ tr('알림 취소') }}
           </button>
           <button
-            v-if="
-              ['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING', 'SCHEDULED'].includes(reminder.status)
-            "
+            v-if="['UNKNOWN', 'SCHEDULING', 'CANCEL_PENDING'].includes(reminder.status)"
             class="border-btn"
             :disabled="busy"
             @click="checkReminder"
@@ -314,7 +313,11 @@ async function openReminder() {
           </button>
         </div>
         <p v-if="reminder.status === 'ELAPSED'" class="small">
-          {{ tr('예약 시각이 지났어요. 실제 수신 여부는 Slack에서 확인해주세요.') }}
+          {{
+            tr(
+              '해당 예약 메시지는 Slack DM에서 확인해주세요.',
+            )
+          }}
         </p>
       </div>
       <button v-else class="border-btn" :disabled="checkingSlack" @click="openReminder">

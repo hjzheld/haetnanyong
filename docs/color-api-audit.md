@@ -4,6 +4,8 @@ Defaults: project `#557558`, task `#C98B8B`, event `#8E8AA3`.
 
 Tasks/events store their own color. Project-linked items display the current project color, so changing a project color updates all child displays without copying values into child rows. List and mutation responses expose the stored color; calendar/dashboard responses expose the effective display color. The frontend resolves the project color for list rows and locks the inherited color input.
 
+The current task/event detail GET responses also resolve the project color with `COALESCE(p.color, item.color)`. Direct detail-to-edit screens lock inherited colors and omit `color` from the save payload, matching the project screen. See the [final audit](code-audit-final-2026-10-22.md) for this follow-up fix.
+
 Fixed:
 
 - Color-only PATCH validation and persistence for tasks/events.

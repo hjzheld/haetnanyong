@@ -4,6 +4,7 @@ import {
   cancelSlackMessage,
   listScheduledSlackMessages,
   slackFailure,
+  type ScheduledSlackMessage,
 } from '#server/services/slack';
 
 export function reminderKey(eventId: string, when: string, text: string) {
@@ -33,14 +34,24 @@ async function ownedReminder(id: string, userId: string) {
   return row;
 }
 
-export async function reconcileReminder(id: string, userId: string, deadline?: number) {
+export async function reconcileReminder(
+  id: string,
+  userId: string,
+  deadline?: number,
+  scheduledByChannel?: Map<string, ScheduledSlackMessage[]>,
+) {
   const row = await ownedReminder(id, userId);
   if (!['SCHEDULING', 'UNKNOWN', 'SCHEDULED', 'CANCEL_PENDING'].includes(row.status)) return row;
   // Do not reconcile an HTTP request that may still be in flight.
-  if (Date.now() - new Date(row.updatedAt).getTime() < 120_000) return row;
+  if (row.status !== 'SCHEDULED' && Date.now() - new Date(row.updatedAt).getTime() < 120_000)
+    return row;
   if (!row.channel)
     throw createError({ statusCode: 409, statusMessage: 'Stored Slack channel is missing' });
-  const messages = await listScheduledSlackMessages(row.channel, deadline);
+  let messages = scheduledByChannel?.get(row.channel);
+  if (!messages) {
+    messages = await listScheduledSlackMessages(row.channel, deadline);
+    scheduledByChannel?.set(row.channel, messages);
+  }
   const at = Math.floor(new Date(row.remindAt).getTime() / 1000);
   const candidates = messages.filter(
     (m) => m.channel_id === row.channel && Number(m.post_at) === at,
@@ -87,6 +98,36 @@ export async function reconcileReminder(id: string, userId: string, deadline?: n
     ],
   );
   return updated || ownedReminder(id, userId);
+}
+
+// A past SCHEDULED row may already be shown as elapsed in the UI. Recheck it
+// before blocking edits or Slack connection changes, while preserving uncertain
+// outcomes and reservations that Slack still lists.
+export async function hasActiveReminders(userId: string, eventId: string | null = null) {
+  const active = await query<{ id: string; status: string; remindAt: string }>(
+    `SELECT r.id,r.status,r.remind_at AS "remindAt"
+      FROM reminders r JOIN events e ON e.id=r.event_id
+      WHERE e.user_id=$1 AND ($2::bigint IS NULL OR e.id=$2)
+        AND r.status NOT IN ('CANCELED','FAILED','ELAPSED')`,
+    [userId, eventId],
+  );
+  if (!active.length) return false;
+  // Existing future or uncertain reservations already require the user to act.
+  if (active.some((row) => row.status !== 'SCHEDULED' || !(Date.parse(row.remindAt) <= Date.now())))
+    return true;
+  const deadline = Date.now() + 15_000;
+  const scheduledByChannel = new Map<string, ScheduledSlackMessage[]>();
+  for (const row of active) {
+    if (Date.now() >= deadline) return true;
+    await reconcileReminder(row.id, userId, deadline, scheduledByChannel);
+  }
+  const remaining = await query(
+    `SELECT r.id FROM reminders r JOIN events e ON e.id=r.event_id
+      WHERE e.user_id=$1 AND ($2::bigint IS NULL OR e.id=$2)
+        AND r.status NOT IN ('CANCELED','FAILED','ELAPSED') LIMIT 1`,
+    [userId, eventId],
+  );
+  return remaining.length > 0;
 }
 
 export async function cancelReminder(id: string, userId: string) {

@@ -68,6 +68,17 @@
   border-radius: 50%;
   border: 1px solid var(--color-border-neutral-0-a13);
 }
+.list-row.is-ended-event .grow {
+  opacity: 0.55;
+}
+.calendar-item.is-ended-event {
+  opacity: 0.5;
+  filter: saturate(0.25);
+}
+.is-ended-event:focus-visible,
+.is-ended-event:focus-within {
+  opacity: 1;
+}
 #pdesk header nav {
   flex-wrap: wrap;
 }

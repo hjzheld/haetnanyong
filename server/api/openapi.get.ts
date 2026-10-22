@@ -24,7 +24,7 @@ export default defineEventHandler(() => {
   }
   document.paths['/calendar'].get.summary = '기간별 일정 조회';
   document.paths['/calendar'].get.description =
-    '프로젝트 일정과 개인 일정만 반환합니다. 할 일과 보관된 프로젝트의 일정은 제외합니다. 최대 366일의 반열린 구간(from 포함, to 제외)을 지원하며 종일 일정도 KST 기준 실제 시간 구간과 겹치는지 확인합니다.';
+    '보관된 프로젝트를 포함한 본인 프로젝트 일정과 개인 일정을 반환합니다. 할 일은 제외합니다. 최대 366일의 반열린 구간(from 포함, to 제외)을 지원하며 종일 일정도 KST 기준 실제 시간 구간과 겹치는지 확인합니다.';
   document.paths['/dashboard'].get.description =
     '다가오는 할 일(upcomingTasks)은 오늘부터 3일 이내, 지연된 할 일(overdueTasks)은 마감일이 지난 미완료 작업입니다. 보관된 프로젝트의 항목은 제외합니다.';
   const dashboardSchema =
@@ -104,7 +104,7 @@ export default defineEventHandler(() => {
   document.paths['/account/slack/health'] = slackHealth;
   document.paths['/health/slack'] = slackHealth;
   document.paths['/reminders'].post.description =
-    '일정(eventId)에만 알림을 설정합니다. 일정/태스크 생성만으로는 알림을 발송하지 않습니다. 최소 1분 이후~120일 이내로 예약합니다. FAILED, ELAPSED, CANCELED 알림은 같은 일정에 재등록할 수 있습니다. 결과가 불확실하면 UNKNOWN으로 보존하고 상태 재확인 API를 사용합니다.';
+    '일정(eventId)에만 알림을 설정합니다. text에는 본문만 전달하며 서버가 고정 머리말을 추가합니다. 일정/태스크 생성만으로는 알림을 발송하지 않습니다. 최소 1분 이후~120일 이내로 예약합니다. FAILED, ELAPSED, CANCELED 알림은 같은 일정에 재등록할 수 있습니다. 결과가 불확실하면 UNKNOWN으로 보존하고 상태 재확인 API를 사용합니다.';
   document.paths['/reminders'].post.responses['429'] = {
     description: 'Slack 요청 제한. Retry-After가 있으면 해당 초만큼 대기',
   };
@@ -112,7 +112,7 @@ export default defineEventHandler(() => {
     '미확정 결과는 먼저 재확인합니다. 2분 내 처리 중인 요청이나 식별할 수 없는 예약은 409로 보존합니다. 이미 삭제되거나 발송된 예약 ID는 취소 오류로 남기지 않습니다.';
   document.paths['/reminders'].post.requestBody.content[
     'application/json'
-  ].schema.properties.text.maxLength = 4000;
+  ].schema.properties.text.maxLength = 3983;
   const color = { type: 'string', pattern: '^#[0-9A-Fa-f]{6}$' };
   for (const [name, defaultColor] of [
     ['Task', '#C98B8B'],

@@ -191,8 +191,8 @@ async function main() {
       await page.locator('.calendar-item').first().waitFor();
       assert.equal(
         await page.locator('.calendar-item').count(),
-        2,
-        'Only active/standalone events appear',
+        3,
+        'Active, standalone and archived-project events appear',
       );
       assert.equal(await page.locator('.calendar-item', { hasText: '작업' }).count(), 0);
       const filter = page.getByRole('combobox', { name: '프로젝트 필터' });

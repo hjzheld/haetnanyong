@@ -1,8 +1,10 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 const { tr, formatTime } = useLocale();
 
 import type { Task, ScheduleEvent } from '~/types/workspace';
 import { datePart, labels, errorText } from '~/utils/display';
+import { eventHasEnded } from '~/utils/plan-time';
+const now = usePlanClock();
 const { request } = useApi();
 const { data, pending, status, error, refresh } = useAsyncData(
   'standalone-items',
@@ -13,7 +15,7 @@ const { data, pending, status, error, refresh } = useAsyncData(
   { lazy: true },
 );
 const route = useRoute();
-const tab = computed(() => (route.query.kind === 'tasks' ? 'tasks' : 'events'));
+const tab = computed(() => (route.query.kind === 'events' ? 'events' : 'tasks'));
 function chooseKind(kind: string) {
   void navigateTo(
     { path: '/plans', query: { ...route.query, tab: 'individual', kind } },
@@ -28,10 +30,10 @@ function chooseKind(kind: string) {
   </section>
   <template v-else-if="data">
     <div class="subnav">
-      <button :aria-pressed="tab === 'events'" @click="chooseKind('events')">
-        {{ tr('일정') }} {{ data.events.length }}</button
-      ><button :aria-pressed="tab === 'tasks'" @click="chooseKind('tasks')">
-        {{ tr('할 일') }} {{ data.tasks.length }}
+      <button :aria-pressed="tab === 'tasks'" @click="chooseKind('tasks')">
+        {{ tr('할 일') }} {{ data.tasks.length }}</button
+      ><button :aria-pressed="tab === 'events'" @click="chooseKind('events')">
+        {{ tr('일정') }} {{ data.events.length }}
       </button>
     </div>
     <section class="panel">
@@ -41,9 +43,11 @@ function chooseKind(kind: string) {
           :key="e.id"
           :to="`/items/events/${e.id}`"
           class="list-row"
+          :class="{ 'is-ended-event': eventHasEnded(e, now) }"
         >
           <div class="grow">
             <strong>{{ e.title }}</strong>
+            <span v-if="eventHasEnded(e, now)" class="badge">{{ tr('종료됨') }}</span>
             <p class="small">
               {{
                 e.allDay

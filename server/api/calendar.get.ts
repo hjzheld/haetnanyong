@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
       e.title, e.starts_at AS "startsAt", e.ends_at AS "endsAt", e.start_date AS "startDate",
       e.end_date AS "endDate", e.is_all_day AS "allDay"
       FROM events e LEFT JOIN projects p ON p.id=e.project_id AND p.user_id=$1
-      WHERE e.user_id=$1 AND p.archived_at IS NULL
+      WHERE e.user_id=$1
         AND ((e.is_all_day=false AND e.starts_at<$3::timestamptz AND e.ends_at>$2::timestamptz)
           OR (e.is_all_day=true AND (e.start_date::timestamp AT TIME ZONE 'Asia/Seoul')<$3::timestamptz
             AND (e.end_date::timestamp AT TIME ZONE 'Asia/Seoul')>$2::timestamptz))`,

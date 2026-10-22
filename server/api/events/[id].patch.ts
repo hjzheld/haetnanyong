@@ -9,6 +9,7 @@ import {
 } from '#server/utils/input';
 import { requireUser } from '#server/utils/auth';
 import { query } from '#server/utils/db';
+import { hasActiveReminders } from '#server/services/reminders';
 
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event);
@@ -28,11 +29,7 @@ export default defineEventHandler(async (event) => {
   if (body.color !== undefined) body.color = inputColor(body.color);
   if (body.title !== undefined && !body.title.trim())
     throw createError({ statusCode: 400, statusMessage: 'Title cannot be empty' });
-  const active = await query(
-    "SELECT r.id FROM reminders r JOIN events e ON e.id=r.event_id WHERE e.id=$1 AND e.user_id=$2 AND r.status NOT IN ('CANCELED','FAILED','ELAPSED')",
-    [id, user.id],
-  );
-  if (active[0])
+  if (await hasActiveReminders(user.id, id))
     throw createError({
       statusCode: 409,
       statusMessage: 'Cancel or reconcile the reminder before editing this event',

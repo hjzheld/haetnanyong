@@ -4,7 +4,7 @@
 
 1. 기존 DB의 적용 상태를 확인한 뒤 필요한 마이그레이션만 실행한다. 새 DB 준비와 004~007의 역할은 [DB 안내](../server/db/README.md)를 따른다.
 2. 005의 테이블은 정기 정리 작업에서 참조하므로 필요하다. 현재 이메일 인증 기능은 비활성화되어 있다.
-3. Vercel 환경변수에 [README](../README.md)의 값을 등록한다. 현재 저장소에는 `.env.example`이 없다. 필수 값은 `DATABASE_URL`, `SESSION_SECRET`이며 Slack OAuth에는 `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_REDIRECT_URI`, `SLACK_TOKEN_ENCRYPTION_KEY`가 필요하다. 정기 작업은 `CRON_SECRET`을 사용한다.
+3. Vercel 환경변수에 [로컬 개발 안내](local-development.md)의 설정 항목을 배포 환경에 맞춰 등록한다. 현재 저장소에는 `.env.example`이 없다. 필수 값은 `DATABASE_URL`, `SESSION_SECRET`이며 Slack OAuth에는 `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_REDIRECT_URI`, `SLACK_TOKEN_ENCRYPTION_KEY`가 필요하다. 정기 작업은 `CRON_SECRET`을 사용한다.
 4. Node.js 22.19 이상을 사용한다.
 5. `/api/health`를 UptimeRobot 또는 Better Stack에서 감시한다.
 
@@ -31,7 +31,7 @@ Vercel 관리 화면이 아니라 `server/middleware/02-rate-limit.ts`에서 관
 
 ## Sentry
 
-Sentry DSN을 등록하면 Nuxt 클라이언트와 Nitro 서버 오류를 수집한다. 비밀번호, 세션 쿠키, Slack 토큰은 오류 컨텍스트로 보내지 않는다.
+Sentry DSN을 등록하면 Nuxt 클라이언트와 Nitro 서버 오류를 수집한다. 앱에서 비밀번호·세션 쿠키·Slack 토큰을 별도 오류 컨텍스트로 첨부하지는 않지만, 모든 SDK 자동 수집 항목을 검증한 것은 아니다. 운영 설정과 실제 수집 이벤트의 민감정보 포함 여부는 별도로 확인한다.
 
 ## Slack 취소 작업
 
