@@ -1,7 +1,7 @@
 import { defineNuxtConfig } from 'nuxt/config';
 
 export default defineNuxtConfig({
-  modules: ['@sentry/nuxt/module'],
+  modules: ['@sentry/nuxt/module', '@vercel/analytics'],
   sourcemap: { client: 'hidden', server: true },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },

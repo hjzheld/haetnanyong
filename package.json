@@ -25,6 +25,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
     "@sentry/nuxt": "^11.8.0",
+    "@vercel/analytics": "^2.0.1",
     "nuxt": "^4.0.0",
     "vue": "^3.5.0",
     "vue-router": "^5.1.0"
