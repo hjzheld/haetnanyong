@@ -3,8 +3,7 @@ const messages: Record<string, string> = {
   종료됨: 'Ended',
   '예약 시간 지남': 'Scheduled time passed',
   '예약 시각 지남': 'Scheduled time passed',
-  '해당 예약 메시지는 Slack DM에서 확인해주세요.':
-    'Check the scheduled message in your Slack DM.',
+  '해당 예약 메시지는 Slack DM에서 확인해주세요.': 'Check the scheduled message in your Slack DM.',
   '고정 머리말': 'Fixed heading',
   '시행일: 2026년 10월 22일': 'Effective date: October 22, 2026',
   '쿠키의 사용과 관리': 'Cookie use and controls',
@@ -705,4 +704,6 @@ const messages: Record<string, string> = {
   '프로젝트 탭의 보관함에서 보관한 프로젝트를 확인할 수 있어요. 프로젝트 상세에서 모든 일정이 종료되고 할 일이 전부 완료되면 보관 여부를 물어요. 예, 보관하기를 누르면 보관함으로 이동해요. 취소하면 같은 화면에서는 다시 묻지 않고, 빈 프로젝트에는 안내가 뜨지 않아요. 상세에서 직접 보관하거나 보관한 프로젝트를 복원할 수도 있어요.':
     'Find archived projects under the Projects tab → Archive. When all events have ended and all tasks are complete, the project detail asks whether to archive it. Choose Yes, archive to move it to the archive. Cancel dismisses the prompt for the current visit. Empty projects do not trigger it. You can also archive or restore a project from its detail screen.',
 };
+messages['일정 상세'] = 'Event details';
+messages['등록된 일정이 없어요.'] = 'No events scheduled.';
 export default messages;

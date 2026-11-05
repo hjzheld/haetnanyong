@@ -246,6 +246,7 @@ function calendarStyle(item: CalendarItem) {
   );
   const luminance = 0.2126 * linear[0]! + 0.7152 * linear[1]! + 0.0722 * linear[2]!;
   return {
+    '--calendar-item-color': color,
     background: color,
     color: luminance > 0.179 ? 'var(--color-on-user-light)' : 'var(--color-on-user-dark)',
     border: 'none',
@@ -253,6 +254,18 @@ function calendarStyle(item: CalendarItem) {
 }
 const month = ref(today.value.slice(0, 7)),
   filter = ref('');
+const calendarDialog = ref<HTMLDialogElement>();
+const calendarDay = ref('');
+const calendarTitleId = useId();
+const dayEvents = computed(() =>
+  (calendarEntries.value.get(calendarDay.value) || [])
+    .map((item) => eventById.value.get(String(item.id)))
+    .filter((item): item is ScheduleEvent => !!item),
+);
+function openCalendarDay(day: string) {
+  calendarDay.value = day;
+  calendarDialog.value?.showModal();
+}
 const projectOptions = computed(() => [
   { value: '', label: tr('전체 프로젝트') },
   { value: 'standalone', label: tr('프로젝트 없음') },
@@ -681,7 +694,6 @@ const titles = {
           tr('일정 등록 페이지로 이동 →')
         }}</NuxtLink>
       </div>
-      <p class="calendar-scroll-hint small">{{ tr('좌우로 밀어서 한 주의 일정을 확인하세요.') }}</p>
       <div class="calendar-scroll" role="region" :aria-label="tr('월간 캘린더')" tabindex="0">
         <div class="calendar">
           <div
@@ -697,24 +709,45 @@ const titles = {
             class="day"
             :class="{ blank: !day, today: day === today }"
           >
+            <button
+              v-if="day"
+              type="button"
+              class="calendar-day-trigger"
+              :aria-label="day + ' · ' + tr('일정 상세')"
+              aria-haspopup="dialog"
+              @click="openCalendarDay(day)"
+            ></button>
             <span v-if="day" class="day-number">{{ Number(day.slice(-2)) }}</span
             ><template v-if="day"
-              ><NuxtLink
+              ><button
                 v-for="e in calendarEntries.get(day) || []"
                 :key="e.kind + e.id"
-                :to="`/items/${e.kind === 'task' ? 'tasks' : 'events'}/${e.id}`"
+                type="button"
+                aria-haspopup="dialog"
+                @click="openCalendarDay(day)"
                 :style="calendarStyle(e)"
                 class="calendar-item"
                 :class="{ event: e.kind === 'event', 'is-ended-event': eventHasEnded(e, planNow) }"
                 :title="e.title + (eventHasEnded(e, planNow) ? ' · ' + tr('종료됨') : '')"
-                ><span class="calendar-kind" aria-hidden="true">{{
+                :aria-label="e.title + ' · ' + tr('일정 상세')"
+              >
+                <svg class="calendar-paw" viewBox="0 0 100 90" aria-hidden="true" focusable="false">
+                  <ellipse cx="16" cy="39" rx="10" ry="12" transform="rotate(-16 16 39)" />
+                  <ellipse cx="38" cy="17" rx="13" ry="15" transform="rotate(12 38 17)" />
+                  <ellipse cx="69" cy="17" rx="13" ry="15" transform="rotate(-12 69 17)" />
+                  <ellipse cx="91" cy="39" rx="9" ry="12" transform="rotate(16 91 39)" />
+                  <path
+                    d="M23 73C23 60 34 43 45 39C50 37 56 37 61 40C72 46 83 61 83 74C83 86 74 90 63 86C57 83 50 83 44 86C32 90 23 86 23 73Z"
+                  />
+                </svg>
+                <span class="calendar-kind" aria-hidden="true">{{
                   e.kind === 'task' ? '□' : '•'
                 }}</span
                 ><span class="calendar-title">{{ e.title }}</span>
                 <span v-if="eventHasEnded(e, planNow)" class="calendar-ended-label">{{
                   tr('종료됨')
                 }}</span>
-              </NuxtLink></template
+              </button></template
             >
           </div>
         </div>
@@ -806,6 +839,45 @@ const titles = {
       }}</CommonEmptyState>
     </section>
   </template>
+  <dialog
+    ref="calendarDialog"
+    class="calendar-detail-dialog"
+    :aria-labelledby="calendarTitleId"
+    @click="$event.target === calendarDialog && calendarDialog?.close()"
+  >
+    <div class="heading">
+      <h2 :id="calendarTitleId">{{ calendarDay }} · {{ tr('일정 상세') }}</h2>
+      <button type="button" class="border-btn" @click="calendarDialog?.close()">
+        {{ tr('닫기') }}
+      </button>
+    </div>
+    <p v-if="!dayEvents.length" class="small">{{ tr('등록된 일정이 없어요.') }}</p>
+    <article v-for="event in dayEvents" :key="event.id" class="calendar-detail-event">
+      <h3>{{ event.title }}</h3>
+      <p class="small">{{ projectName(event.projectId) }}</p>
+      <p class="small">
+        {{
+          event.allDay
+            ? tr('종일') +
+              ' · ' +
+              datePart(event.startDate) +
+              ' ~ ' +
+              datePart(event.endDate) +
+              tr(' (종료일 제외)')
+            : formatTime(event.startsAt) + ' ~ ' + formatTime(event.endsAt)
+        }}
+      </p>
+      <span v-if="eventHasEnded(event, planNow)" class="badge">{{ tr('종료됨') }}</span>
+      <p v-if="event.description" class="calendar-detail-description">{{ event.description }}</p>
+      <NuxtLink
+        class="border-btn"
+        :to="`/items/events/${event.id}`"
+        @click="calendarDialog?.close()"
+      >
+        {{ tr('상세 보기') }} →
+      </NuxtLink>
+    </article>
+  </dialog>
   <WorkspaceItemEditor
     v-if="editor"
     :kind="editor.kind"

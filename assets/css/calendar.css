@@ -90,6 +90,62 @@
     font-size: 11px;
   }
 }
+#pdesk .calendar .day {
+  position: relative;
+}
+#pdesk .calendar-day-trigger {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+#pdesk .calendar-day-trigger:focus-visible {
+  outline: 2px solid var(--color-border-lavender-343);
+  outline-offset: -3px;
+}
+#pdesk .calendar .calendar-item {
+  position: relative;
+}
+#pdesk .calendar .day-number {
+  pointer-events: none;
+}
+#pdesk .calendar-detail-dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: 85svh;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+#pdesk .calendar-detail-dialog .heading {
+  align-items: center;
+}
+#pdesk .calendar-detail-event {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 16px;
+  padding: 18px 0;
+  border-top: 1px solid var(--color-border-neutral-880);
+}
+#pdesk .calendar-detail-event > :not(.border-btn) {
+  grid-column: 1;
+}
+#pdesk .calendar-detail-event > .badge {
+  justify-self: start;
+}
+#pdesk .calendar-detail-event > .border-btn {
+  grid-column: 2;
+  grid-row: 1 / span 5;
+  align-self: center;
+  white-space: nowrap;
+}
+#pdesk .calendar-detail-description {
+  white-space: pre-wrap;
+}
 #pdesk .calendar-heading {
   align-items: center;
   gap: 18px;

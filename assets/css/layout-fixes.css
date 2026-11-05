@@ -371,20 +371,32 @@
     font-size: 12px;
   }
   #pdesk .calendar-scroll {
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
+    width: 100%;
+    min-width: 0;
     border-radius: 16px;
   }
   #pdesk:not(.is-logged-out) .calendar {
-    min-width: 630px;
+    min-width: 0;
+    width: 100%;
   }
   #pdesk:not(.is-logged-out) .calendar .day {
-    min-height: 110px;
-    padding: 8px 5px;
+    min-height: clamp(150px, 24svh, 220px);
+    padding: 8px 3px;
   }
   #pdesk:not(.is-logged-out) .calendar .calendar-item {
-    font-size: 12px;
-    padding: 6px;
+    font-size: 10px;
+    padding: 6px 3px;
+    gap: 2px;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+  #pdesk .calendar .calendar-title {
+    flex-basis: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
   }
   #pdesk .calendar-heading {
     gap: 14px;
@@ -404,5 +416,61 @@
     min-height: 44px;
     display: inline-flex;
     align-items: center;
+  }
+}
+
+#pdesk .calendar-paw {
+  display: none;
+}
+@media (max-width: 768px) {
+  #pdesk:not(.is-logged-out) .calendar .day {
+    min-height: 100px;
+    padding: 5px 3px;
+  }
+  #pdesk .calendar .day-number {
+    margin-bottom: 0;
+  }
+  #pdesk:not(.is-logged-out) .calendar .calendar-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 32px;
+    margin-top: 2px;
+    padding: 2px;
+    background: transparent !important;
+  }
+  #pdesk .calendar .calendar-item .calendar-paw {
+    display: block;
+    width: 28px;
+    height: 28px;
+    flex: none;
+    fill: var(--calendar-item-color);
+  }
+  #pdesk .calendar .calendar-item .calendar-kind,
+  #pdesk .calendar .calendar-item .calendar-title,
+  #pdesk .calendar .calendar-item .calendar-ended-label {
+    display: none;
+  }
+}
+@media (max-width: 475px) {
+  #pdesk:not(.is-logged-out) .calendar .day {
+    min-height: 80px;
+    padding: 4px 3px;
+  }
+  #pdesk:not(.is-logged-out) .calendar .calendar-item {
+    min-height: 20px;
+    margin-top: 0;
+    padding: 6px 2px;
+  }
+  #pdesk .calendar .calendar-item .calendar-paw {
+    display: none;
+  }
+  #pdesk .calendar .calendar-item::after {
+    content: '';
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--calendar-item-color);
   }
 }

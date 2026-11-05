@@ -43,6 +43,10 @@
 .item-detail {
   max-width: 800px;
 }
+#pdesk .item-detail > .badge {
+  width: fit-content;
+  margin: 0 0 16px;
+}
 .item-description {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
