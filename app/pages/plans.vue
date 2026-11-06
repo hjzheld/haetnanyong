@@ -15,6 +15,14 @@ function closeHelp() {
   help.value?.close();
   helpButton.value?.focus();
 }
+function closeCreator(kind: 'task' | 'event') {
+  creatorOpen.value = false;
+  if (tab.value === 'individual')
+    void navigateTo(
+      { path: '/plans', query: { ...route.query, tab: 'individual', kind: kind === 'event' ? 'events' : 'tasks' } },
+      { replace: true },
+    );
+}
 async function saved(result: {
   id: string;
   projectId?: string;
@@ -64,7 +72,7 @@ async function saved(result: {
   <WorkspaceIndividualPlans v-else />
   <WorkspacePlanCreator
     :open="creatorOpen"
-    @close="creatorOpen = false"
+    @close="closeCreator"
     @saved="saved"
     @project-created="refreshNuxtData('workspace-data')"
   />

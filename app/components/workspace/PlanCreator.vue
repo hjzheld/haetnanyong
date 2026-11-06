@@ -3,7 +3,7 @@ import type { Project } from '~/types/workspace';
 import { errorText } from '~/utils/display';
 const props = defineProps<{ open: boolean }>();
 const emit = defineEmits<{
-  close: [];
+  close: [kind: 'task' | 'event'];
   saved: [result: { id: string; projectId?: string; kind: 'task' | 'event' }];
   projectCreated: [project: Project];
 }>();
@@ -36,7 +36,7 @@ async function requestClose() {
   if (decidingDiscard) return;
   decidingDiscard = true;
   try {
-    if (!editor.value || (await editor.value.confirmDiscard())) emit('close');
+    if (!editor.value || (await editor.value.confirmDiscard())) emit('close', kind.value);
   } finally {
     decidingDiscard = false;
   }
@@ -131,7 +131,7 @@ onBeforeUnmount(() => {
       inline
       unframed
       allow-project-creation
-      @close="emit('close')"
+      @close="emit('close', kind)"
       @saved="saved"
       @project-created="projectCreated"
     />

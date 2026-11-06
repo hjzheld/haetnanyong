@@ -24,6 +24,8 @@ const emit = defineEmits<{
 const { request } = useApi();
 const i = props.item,
   today = props.initialDate || koreaDate();
+const defaultStart = localTime(new Date(Date.now() + 5 * 60_000)) || `${today}T14:00`;
+const defaultEnd = localTime(new Date(Date.now() + 65 * 60_000)) || `${today}T15:00`;
 const chosenProject = ref(String(i?.projectId || props.projectId || ''));
 const createdProject = ref<Project>();
 const newProjectValue = '__new_project__';
@@ -72,8 +74,8 @@ const f = reactive({
     datePart(i?.endDate as string) ||
     koreaDate(new Date(Date.parse(today + 'T12:00:00+09:00') + 86400000)),
   allDay: Boolean(i?.allDay),
-  startsAt: localTime(i?.startsAt as string) || today + 'T14:00',
-  endsAt: localTime(i?.endsAt as string) || today + 'T15:00',
+  startsAt: localTime(i?.startsAt as string) || defaultStart,
+  endsAt: localTime(i?.endsAt as string) || defaultEnd,
   timing: i?.allDay ? 'CUSTOM' : '10',
   scheduledAt: localTime(new Date(Date.now() + 5 * 60_000).toISOString()),
   text: defaultReminderMessage(
